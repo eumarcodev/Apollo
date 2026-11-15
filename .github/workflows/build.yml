@@ -1,0 +1,100 @@
+name: Build (Windows)
+
+# Reusable workflow: builds Apollo on Windows (MSYS2 UCRT64) and uploads the installer and the portable zip
+# as a workflow artifact. Called by pr.yml, nightly.yml, rc.yml and stable.yml. It never publishes anything.
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Version baked into the binaries and the file names, without the leading "v" (e.g. 1.3.0-rc.1)
+        type: string
+        required: true
+      ref:
+        description: Commit SHA to build (defaults to the commit that triggered the caller)
+        type: string
+        required: false
+        default: ""
+      artifact-name:
+        description: Name of the uploaded artifact
+        type: string
+        required: false
+        default: apollo-windows-x64
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (Windows, MSYS2 UCRT64)
+    runs-on: windows-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: msys2 {0}
+    env:
+      BUILD_VERSION: ${{ inputs.version }}
+      BRANCH: ${{ github.ref_name }}
+      COMMIT: ${{ inputs.ref || github.sha }}
+      # The MSYS2 login shell does not always forward this, and CMake needs it to find build-deps/dist/Windows-AMD64
+      PROCESSOR_ARCHITECTURE: AMD64
+    steps:
+      - name: Keep line endings untouched
+        shell: pwsh
+        run: git config --global core.autocrlf false
+
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          submodules: recursive
+
+      # path-type: inherit keeps the runner's official Node.js/npm on PATH, as required by docs/building.md
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          path-type: inherit
+          install: >-
+            git
+            mingw-w64-ucrt-x86_64-boost
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-cppwinrt
+            mingw-w64-ucrt-x86_64-curl-winssl
+            mingw-w64-ucrt-x86_64-MinHook
+            mingw-w64-ucrt-x86_64-miniupnpc
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-nlohmann_json
+            mingw-w64-ucrt-x86_64-nsis
+            mingw-w64-ucrt-x86_64-onevpl
+            mingw-w64-ucrt-x86_64-openssl
+            mingw-w64-ucrt-x86_64-opus
+            mingw-w64-ucrt-x86_64-toolchain
+
+      # APOLLO_UPDATE_REPO makes the web UI check this repository's releases for new versions
+      - name: Configure
+        run: cmake -B build -G Ninja -S . -DAPOLLO_UPDATE_REPO=${{ github.repository }}
+
+      - name: Build
+        run: ninja -C build
+
+      - name: Package (installer and portable zip)
+        run: |
+          cpack -G NSIS --config ./build/CPackConfig.cmake
+          cpack -G ZIP --config ./build/CPackConfig.cmake
+
+      - name: Rename artifacts
+        run: |
+          cd build/cpack_artifacts
+          mv Apollo.exe "Apollo-${BUILD_VERSION}-windows-x64-installer.exe"
+          mv Apollo.zip "Apollo-${BUILD_VERSION}-windows-x64-portable.zip"
+          ls -la
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: |
+            build/cpack_artifacts/Apollo-*-installer.exe
+            build/cpack_artifacts/Apollo-*-portable.zip
+          if-no-files-found: error
