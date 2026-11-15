@@ -6,6 +6,9 @@ set(SUNSHINE_PUBLISHER_WEBSITE "https://www.sudomaker.com"
 set(SUNSHINE_PUBLISHER_ISSUE_URL "https://github.com/ClassicOldSong/Apollo/issues"
         CACHE STRING "The URL of the publisher's support site or issue tracker.
         If you provide a modified version of Sunshine, we kindly request that you use your own url.")
+set(APOLLO_UPDATE_REPO "ClassicOldSong/Apollo"
+        CACHE STRING "The GitHub repository (owner/name) whose releases the web UI checks for new versions.
+        Forks that publish their own releases should set this to their own repository.")
 
 option(BUILD_DOCS "Build documentation" OFF)
 option(BUILD_TESTS "Build tests" OFF)
