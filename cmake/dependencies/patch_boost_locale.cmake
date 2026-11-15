@@ -1,4 +1,4 @@
-# Patches Boost 1.89 (fetched via FetchContent) so it configures with CMake >= 4.x.
+# Patches Boost (fetched via FetchContent; the failure was seen on 1.89) so it configures with CMake >= 4.x.
 #
 # libs/locale/CMakeLists.txt passes include/boost/locale.hpp to source_group(TREE .../include/boost/locale ...),
 # which newer CMake versions reject because the file is not under that tree.
