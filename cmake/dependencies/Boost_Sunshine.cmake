@@ -57,6 +57,12 @@ if(NOT Boost_FOUND)
     set(BOOST_URL "https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}-cmake.tar.xz")  # cmake-lint: disable=C0301
     set(BOOST_HASH "SHA256=67acec02d0d118b5de9eb441f5fb707b3a1cdd884be00ca24b9a73c995511f74")
 
+    # Boost 1.89's Locale CMakeLists fails with newer CMake (source_group TREE error), patch it after download
+    set(BOOST_PATCH_COMMAND
+            ${CMAKE_COMMAND}
+            -DBOOST_SOURCE_DIR=${FETCHCONTENT_BASE_DIR}/boost-src
+            -P ${CMAKE_CURRENT_LIST_DIR}/patch_boost_locale.cmake)
+
     if(CMAKE_VERSION VERSION_LESS "3.24.0")
         FetchContent_Declare(
                 Boost
@@ -69,6 +75,7 @@ if(NOT Boost_FOUND)
                 Boost
                 URL ${BOOST_URL}
                 URL_HASH ${BOOST_HASH}
+                PATCH_COMMAND ${BOOST_PATCH_COMMAND}
                 SYSTEM  # requires CMake 3.25+
                 OVERRIDE_FIND_PACKAGE  # requires CMake 3.24+, but we have a macro to handle it for other versions
         )
@@ -77,6 +84,7 @@ if(NOT Boost_FOUND)
                 Boost
                 URL ${BOOST_URL}
                 URL_HASH ${BOOST_HASH}
+                PATCH_COMMAND ${BOOST_PATCH_COMMAND}
                 OVERRIDE_FIND_PACKAGE  # requires CMake 3.24+, but we have a macro to handle it for other versions
         )
     endif()
