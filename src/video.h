@@ -48,6 +48,7 @@ namespace video {
 
     int encodingFramerate; // Requested display framerate
     bool input_only;
+    int profile = 100;  // H.264 profile_idc (66 - baseline, 77 - main, 100 - high), used by the AMF encoder
   };
 
   platf::mem_type_e map_base_dev_type(AVHWDeviceType type);

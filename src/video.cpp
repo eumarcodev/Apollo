@@ -325,8 +325,12 @@ namespace video {
     avcodec_encode_session_t(avcodec_encode_session_t &&other) noexcept = default;
 
     ~avcodec_encode_session_t() {
-      // Flush any remaining frames in the encoder
-      if (avcodec_send_frame(avcodec_ctx.get(), nullptr) == 0) {
+      // Flush any remaining frames in the encoder.
+      // The AMF runtime on recent AMD drivers (seen on RDNA4) can block forever while draining,
+      // which hangs encoder validation at startup. Nothing is consumed after teardown, so skip it for AMF.
+      const bool is_amf = avcodec_ctx && avcodec_ctx->codec && avcodec_ctx->codec->name &&
+                          std::string_view {avcodec_ctx->codec->name}.find("_amf") != std::string_view::npos;
+      if (!is_amf && avcodec_send_frame(avcodec_ctx.get(), nullptr) == 0) {
         packet_raw_avcodec pkt;
         while (avcodec_receive_packet(avcodec_ctx.get(), pkt.av_packet) == 0);
       }
