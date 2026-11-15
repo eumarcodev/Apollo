@@ -1,0 +1,158 @@
+name: Windows build and release
+
+# - pull_request:      builds only, to validate changes (nothing is published)
+# - push to master:    builds, computes the next semantic version and publishes a GitHub release
+# - workflow_dispatch: same as push, only publishes when run on master
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Compute version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.semver.outputs.version }}
+      version_tag: ${{ steps.semver.outputs.version_tag }}
+      version_type: ${{ steps.semver.outputs.version_type }}
+    steps:
+      - name: Checkout (full history and tags)
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Next version is derived from the latest `v*` tag and the commit messages since then:
+      #   `feat:` / `feat(scope):`      -> minor
+      #   `!:` or `BREAKING CHANGE:`    -> major
+      #   anything else (`fix:`, ...)   -> patch
+      - name: Semantic version
+        id: semver
+        uses: paulhatch/semantic-version@v6
+        with:
+          tag_prefix: "v"
+          major_pattern: "/!:|BREAKING CHANGE:/"
+          minor_pattern: "/feat(\\(.+\\))?:/"
+          version_format: "${major}.${minor}.${patch}"
+          bump_each_commit: false
+
+      - name: Show computed version
+        run: |
+          echo "version=${{ steps.semver.outputs.version }}"
+          echo "tag=${{ steps.semver.outputs.version_tag }}"
+          echo "type=${{ steps.semver.outputs.version_type }}"
+
+  build:
+    name: Build (Windows, MSYS2 UCRT64)
+    needs: version
+    runs-on: windows-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: msys2 {0}
+    env:
+      BUILD_VERSION: ${{ needs.version.outputs.version }}
+      BRANCH: ${{ github.ref_name }}
+      COMMIT: ${{ github.sha }}
+      # The MSYS2 login shell does not always forward this, and CMake needs it to find build-deps/dist/Windows-AMD64
+      PROCESSOR_ARCHITECTURE: AMD64
+    steps:
+      - name: Keep line endings untouched
+        shell: pwsh
+        run: git config --global core.autocrlf false
+
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      # path-type: inherit keeps the runner's official Node.js/npm on PATH, as required by docs/building.md
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          path-type: inherit
+          install: >-
+            git
+            mingw-w64-ucrt-x86_64-boost
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-cppwinrt
+            mingw-w64-ucrt-x86_64-curl-winssl
+            mingw-w64-ucrt-x86_64-MinHook
+            mingw-w64-ucrt-x86_64-miniupnpc
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-nlohmann_json
+            mingw-w64-ucrt-x86_64-nsis
+            mingw-w64-ucrt-x86_64-onevpl
+            mingw-w64-ucrt-x86_64-openssl
+            mingw-w64-ucrt-x86_64-opus
+            mingw-w64-ucrt-x86_64-toolchain
+
+      - name: Configure
+        run: cmake -B build -G Ninja -S .
+
+      - name: Build
+        run: ninja -C build
+
+      - name: Package (installer and portable zip)
+        run: |
+          cpack -G NSIS --config ./build/CPackConfig.cmake
+          cpack -G ZIP --config ./build/CPackConfig.cmake
+
+      - name: Rename artifacts
+        run: |
+          cd build/cpack_artifacts
+          mv Apollo.exe "Apollo-${BUILD_VERSION}-windows-x64-installer.exe"
+          mv Apollo.zip "Apollo-${BUILD_VERSION}-windows-x64-portable.zip"
+          ls -la
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: apollo-windows-x64
+          path: |
+            build/cpack_artifacts/Apollo-*-installer.exe
+            build/cpack_artifacts/Apollo-*-portable.zip
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    needs: [version, build]
+    if: >-
+      github.ref == 'refs/heads/master' &&
+      github.event_name != 'pull_request' &&
+      needs.version.outputs.version_type != 'none'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ needs.version.outputs.version }}
+      TAG: ${{ needs.version.outputs.version_tag }}
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: apollo-windows-x64
+          path: dist
+
+      # `gh release create` creates the tag on the built commit, so the next run starts counting from it
+      - name: Create release
+        run: |
+          gh release create "$TAG" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Apollo $TAG" \
+            --generate-notes
