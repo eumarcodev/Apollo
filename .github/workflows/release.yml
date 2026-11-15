@@ -101,7 +101,8 @@ jobs:
             mingw-w64-ucrt-x86_64-toolchain
 
       - name: Configure
-        run: cmake -B build -G Ninja -S .
+        # APOLLO_UPDATE_REPO makes the web UI check this repository's releases for new versions
+        run: cmake -B build -G Ninja -S . -DAPOLLO_UPDATE_REPO=${{ github.repository }}
 
       - name: Build
         run: ninja -C build
