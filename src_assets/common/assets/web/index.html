@@ -24,7 +24,10 @@
     <!-- Version -->
     <div class="card p-2 my-4">
       <div class="card-body" v-if="version">
-        <h2>Version {{version.version}}</h2>
+        <h2>
+          Version {{version.version}}
+          <span class="badge bg-secondary fs-6 align-middle" v-if="installedChannelLabel">{{installedChannelLabel}}</span>
+        </h2>
         <br>
         <div v-if="loading">
           {{ $t('index.loading_latest') }}
@@ -32,36 +35,24 @@
         <div class="alert alert-success" v-if="buildVersionIsDirty">
           {{ $t('index.version_dirty') }} 🌇
         </div>
-        <div class="alert alert-info" v-if="installedVersionNotStable">
+        <div class="alert alert-info" v-if="installedIsPreRelease">
           {{ $t('index.installed_version_not_stable') }}
         </div>
-        <div v-else-if="(!preReleaseBuildAvailable || !notifyPreReleases) && !stableBuildAvailable && !buildVersionIsDirty">
+        <div v-if="updateAvailable">
+          <div class="alert alert-warning">
+            <div class="d-flex justify-content-between">
+              <div class="my-2">
+                <p>{{ latestVersion.channel === 'stable' ? $t('index.new_stable') : $t('index.new_pre_release') }}</p>
+              </div>
+              <a class="btn btn-success m-1" :href="latestVersion.release.html_url" target="_blank">{{ $t('index.download') }}</a>
+            </div>
+            <h3>{{latestVersion.release.name}}</h3>
+            <pre>{{latestVersion.release.body}}</pre>
+          </div>
+        </div>
+        <div v-else-if="!loading && !buildVersionIsDirty && !installedIsPreRelease">
           <div class="alert alert-success">
             {{ $t('index.version_latest') }}
-          </div>
-        </div>
-        <div v-if="notifyPreReleases && preReleaseBuildAvailable">
-          <div class="alert alert-warning">
-            <div class="d-flex justify-content-between">
-              <div class="my-2">
-                <p>{{ $t('index.new_pre_release') }}</p>
-              </div>
-              <a class="btn btn-success m-1" :href="preReleaseVersion.release.html_url" target="_blank">{{ $t('index.download') }}</a>
-            </div>
-            <pre><b>{{preReleaseVersion.release.name}}</b></pre>
-            <pre>{{preReleaseVersion.release.body}}</pre>
-          </div>
-        </div>
-        <div v-if="stableBuildAvailable">
-          <div class="alert alert-warning">
-            <div class="d-flex justify-content-between">
-              <div class="my-2">
-                <p>{{ $t('index.new_stable') }}</p>
-              </div>
-              <a class="btn btn-success m-1" :href="githubVersion.release.html_url" target="_blank">{{ $t('index.download') }}</a>
-            </div>
-            <h3>{{githubVersion.release.name}}</h3>
-            <pre>{{githubVersion.release.body}}</pre>
           </div>
         </div>
       </div>
@@ -80,7 +71,7 @@
   import Navbar from './Navbar.vue'
   import ClientCard from './ClientCard.vue'
   import ResourceCard from './ResourceCard.vue'
-  import ApolloVersion from './apollo_version'
+  import ApolloVersion, { pickLatestRelease, resolveUpdateChannel } from './apollo_version'
 
   console.log("Hello, Apollo!")
   let app = createApp({
@@ -92,9 +83,8 @@
     data() {
       return {
         version: null,
-        githubVersion: null,
-        notifyPreReleases: false,
-        preReleaseVersion: null,
+        latestVersion: null,
+        updateChannel: 'stable',
         loading: true,
         logs: null,
       }
@@ -102,17 +92,16 @@
     async created() {
       try {
         let config = await fetch("./api/config").then((r) => r.json());
-        this.notifyPreReleases = config.notify_pre_releases;
         this.version = new ApolloVersion(null, config.version);
         console.log("Version: ", this.version.version)
+        // Which releases to be notified about: stable, rc or nightly (setting, legacy option or installed channel)
+        this.updateChannel = resolveUpdateChannel(config.update_channel, config.notify_pre_releases, this.version);
+        console.log("Update channel: ", this.updateChannel)
         // Repository whose releases are checked for updates, configurable at build time (APOLLO_UPDATE_REPO)
         const updateRepo = config.update_repo || "ClassicOldSong/Apollo";
-        this.githubVersion = new ApolloVersion(await fetch(`https://api.github.com/repos/${updateRepo}/releases/latest`).then((r) => r.json()), null);
-        console.log("GitHub Version: ", this.githubVersion.version)
-        if (this.githubVersion) {
-          this.preReleaseVersion = new ApolloVersion((await fetch(`https://api.github.com/repos/${updateRepo}/releases`).then((r) => r.json())).find(release => release.prerelease), null);
-          console.log("Pre-Release Version: ", this.preReleaseVersion.version)
-        }
+        const releases = await fetch(`https://api.github.com/repos/${updateRepo}/releases?per_page=30`).then((r) => r.json());
+        this.latestVersion = pickLatestRelease(releases, this.updateChannel);
+        console.log("Latest version: ", this.latestVersion?.version)
       } catch (e) {
         console.error(e);
       }
@@ -124,23 +113,18 @@
       this.loading = false;
     },
     computed: {
-      installedVersionNotStable() {
-        if (!this.githubVersion || !this.version) {
-          return false;
-        }
-        return this.version.isGreater(this.githubVersion);
+      installedIsPreRelease() {
+        return !!this.version && !!this.version.channel && this.version.channel !== 'stable';
       },
-      stableBuildAvailable() {
-        if (!this.githubVersion || !this.version) {
-          return false;
-        }
-        return this.githubVersion.isGreater(this.version);
+      installedChannelLabel() {
+        const labels = { nightly: 'Nightly', rc: 'RC', beta: 'Beta' };
+        return this.version ? labels[this.version.channel] || null : null;
       },
-      preReleaseBuildAvailable() {
-        if (!this.preReleaseVersion || !this.githubVersion || !this.version) {
+      updateAvailable() {
+        if (!this.latestVersion || !this.version) {
           return false;
         }
-        return this.preReleaseVersion.isGreater(this.version, true) && this.preReleaseVersion.isGreater(this.githubVersion, true);
+        return this.latestVersion.isGreater(this.version);
       },
       buildVersionIsDirty() {
         return this.version.version?.split(".").length === 5 &&

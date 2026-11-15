@@ -283,6 +283,7 @@ namespace config {
 
     std::string log_file;
     bool notify_pre_releases;
+    std::string update_channel;  ///< Release channel to be notified about in the web UI: stable, rc or nightly (empty: follow the installed version)
     bool legacy_ordering;
     bool system_tray;
     std::vector<prep_cmd_t> prep_cmds;

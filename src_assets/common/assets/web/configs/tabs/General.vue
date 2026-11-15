@@ -221,13 +221,17 @@ onMounted(() => {
               default="true"
     ></Checkbox>
 
-    <!-- Notify Pre-Releases -->
-    <Checkbox class="mb-3"
-              id="notify_pre_releases"
-              locale-prefix="config"
-              v-model="config.notify_pre_releases"
-              default="false"
-    ></Checkbox>
+    <!-- Update Channel -->
+    <div class="mb-3">
+      <label for="update_channel" class="form-label">{{ $t('config.update_channel') }}</label>
+      <select id="update_channel" class="form-select" v-model="config.update_channel">
+        <option value="">{{ $t('config.update_channel_auto') }}</option>
+        <option value="stable">{{ $t('config.update_channel_stable') }}</option>
+        <option value="rc">{{ $t('config.update_channel_rc') }}</option>
+        <option value="nightly">{{ $t('config.update_channel_nightly') }}</option>
+      </select>
+      <div class="form-text">{{ $t('config.update_channel_desc') }}</div>
+    </div>
 
     <!-- Enable system tray -->
     <Checkbox class="mb-3"
