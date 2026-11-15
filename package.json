@@ -5,7 +5,8 @@
     "build": "vite build --debug",
     "build-clean": "vite build --debug --emptyOutDir",
     "dev": "vite build --watch",
-    "serve": "serve ./tests/fixtures/http --no-port-switching"
+    "serve": "serve ./tests/fixtures/http --no-port-switching",
+    "test:web": "node --test \"tests/web/*.test.mjs\""
   },
   "type": "module",
   "dependencies": {

@@ -245,6 +245,8 @@ editing the `conf` file in a text editor. Use the examples as reference.
         <td>Description</td>
         <td colspan="2">
             Whether to be notified of new pre-release versions of Sunshine.
+            Superseded by [update_channel](#update_channel): when enabled and `update_channel` is not set, it
+            behaves like `update_channel = rc`.
         </td>
     </tr>
     <tr>
@@ -257,6 +259,36 @@ editing the `conf` file in a text editor. Use the examples as reference.
         <td>Example</td>
         <td colspan="2">@code{}
             notify_pre_releases = disabled
+            @endcode</td>
+    </tr>
+</table>
+
+### update_channel
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Which releases the web UI home page tells you about.
+            <ul>
+                <li>stable: only stable releases (`1.3.0`)</li>
+                <li>rc: stable releases and release candidates (`1.3.0-rc.2`)</li>
+                <li>nightly: stable releases, release candidates and the daily builds (`1.4.0-nightly.20261116`)</li>
+            </ul>
+            When not set, Apollo follows the channel of the installed version: a nightly or rc build keeps
+            following its own channel, and a stable build follows stable.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            (not set, follow the installed version)
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            update_channel = rc
             @endcode</td>
     </tr>
 </table>
