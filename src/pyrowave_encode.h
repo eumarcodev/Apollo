@@ -21,6 +21,10 @@ namespace pyrowave_enc {
     int width;
     int height;
     bool yuv444 = false;
+    // Size of the captured textures given to copy_from(). 0 means the same as the stream size.
+    // When it differs the encoder scales the frame down (or up) to width x height.
+    int source_width = 0;
+    int source_height = 0;
   };
 
   struct packet_t {
@@ -46,7 +50,7 @@ namespace pyrowave_enc {
     session_t &operator=(const session_t &) = delete;
 
     /**
-     * @brief Copy a BGRA8 texture of the configured size (same D3D11 device) into the session.
+     * @brief Copy a BGRA8 texture of the configured source size (same D3D11 device) into the session.
      * The copy is queued on the immediate context, so the source can be released right after this call.
      */
     void copy_from(ID3D11Texture2D *source);
