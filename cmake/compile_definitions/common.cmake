@@ -142,6 +142,11 @@ include_directories(
         ${Boost_INCLUDE_DIRS}  # has to be the last, or we get runtime error on macOS ffmpeg encoder
 )
 
+if(HELIOS_ENABLE_PYROWAVE)
+    list(APPEND SUNSHINE_DEFINITIONS HELIOS_ENABLE_PYROWAVE=1)
+    list(APPEND SUNSHINE_EXTERNAL_LIBRARIES pyrowave::shared)
+endif()
+
 list(APPEND SUNSHINE_EXTERNAL_LIBRARIES
         ${MINIUPNP_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
