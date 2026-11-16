@@ -34,3 +34,20 @@ TEST(PyroWaveProtocol, BitstreamFormatIsDistinctFromOtherCodecs) {
 TEST(PyroWaveProtocol, HostDoesNotAdvertiseUntilItCanEncode) {
   EXPECT_FALSE(video::pyrowave_available());
 }
+
+TEST(PyroWaveProtocol, PacketSizePreferenceNeverExceedsTheHostLimit) {
+  EXPECT_EQ(pyrowave::clamp_packet_size(0, 1200), 0);  // no preference
+  EXPECT_EQ(pyrowave::clamp_packet_size(-5, 1200), 0);
+  EXPECT_EQ(pyrowave::clamp_packet_size(1000, 1200), 1000);
+  EXPECT_EQ(pyrowave::clamp_packet_size(1200, 1200), 1200);
+  EXPECT_EQ(pyrowave::clamp_packet_size(2000, 1200), 1200);  // host limit wins
+  EXPECT_EQ(pyrowave::clamp_packet_size(100, 1200), 400);  // lower bound
+  EXPECT_EQ(pyrowave::clamp_packet_size(1000, 200), 400);  // a host limit below the bound still gives a valid size
+}
+
+TEST(PyroWaveProtocol, MaxFramePreferenceKeepsTheHostFloor) {
+  EXPECT_EQ(pyrowave::clamp_max_frame_kb(0, 16), 0);  // no cap
+  EXPECT_EQ(pyrowave::clamp_max_frame_kb(128, 16), 128);
+  EXPECT_EQ(pyrowave::clamp_max_frame_kb(4, 16), 16);  // never below the host floor
+  EXPECT_EQ(pyrowave::clamp_max_frame_kb(99999, 16), 4096);
+}

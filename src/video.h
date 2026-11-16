@@ -49,6 +49,8 @@ namespace video {
     int encodingFramerate; // Requested display framerate
     bool input_only;
     int profile = 100;  // H.264 profile_idc (66 - baseline, 77 - main, 100 - high), used by the AMF encoder
+    int pyrowavePacketSize = 0;  // PyroWave only: largest packet the client asked for in bytes, already clamped (0 - host decides)
+    int pyrowaveMaxFrameKb = 0;  // PyroWave only: cap on one frame the client asked for in KB, already clamped (0 - no cap)
   };
 
   platf::mem_type_e map_base_dev_type(AVHWDeviceType type);
