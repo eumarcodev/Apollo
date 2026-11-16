@@ -59,7 +59,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v8
         with:
-          name: apollo-windows-x64
+          name: helios-windows-x64
           path: dist
 
       # The tag already exists (it triggered this run), so the release is attached to it
@@ -69,7 +69,7 @@ jobs:
           gh release create "${TAG}" dist/* \
             --repo "${GITHUB_REPOSITORY}" \
             --verify-tag \
-            --title "Apollo ${TAG}" \
+            --title "Helios ${TAG}" \
             --latest \
             --generate-notes
 

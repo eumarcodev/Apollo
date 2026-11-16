@@ -22,7 +22,7 @@ All C++ builds run inside MSYS2 UCRT64 (GCC, Ninja). From PowerShell/Bash prefix
 ```bash
 cmake -B build -G Ninja -S .          # add -DBUILD_TESTS=ON for tests
 ninja -C build
-cpack -G NSIS --config build/CPackConfig.cmake   # installer (Apollo.exe); -G ZIP for portable
+cpack -G NSIS --config build/CPackConfig.cmake   # installer (Helios.exe); -G ZIP for portable
 ```
 
 Gotchas learned the hard way:
