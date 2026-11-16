@@ -321,6 +321,16 @@ namespace video {
     bool idr;
   };
 
+  /**
+   * @brief A PyroWave frame: `frame_data` holds whole PyroWave packets back to back,
+   * `pyrowave_packets` lists the offset and size of each one.
+   */
+  struct packet_raw_pyrowave: packet_raw_generic {
+    using packet_raw_generic::packet_raw_generic;
+
+    std::vector<std::pair<size_t, size_t>> pyrowave_packets;
+  };
+
   using packet_t = std::unique_ptr<packet_raw_t>;
 
   struct hdr_info_raw_t {
@@ -339,6 +349,13 @@ namespace video {
 
   extern int active_hevc_mode;
   extern int active_av1_mode;
+
+  /**
+   * @brief Whether this host can encode PyroWave. False until the encode session exists.
+   */
+  bool
+    pyrowave_available();
+
   extern bool last_encoder_probe_supported_ref_frames_invalidation;
   extern std::array<bool, 3> last_encoder_probe_supported_yuv444_for_codec;  // 0 - H.264, 1 - HEVC, 2 - AV1
 

@@ -26,6 +26,7 @@ extern "C" {
 #include "src/nvenc/nvenc_config.h"
 #include "src/nvenc/nvenc_d3d11_native.h"
 #include "src/nvenc/nvenc_d3d11_on_cuda.h"
+#include "src/pyrowave_encode.h"
 #include "src/nvenc/nvenc_utils.h"
 #include "src/video.h"
 
@@ -456,6 +457,44 @@ namespace platf::dxgi {
       return 0;
     }
 
+    /**
+     * @brief Run `use` with the captured texture while the capture side is kept away from it.
+     * @param use Called with the texture as ID3D11Texture2D*, or nullptr for a blank image.
+     */
+    template<class F>
+    int with_capture_texture(platf::img_t &img_base, F &&use) {
+      auto &img = (img_d3d_t &) img_base;
+      if (img.blank) {
+        use(nullptr);
+        return 0;
+      }
+
+      // Garbage collect mapped capture images whose weak references have expired
+      for (auto it = img_ctx_map.begin(); it != img_ctx_map.end();) {
+        if (it->second.img_weak.expired()) {
+          it = img_ctx_map.erase(it);
+        } else {
+          it++;
+        }
+      }
+
+      auto &img_ctx = img_ctx_map[img.id];
+      if (initialize_image_context(img, img_ctx)) {
+        return -1;
+      }
+
+      auto status = img_ctx.encoder_mutex->AcquireSync(0, INFINITE);
+      if (status != S_OK) {
+        BOOST_LOG(error) << "Failed to acquire encoder mutex [0x"sv << util::hex(status).to_string_view() << ']';
+        return -1;
+      }
+
+      use(img_ctx.encoder_texture.get());
+
+      img_ctx.encoder_mutex->ReleaseSync(0);
+      return 0;
+    }
+
     void apply_colorspace(const ::video::sunshine_colorspace_t &colorspace) {
       auto color_vectors = ::video::color_vectors_from_colorspace(colorspace);
 
@@ -708,31 +747,36 @@ namespace platf::dxgi {
       return 0;
     }
 
-    int init(std::shared_ptr<platf::display_t> display, adapter_t::pointer adapter_p, pix_fmt_e pix_fmt) {
-      switch (pix_fmt) {
-        case pix_fmt_e::nv12:
-          format = DXGI_FORMAT_NV12;
-          break;
+    int init(std::shared_ptr<platf::display_t> display, adapter_t::pointer adapter_p, pix_fmt_e pix_fmt, bool rgb_passthrough = false) {
+      if (rgb_passthrough) {
+        // The encoder reads the captured RGB texture as it is (PyroWave converts to YCbCr itself)
+        format = DXGI_FORMAT_B8G8R8A8_UNORM;
+      } else {
+        switch (pix_fmt) {
+          case pix_fmt_e::nv12:
+            format = DXGI_FORMAT_NV12;
+            break;
 
-        case pix_fmt_e::p010:
-          format = DXGI_FORMAT_P010;
-          break;
+          case pix_fmt_e::p010:
+            format = DXGI_FORMAT_P010;
+            break;
 
-        case pix_fmt_e::ayuv:
-          format = DXGI_FORMAT_AYUV;
-          break;
+          case pix_fmt_e::ayuv:
+            format = DXGI_FORMAT_AYUV;
+            break;
 
-        case pix_fmt_e::yuv444p16:
-          format = DXGI_FORMAT_R16_UINT;
-          break;
+          case pix_fmt_e::yuv444p16:
+            format = DXGI_FORMAT_R16_UINT;
+            break;
 
-        case pix_fmt_e::y410:
-          format = DXGI_FORMAT_Y410;
-          break;
+          case pix_fmt_e::y410:
+            format = DXGI_FORMAT_Y410;
+            break;
 
-        default:
-          BOOST_LOG(error) << "D3D11 backend doesn't support pixel format: " << from_pix_fmt(pix_fmt);
-          return -1;
+          default:
+            BOOST_LOG(error) << "D3D11 backend doesn't support pixel format: " << from_pix_fmt(pix_fmt);
+            return -1;
+        }
       }
 
       D3D_FEATURE_LEVEL featureLevels[] {
@@ -1102,6 +1146,95 @@ namespace platf::dxgi {
     std::unique_ptr<nvenc::nvenc_d3d11> nvenc_d3d;
     NV_ENC_BUFFER_FORMAT buffer_format = NV_ENC_BUFFER_FORMAT_UNDEFINED;
   };
+
+#ifdef HELIOS_ENABLE_PYROWAVE
+  class d3d_pyrowave_encode_device_t: public pyrowave_encode_device_t {
+  public:
+    bool init_device(std::shared_ptr<platf::display_t> display, adapter_t::pointer adapter_p) {
+      return base.init(display, adapter_p, pix_fmt_e::unknown, true) == 0;
+    }
+
+    bool init_encoder(const ::video::config_t &client_config) override {
+      if (colorspace.bit_depth != 8 || colorspace.colorspace == ::video::colorspace_e::bt2020) {
+        BOOST_LOG(error) << "PyroWave only supports 8-bit SDR streams for now";
+        return false;
+      }
+
+      width = client_config.width;
+      height = client_config.height;
+      yuv444 = client_config.chromaSamplingType == 1;
+      return create_session(base.display->width, base.display->height);
+    }
+
+    // The session imports one shared texture of the capture size and the encoder scales it to the stream size
+    bool create_session(int capture_width, int capture_height) {
+      session.reset();
+      session = pyrowave_enc::session_t::create(base.device.get(), base.device_ctx.get(), {width, height, yuv444, capture_width, capture_height});
+      if (!session) {
+        return false;
+      }
+
+      source_width = capture_width;
+      source_height = capture_height;
+
+      // Something to encode before the first captured frame arrives
+      session->clear();
+      return true;
+    }
+
+    int convert(platf::img_t &img_base) override {
+      if (!session) {
+        return -1;
+      }
+
+      auto &img = (img_d3d_t &) img_base;
+      if (!img.blank && (img.width != source_width || img.height != source_height)) {
+        // The capture size changed (display mode switch): import a texture of the new size
+        BOOST_LOG(info) << "PyroWave: capture size is now " << img.width << 'x' << img.height << ", stream size is " << width << 'x' << height;
+        if (!create_session(img.width, img.height)) {
+          return -1;
+        }
+      }
+
+      return base.with_capture_texture(img_base, [this](ID3D11Texture2D *texture) {
+        if (texture) {
+          session->copy_from(texture);
+        } else {
+          session->clear();
+        }
+      });
+    }
+
+    bool encode(std::size_t frame_budget, std::size_t packet_size) override {
+      if (!session || !session->encode(frame_budget, packet_size)) {
+        return false;
+      }
+
+      const auto &session_packets = session->packets();
+      std::size_t total = 0;
+      for (const auto &packet : session_packets) {
+        total = std::max(total, packet.offset + packet.size);
+      }
+
+      bitstream.assign(session->bitstream(), session->bitstream() + total);
+      packets.clear();
+      packets.reserve(session_packets.size());
+      for (const auto &packet : session_packets) {
+        packets.emplace_back(packet.offset, packet.size);
+      }
+      return true;
+    }
+
+  private:
+    d3d_base_encode_device base;
+    std::unique_ptr<pyrowave_enc::session_t> session;
+    int width = 0;
+    int height = 0;
+    int source_width = 0;
+    int source_height = 0;
+    bool yuv444 = false;
+  };
+#endif  // HELIOS_ENABLE_PYROWAVE
 
   bool set_cursor_texture(device_t::pointer device, gpu_cursor_t &cursor, util::buffer_t<std::uint8_t> &&cursor_img, DXGI_OUTDUPL_POINTER_SHAPE_INFO &shape_info) {
     // This cursor image may not be used
@@ -1933,6 +2066,18 @@ namespace platf::dxgi {
       return nullptr;
     }
     return device;
+  }
+
+  std::unique_ptr<pyrowave_encode_device_t> display_vram_t::make_pyrowave_encode_device() {
+#ifdef HELIOS_ENABLE_PYROWAVE
+    auto device = std::make_unique<d3d_pyrowave_encode_device_t>();
+    if (!device->init_device(shared_from_this(), adapter.get())) {
+      return nullptr;
+    }
+    return device;
+#else
+    return nullptr;
+#endif
   }
 
   int init() {

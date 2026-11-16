@@ -12,6 +12,11 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/third-party/moonlight-common-c/enet")
 # web server
 add_subdirectory("${CMAKE_SOURCE_DIR}/third-party/Simple-Web-Server")
 
+# PyroWave codec (optional)
+if(HELIOS_ENABLE_PYROWAVE)
+    include("${CMAKE_MODULE_PATH}/dependencies/pyrowave.cmake")
+endif()
+
 # libdisplaydevice
 add_subdirectory("${CMAKE_SOURCE_DIR}/third-party/libdisplaydevice")
 

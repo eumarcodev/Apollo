@@ -1,5 +1,8 @@
 # windows specific packaging
 install(TARGETS sunshine RUNTIME DESTINATION "." COMPONENT application)
+if(HELIOS_ENABLE_PYROWAVE)
+    install(FILES "${PYROWAVE_DLL}" DESTINATION "." COMPONENT application)
+endif()
 
 # Hardening: include zlib1.dll (loaded via LoadLibrary() in openssl's libcrypto.a)
 install(FILES "${ZLIB}" DESTINATION "." COMPONENT application)

@@ -5,6 +5,7 @@
 
 // standard includes
 #include <fstream>
+#include <random>
 #include <future>
 #include <queue>
 
@@ -1324,6 +1325,131 @@ namespace stream {
     }
   }
 
+  /**
+   * @brief Send one PyroWave frame: one RTP packet per PyroWave packet, no FEC and no padding.
+   *
+   * PyroWave frames are made of independently decodable packets and the client assembles them by RTP sequence
+   * number (first packet has FLAG_SOF, last has FLAG_EOF), so a lost packet costs a few blocks, not the frame.
+   * Packets use the usual video layout: RTP header, 4 reserved bytes, NV_VIDEO_PACKET, payload, and the AES-GCM
+   * prefix in front when video encryption is on.
+   */
+  void send_pyrowave_frame(
+    udp::socket &sock,
+    session_t &session,
+    video::packet_raw_pyrowave &frame,
+    crypto::aes_t &iv,
+    auto &timer,
+    const std::chrono::steady_clock::time_point &video_epoch,
+    std::chrono::steady_clock::time_point &ratecontrol_next_frame_start
+  ) {
+    const auto &parts = frame.pyrowave_packets;
+    if (parts.empty()) {
+      return;
+    }
+
+    // Same buffer size the client allocates: packet size plus the RTP header room, minus our headers
+    const std::size_t blocksize = session.config.packetsize + MAX_RTP_HEADER_SIZE;
+    const std::size_t max_payload = blocksize - sizeof(video_packet_raw_t);
+    for (const auto &[offset, size] : parts) {
+      if (size > max_payload) {
+        BOOST_LOG(error) << "PyroWave packet of "sv << size << " bytes does not fit the client packet size ("sv << max_payload << "), dropping frame "sv << frame.frame_index();
+        return;
+      }
+    }
+
+    const std::size_t prefix_size = session.video.cipher ? sizeof(video_packet_enc_prefix_t) : 0;
+    std::vector<uint8_t> buffer(prefix_size + sizeof(video_packet_raw_t) + max_payload);
+    auto *prefix = (video_packet_enc_prefix_t *) buffer.data();
+    auto *out = (video_packet_raw_t *) (buffer.data() + prefix_size);
+
+    // RTP video timestamps use a 90 KHz clock. Repeated frames have no capture time, so rate control time is used.
+    if (!frame.frame_timestamp) {
+      frame.frame_timestamp = ratecontrol_next_frame_start;
+    }
+    using rtp_tick = std::chrono::duration<uint32_t, std::ratio<1, 90000>>;
+    const uint32_t timestamp = std::chrono::round<rtp_tick>(*frame.frame_timestamp - video_epoch).count();
+
+    // Pace at around 80% of 1Gbps, like the other codecs
+    const size_t packets_in_1ms = std::giga::num * 80 / 100 / 1000 / blocksize / 8;
+    const auto frame_start = std::max(ratecontrol_next_frame_start, std::chrono::steady_clock::now());
+    size_t frame_packets_sent = 0;
+    size_t group_packets_sent = 0;
+
+    auto lowseq = session.video.lowseq;
+    auto peer_address = session.video.peer.address();
+
+    for (size_t x = 0; x < parts.size(); ++x) {
+      const auto [offset, size] = parts[x];
+
+      std::memset(out, 0, sizeof(video_packet_raw_t));
+      out->rtp.header = 0x80 | FLAG_EXTENSION;
+      out->rtp.sequenceNumber = util::endian::big<uint16_t>(lowseq + x);
+      out->rtp.timestamp = util::endian::big<uint32_t>(timestamp);
+      out->packet.streamPacketIndex = ((uint32_t) lowseq + x) << 8;
+      out->packet.frameIndex = frame.frame_index();
+      out->packet.flags = FLAG_CONTAINS_PIC_DATA;
+      if (x == 0) {
+        out->packet.flags |= FLAG_SOF;
+      }
+      if (x + 1 == parts.size()) {
+        out->packet.flags |= FLAG_EOF;
+      }
+      out->packet.multiFecFlags = 0x10;
+      out->packet.fecInfo = (x << 12 | parts.size() << 22);
+      std::memcpy(out->payload(), frame.data() + offset, size);
+
+      const size_t length = sizeof(video_packet_raw_t) + size;
+
+      if (session.video.cipher) {
+        // Same IV construction as the other codecs, see videoBroadcastThread
+        std::copy_n((uint8_t *) &session.video.gcm_iv_counter, sizeof(session.video.gcm_iv_counter), std::begin(iv));
+        iv[11] = 'V';
+        session.video.gcm_iv_counter++;
+
+        prefix->frameNumber = frame.frame_index();
+        std::copy(std::begin(iv), std::end(iv), prefix->iv);
+        session.video.cipher->encrypt(std::string_view {(char *) out, length}, prefix->tag, (uint8_t *) out, &iv);
+      }
+
+      if (group_packets_sent >= packets_in_1ms || frame_packets_sent == 0) {
+        auto due = frame_start + std::chrono::duration_cast<std::chrono::nanoseconds>(1ms) * frame_packets_sent / packets_in_1ms;
+        auto now = std::chrono::steady_clock::now();
+        if (now < due) {
+          timer->sleep_for(due - now);
+        }
+        group_packets_sent = 0;
+      }
+
+      auto send_info = platf::send_info_t {
+        (const char *) buffer.data(),
+        prefix_size,
+        (const char *) out,
+        length,
+        (uintptr_t) sock.native_handle(),
+        peer_address,
+        session.video.peer.port(),
+        session.localAddress,
+      };
+      // Test knob: HELIOS_PYROWAVE_LOSS=<percent> drops that share of PyroWave packets before sending, to try the client on a lossy link.
+      static const double simulated_loss = [] {
+        const char *value = std::getenv("HELIOS_PYROWAVE_LOSS");
+        return value ? std::atof(value) : 0.0;
+      }();
+      static thread_local std::mt19937 loss_rng {12345};
+      if (simulated_loss <= 0.0 || std::uniform_real_distribution<double> {0.0, 100.0}(loss_rng) >= simulated_loss) {
+        platf::send(send_info);
+      }
+
+      ++group_packets_sent;
+      ++frame_packets_sent;
+    }
+
+    ratecontrol_next_frame_start = frame_start + std::chrono::duration_cast<std::chrono::nanoseconds>(1ms) * frame_packets_sent / packets_in_1ms;
+    session.video.lowseq = lowseq + parts.size();
+
+    BOOST_LOG(verbose) << "Sent PyroWave frame ["sv << frame.frame_index() << "] packets ["sv << parts.size() << "] bytes ["sv << frame.data_size() << ']';
+  }
+
   void videoBroadcastThread(udp::socket &sock) {
     auto shutdown_event = mail::man->event<bool>(mail::broadcast_shutdown);
     auto packets = mail::man->queue<video::packet_t>(mail::video_packets);
@@ -1356,6 +1482,12 @@ namespace stream {
       frame_network_latency_logger.first_point_now();
 
       auto session = (session_t *) packet->channel_data;
+      if (auto *pyrowave_frame = dynamic_cast<video::packet_raw_pyrowave *>(packet.get())) {
+        send_pyrowave_frame(sock, *session, *pyrowave_frame, iv, timer, video_epoch, ratecontrol_next_frame_start);
+        frame_network_latency_logger.second_point_now_and_log();
+        continue;
+      }
+
       auto lowseq = session->video.lowseq;
 
       std::string_view payload {(char *) packet->data(), packet->data_size()};
