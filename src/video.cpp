@@ -1102,12 +1102,12 @@ namespace video {
   bool
     pyrowave_available() {
 #ifdef HELIOS_ENABLE_PYROWAVE
-    // Experimental: the RTP transport for PyroWave is not done yet (#23), so it is only offered when asked for.
-    static const bool enabled = [] {
-      const char *value = std::getenv("HELIOS_PYROWAVE");
-      return value && *value && std::string_view {value} != "0";
-    }();
-    return enabled;
+    // Experimental: offered when the "pyrowave" option is on. HELIOS_PYROWAVE=1 turns it on too, for testing.
+    if (config::video.pyrowave) {
+      return true;
+    }
+    const char *value = std::getenv("HELIOS_PYROWAVE");
+    return value && *value && std::string_view {value} != "0";
 #else
     return false;
 #endif
