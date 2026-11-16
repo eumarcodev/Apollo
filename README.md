@@ -1,6 +1,6 @@
 # Helios
 
-Helios is a self-hosted desktop stream host for [Artemis (Moonlight Noir)](https://github.com/ClassicOldSong/moonlight-android), Selene Game Streaming and Moonlight clients. Offering low latency, native client resolution, cloud gaming server capabilities with support for AMD, Intel, and Nvidia GPUs for hardware encoding. Software encoding is also available. A web UI is provided to allow configuration and client pairing from your favorite web browser. Pair from the local server or any mobile device.
+Helios is a self-hosted desktop stream host for [Selene Game Streaming](https://github.com/eumarcodev/Selene-Game-Streaming) (the Android client of this project), [Artemis (Moonlight Noir)](https://github.com/ClassicOldSong/moonlight-android) and Moonlight clients. Offering low latency, native client resolution, cloud gaming server capabilities with support for AMD, Intel, and Nvidia GPUs for hardware encoding. Software encoding is also available. A web UI is provided to allow configuration and client pairing from your favorite web browser. Pair from the local server or any mobile device.
 
 Major features:
 
@@ -21,7 +21,7 @@ This project is an independent fork. Its names continue a family of names: the h
 | [Apollo](https://github.com/ClassicOldSong/Apollo) | Sunshine fork with virtual display (SudoVDA), per-client permissions and clipboard sync | Greek god of the sun | ClassicOldSong |
 | [Artemis (Moonlight Noir)](https://github.com/ClassicOldSong/moonlight-android) | Moonlight Android fork that pairs with Apollo | Greek goddess of the moon | ClassicOldSong |
 | [**Helios**](https://github.com/eumarcodev/Helios-Server) | This project, the host (fork of Apollo) | Greek personification of the sun, older than Apollo | Maintained by [eumarcodev](https://github.com/eumarcodev) |
-| **Selene Game Streaming** | This project, the Android client (fork of Artemis) | Greek personification of the moon, older than Artemis | Maintained by [eumarcodev](https://github.com/eumarcodev) |
+| [**Selene Game Streaming**](https://github.com/eumarcodev/Selene-Game-Streaming) | This project, the Android client (fork of Artemis) | Greek personification of the moon, older than Artemis | Maintained by [eumarcodev](https://github.com/eumarcodev) |
 
 Sunshine and Moonlight pair as sun and moon, Apollo and Artemis as the twin gods, and Helios and Selene go one generation further back, to the Titans they descend from.
 
@@ -57,11 +57,11 @@ Check out the [Wiki](https://github.com/ClassicOldSong/Apollo/wiki/Permission-Sy
 > ***It is highly recommend to remove any other virtual display solutions from your system and Helios/Sunshine config, to reduce confusions and compatibility issues.***
 
 > [!NOTE]
-> **TL;DR** Just treat your Artemis/Moonlight client like a dedicated PnP monitor with Helios.
+> **TL;DR** Just treat your Selene/Artemis/Moonlight client like a dedicated PnP monitor with Helios.
 
-Helios uses SudoVDA for virtual display. It features auto resolution and framerate matching for your Artemis/Moonlight clients. The virtual display is created upon the stream starts and removed once the app quits. **If you do not see a new virtual display added or removed when the stream starts or stops, there may be a driver misconfiguration, or another persistent virtual display might still be active.**
+Helios uses SudoVDA for virtual display. It features auto resolution and framerate matching for your Selene/Artemis/Moonlight clients. The virtual display is created upon the stream starts and removed once the app quits. **If you do not see a new virtual display added or removed when the stream starts or stops, there may be a driver misconfiguration, or another persistent virtual display might still be active.**
 
-The virtual display works just like any physically attached monitors with SudoVDA, there's completely no need for a super complicated solution to "fix" resolution configurations for your devices. Unlike all other solutions that reuses one identity or generate a random one each time for any virtual display sessions, **Helios assigns a fixed identity for each Artemis/Moonlight client, so your display configuration will be automatically remembered and managed by Windows natively.**
+The virtual display works just like any physically attached monitors with SudoVDA, there's completely no need for a super complicated solution to "fix" resolution configurations for your devices. Unlike all other solutions that reuses one identity or generate a random one each time for any virtual display sessions, **Helios assigns a fixed identity for each Selene/Artemis/Moonlight client, so your display configuration will be automatically remembered and managed by Windows natively.**
 
 ## Configuration for dual GPU laptops
 
