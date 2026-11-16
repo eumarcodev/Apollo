@@ -275,7 +275,7 @@ editing the `conf` file in a text editor. Use the examples as reference.
                 <li>rc: stable releases and release candidates (`1.3.0-rc.2`)</li>
                 <li>nightly: stable releases, release candidates and the daily builds (`1.4.0-nightly.20261116`)</li>
             </ul>
-            When not set, Apollo follows the channel of the installed version: a nightly or rc build keeps
+            When not set, Helios follows the channel of the installed version: a nightly or rc build keeps
             following its own channel, and a stable build follows stable.
         </td>
     </tr>
