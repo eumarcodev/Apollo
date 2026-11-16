@@ -66,7 +66,14 @@ namespace pyrowave_enc {
       return false;
     }
 
-    if (!check(pyrowave_create_device_by_compat(0, 0, nullptr, nullptr, reinterpret_cast<const pyrowave_luid *>(&adapter_desc.AdapterLuid), VK_QUEUE_GLOBAL_PRIORITY_MEDIUM, &device_), "create device")) {
+    const auto *luid = reinterpret_cast<const pyrowave_luid *>(&adapter_desc.AdapterLuid);
+    auto priority = static_cast<VkQueueGlobalPriority>(config.queue_priority);
+    pyrowave_result device_result = pyrowave_create_device_by_compat(0, 0, nullptr, nullptr, luid, priority, &device_);
+    if (device_result != PYROWAVE_SUCCESS && priority != VK_QUEUE_GLOBAL_PRIORITY_MEDIUM) {
+      BOOST_LOG(warning) << "PyroWave: the GPU refused queue priority " << config.queue_priority << ", using medium";
+      device_result = pyrowave_create_device_by_compat(0, 0, nullptr, nullptr, luid, VK_QUEUE_GLOBAL_PRIORITY_MEDIUM, &device_);
+    }
+    if (!check(device_result, "create device")) {
       return false;
     }
 

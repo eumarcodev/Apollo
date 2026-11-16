@@ -1169,7 +1169,9 @@ namespace platf::dxgi {
     // The session imports one shared texture of the capture size and the encoder scales it to the stream size
     bool create_session(int capture_width, int capture_height) {
       session.reset();
-      session = pyrowave_enc::session_t::create(base.device.get(), base.device_ctx.get(), {width, height, yuv444, capture_width, capture_height});
+      const auto &priority_name = config::video.pyrowave_priority;
+      const int queue_priority = priority_name == "low" ? 128 : priority_name == "high" ? 512 : priority_name == "realtime" ? 1024 : 256;
+      session = pyrowave_enc::session_t::create(base.device.get(), base.device_ctx.get(), {width, height, yuv444, capture_width, capture_height, queue_priority});
       if (!session) {
         return false;
       }

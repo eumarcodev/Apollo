@@ -25,6 +25,9 @@ namespace pyrowave_enc {
     // When it differs the encoder scales the frame down (or up) to width x height.
     int source_width = 0;
     int source_height = 0;
+    // VkQueueGlobalPriority of the Vulkan queue: 128 low, 256 medium, 512 high, 1024 realtime.
+    // High and realtime need driver support; the session falls back to medium when the device refuses them.
+    int queue_priority = 256;
   };
 
   struct packet_t {
