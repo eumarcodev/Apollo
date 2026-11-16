@@ -148,10 +148,31 @@ namespace pyrowave_enc {
     }
   }
 
+  void session_t::copy_from(ID3D11Texture2D *source) {
+    context_->CopyResource(shared_texture_.Get(), source);
+  }
+
+  void session_t::clear() {
+    if (!shared_rtv_) {
+      ComPtr<ID3D11Device> device;
+      context_->GetDevice(&device);
+      if (FAILED(device->CreateRenderTargetView(shared_texture_.Get(), nullptr, &shared_rtv_))) {
+        BOOST_LOG(error) << "PyroWave: could not create a render target view to clear the frame";
+        return;
+      }
+    }
+    const float black[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+    context_->ClearRenderTargetView(shared_rtv_.Get(), black);
+  }
+
   bool session_t::encode(ID3D11Texture2D *source, std::size_t frame_budget, std::size_t packet_size) {
+    copy_from(source);
+    return encode(frame_budget, packet_size);
+  }
+
+  bool session_t::encode(std::size_t frame_budget, std::size_t packet_size) {
     packets_.clear();
 
-    context_->CopyResource(shared_texture_.Get(), source);
     context_->Signal(fence_.Get(), ++timeline_);
 
     pyrowave_gpu_external_reference external_ref = {};

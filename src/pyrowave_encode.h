@@ -46,11 +46,26 @@ namespace pyrowave_enc {
     session_t &operator=(const session_t &) = delete;
 
     /**
-     * @brief Encode one frame.
-     * @param source BGRA8 texture of the configured size, from the same D3D11 device.
+     * @brief Copy a BGRA8 texture of the configured size (same D3D11 device) into the session.
+     * The copy is queued on the immediate context, so the source can be released right after this call.
+     */
+    void copy_from(ID3D11Texture2D *source);
+
+    /**
+     * @brief Fill the session texture with black, so there is something to encode before the first capture.
+     */
+    void clear();
+
+    /**
+     * @brief Encode the last texture given to copy_from() or clear(). It can be called again to repeat a frame.
      * @param frame_budget Maximum size of the frame bitstream in bytes.
      * @param packet_size Largest packet the encoder may emit in bytes. Each packet is independently decodable.
      * @return true on success. Results are valid until the next call.
+     */
+    bool encode(std::size_t frame_budget, std::size_t packet_size);
+
+    /**
+     * @brief copy_from() followed by encode().
      */
     bool encode(ID3D11Texture2D *source, std::size_t frame_budget, std::size_t packet_size);
 
@@ -69,6 +84,7 @@ namespace pyrowave_enc {
     config_t config_ {};
     Microsoft::WRL::ComPtr<ID3D11DeviceContext4> context_;
     Microsoft::WRL::ComPtr<ID3D11Texture2D> shared_texture_;
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> shared_rtv_;
     Microsoft::WRL::ComPtr<ID3D11Fence> fence_;
     std::uint64_t timeline_ = 0;
 

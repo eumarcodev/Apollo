@@ -321,6 +321,16 @@ namespace video {
     bool idr;
   };
 
+  /**
+   * @brief A PyroWave frame: `frame_data` holds whole PyroWave packets back to back,
+   * `pyrowave_packets` lists the offset and size of each one.
+   */
+  struct packet_raw_pyrowave: packet_raw_generic {
+    using packet_raw_generic::packet_raw_generic;
+
+    std::vector<std::pair<size_t, size_t>> pyrowave_packets;
+  };
+
   using packet_t = std::unique_ptr<packet_raw_t>;
 
   struct hdr_info_raw_t {
