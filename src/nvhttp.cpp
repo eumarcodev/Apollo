@@ -903,6 +903,8 @@ namespace nvhttp {
 
     tree.put("root.appversion", VERSION);
     tree.put("root.GfeVersion", GFE_VERSION);
+    // Real Helios version, shown by the Selene performance overlay (appversion above is a fixed compatibility value)
+    tree.put("root.HeliosVersion", PROJECT_VERSION);
     tree.put("root.uniqueid", http::unique_id);
     tree.put("root.HttpsPort", net::map_port(PORT_HTTPS));
     tree.put("root.ExternalPort", net::map_port(PORT_HTTP));

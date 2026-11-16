@@ -1362,6 +1362,16 @@ namespace stream {
     auto *prefix = (video_packet_enc_prefix_t *) buffer.data();
     auto *out = (video_packet_raw_t *) (buffer.data() + prefix_size);
 
+    // Host processing latency (capture to send, so it includes the encode) in units of 0.1 ms, like the other
+    // codecs report in their frame header. PyroWave has no frame header, so it travels in the 4 bytes after the
+    // RTP header (little endian, the same value in every packet of the frame). Repeated frames have no capture
+    // time and report 0.
+    uint16_t host_latency = 0;
+    if (frame.frame_timestamp) {
+      const auto latency_us = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - *frame.frame_timestamp).count();
+      host_latency = (uint16_t) std::clamp<decltype(latency_us)>((latency_us + 50) / 100, 0, std::numeric_limits<uint16_t>::max());
+    }
+
     // RTP video timestamps use a 90 KHz clock. Repeated frames have no capture time, so rate control time is used.
     if (!frame.frame_timestamp) {
       frame.frame_timestamp = ratecontrol_next_frame_start;
@@ -1385,6 +1395,8 @@ namespace stream {
       out->rtp.header = 0x80 | FLAG_EXTENSION;
       out->rtp.sequenceNumber = util::endian::big<uint16_t>(lowseq + x);
       out->rtp.timestamp = util::endian::big<uint32_t>(timestamp);
+      out->reserved[0] = (char) (host_latency & 0xFF);
+      out->reserved[1] = (char) (host_latency >> 8);
       out->packet.streamPacketIndex = ((uint32_t) lowseq + x) << 8;
       out->packet.frameIndex = frame.frame_index();
       out->packet.flags = FLAG_CONTAINS_PIC_DATA;
