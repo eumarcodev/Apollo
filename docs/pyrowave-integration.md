@@ -107,7 +107,7 @@ freezes, no key frame request needed). Only single screenshots were inspected, n
 Requirements:
 - Helios built with PyroWave (the Windows installers from release candidate 1.4.0-rc.1 on) and a GPU/driver with Vulkan
   and D3D11 interop. If the interop is not available the codec is not offered.
-- Selene 1.1.0-rc.1 or newer on a device with Vulkan 1.1 and a driver that can run the decoder (tested: Redmi tablet).
+- Selene 1.1.0-rc.1 or newer on a device with Vulkan and a driver that can run the decoder (tested: Redmi tablet).
 - Bandwidth: every frame is intra-only, so use 50 Mbps or more on wired or good 5 GHz Wi-Fi. At 80 Mbps a 90 fps
   stream is about 110 KB per frame. Lower bitrates work but the picture gets softer.
 - Resolution: the decoder runs on the tablet GPU and takes about 8 ms at 1280x720, 21 ms at 1920x1200 and 33 ms at
