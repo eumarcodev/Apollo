@@ -94,3 +94,10 @@ using the existing codecs.
 
 PyroWave is written by Hans-Kristian Arntzen (Themaister) and is available at
 https://github.com/Themaister/pyrowave. Helios uses it through the `eumarcodev/pyrowave` fork.
+
+## Testing on a lossy link
+
+Set `HELIOS_PYROWAVE_LOSS=<percent>` (together with `HELIOS_PYROWAVE=1`) before starting Helios to drop that share of the
+PyroWave packets before they are sent. Measured on the Redmi tablet at 1920x1200 and 80 Mbps with a full-screen animation:
+5% loss gives a clean-looking picture, 15% loss makes it soft and blocky but it keeps moving and recovers by itself (no
+freezes, no key frame request needed). Only single screenshots were inspected, not a quantitative quality measure.
