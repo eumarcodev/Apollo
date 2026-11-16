@@ -1065,6 +1065,12 @@ namespace video {
   static encoder_t *chosen_encoder;
   int active_hevc_mode;
   int active_av1_mode;
+
+  bool
+    pyrowave_available() {
+    // The PyroWave encode session is not implemented yet, so the host never advertises it.
+    return false;
+  }
   bool last_encoder_probe_supported_ref_frames_invalidation = false;
   std::array<bool, 3> last_encoder_probe_supported_yuv444_for_codec = {
     true,

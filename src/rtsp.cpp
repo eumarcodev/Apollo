@@ -30,6 +30,7 @@ extern "C" {
 #include "rtsp.h"
 #include "stream.h"
 #include "sync.h"
+#include "pyrowave_protocol.h"
 #include "video.h"
 
 namespace asio = boost::asio;
@@ -823,6 +824,11 @@ namespace rtsp_stream {
       ss << "a=rtpmap:98 AV1/90000"sv << std::endl;
     }
 
+    if (video::pyrowave_available()) {
+      ss << "a=rtpmap:"sv << pyrowave::RTP_PAYLOAD_TYPE << " PYROWAVE/90000"sv << std::endl;
+      ss << "a=fmtp:"sv << pyrowave::RTP_PAYLOAD_TYPE << " version="sv << pyrowave::PROTOCOL_VERSION << std::endl;
+    }
+
     if (!session.surround_params.empty()) {
       // If we have our own surround parameters, advertise them twice first
       ss << "a=fmtp:97 surround-params="sv << session.surround_params << std::endl;
@@ -1141,6 +1147,13 @@ namespace rtsp_stream {
 
     if (config.monitor.videoFormat == 2 && video::active_av1_mode == 1) {
       BOOST_LOG(warning) << "AV1 is disabled, yet the client requested AV1"sv;
+
+      respond(sock, session, &option, 400, "BAD REQUEST", req->sequenceNumber, {});
+      return;
+    }
+
+    if (pyrowave::is_pyrowave_format(config.monitor.videoFormat) && !video::pyrowave_available()) {
+      BOOST_LOG(warning) << "PyroWave is not available, yet the client requested it"sv;
 
       respond(sock, session, &option, 400, "BAD REQUEST", req->sequenceNumber, {});
       return;
