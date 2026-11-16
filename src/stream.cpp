@@ -1442,10 +1442,11 @@ namespace stream {
         session.video.peer.port(),
         session.localAddress,
       };
-      // Test knob: HELIOS_PYROWAVE_LOSS=<percent> drops that share of PyroWave packets before sending, to try the client on a lossy link.
+      // Test knob: the pyrowave_simulated_loss option, or the HELIOS_PYROWAVE_LOSS environment variable (which wins),
+      // drops that share of PyroWave packets before sending, to try the client on a lossy link.
       static const double simulated_loss = [] {
         const char *value = std::getenv("HELIOS_PYROWAVE_LOSS");
-        return value ? std::atof(value) : 0.0;
+        return value ? std::atof(value) : config::video.pyrowave_simulated_loss;
       }();
       static thread_local std::mt19937 loss_rng {12345};
       if (simulated_loss <= 0.0 || std::uniform_real_distribution<double> {0.0, 100.0}(loss_rng) >= simulated_loss) {
