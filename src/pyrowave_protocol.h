@@ -48,4 +48,45 @@ namespace pyrowave {
     is_pyrowave_format(int bitstream_format) {
     return bitstream_format == BITSTREAM_FORMAT;
   }
+
+  // Limits of the client preferences sent in the SDP (x-ss-pyrowave.packetSize and x-ss-pyrowave.maxFrameKb).
+  constexpr int MIN_PACKET_SIZE = 400;
+  constexpr int MAX_FRAME_KB = 4096;
+
+  /**
+   * @brief Packet size to use when the client asks for `asked` bytes. 0 or less means no preference.
+   * The client can only ask for less than the host allows, never more.
+   * @param host_max The pyrowave_packet_size option of this host.
+   */
+  constexpr int
+    clamp_packet_size(int asked, int host_max) {
+    if (asked <= 0) {
+      return 0;
+    }
+    const int upper = host_max < MIN_PACKET_SIZE ? MIN_PACKET_SIZE : host_max;
+    return asked < MIN_PACKET_SIZE ? MIN_PACKET_SIZE : (asked > upper ? upper : asked);
+  }
+
+  /**
+   * @brief Host processing latency as the 16 bit value sent to the client, in units of 0.1 ms (rounded to the
+   * nearest unit, never negative, saturating at 65535 which is about 6.5 s).
+   * @param latency_us Time from capture to send in microseconds.
+   */
+  constexpr uint16_t
+    host_latency_units(long long latency_us) {
+    const long long units = (latency_us + 50) / 100;
+    return units < 0 ? 0 : (units > 65535 ? 65535 : static_cast<uint16_t>(units));
+  }
+
+  /**
+   * @brief Frame size cap in KB to use when the client asks for `asked`. 0 or less means no cap.
+   * The cap never goes below the host floor (the pyrowave_min_frame_kb option) or above MAX_FRAME_KB.
+   */
+  constexpr int
+    clamp_max_frame_kb(int asked, int host_min_kb) {
+    if (asked <= 0) {
+      return 0;
+    }
+    return asked < host_min_kb ? host_min_kb : (asked > MAX_FRAME_KB ? MAX_FRAME_KB : asked);
+  }
 }  // namespace pyrowave

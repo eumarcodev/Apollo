@@ -30,6 +30,7 @@ extern "C" {
 #include "network.h"
 #include "platform/common.h"
 #include "process.h"
+#include "pyrowave_protocol.h"
 #include "stream.h"
 #include "sync.h"
 #include "system_tray.h"
@@ -1369,7 +1370,7 @@ namespace stream {
     uint16_t host_latency = 0;
     if (frame.frame_timestamp) {
       const auto latency_us = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - *frame.frame_timestamp).count();
-      host_latency = (uint16_t) std::clamp<decltype(latency_us)>((latency_us + 50) / 100, 0, std::numeric_limits<uint16_t>::max());
+      host_latency = pyrowave::host_latency_units(latency_us);
     }
 
     // RTP video timestamps use a 90 KHz clock. Repeated frames have no capture time, so rate control time is used.
