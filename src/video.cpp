@@ -400,15 +400,19 @@ namespace video {
    */
   class pyrowave_encode_session_t: public encode_session_t {
   public:
-    // Largest PyroWave packet. The transport (#23) decides the final value from the negotiated RTP payload size.
-    static constexpr std::size_t default_packet_size = 1200;
-
     pyrowave_encode_session_t(const config_t &config, std::unique_ptr<platf::pyrowave_encode_device_t> encode_device):
         device(std::move(encode_device)),
-        packet_size(default_packet_size) {
-      // Per-frame byte budget from the requested bitrate (kilobits per second) and frame rate
+        // Largest PyroWave packet (option pyrowave_packet_size). It has to fit the RTP payload of the client.
+        packet_size(static_cast<std::size_t>(config.pyrowavePacketSize > 0 ? config.pyrowavePacketSize : config::video.pyrowave_packet_size)) {
+      // Per-frame byte budget from the requested bitrate (kilobits per second) and frame rate,
+      // never below the pyrowave_min_frame_kb floor
       const std::size_t bytes_per_second = static_cast<std::size_t>(std::max(config.bitrate, 1)) * 1000 / 8;
-      frame_budget = std::max<std::size_t>(16 * 1024, bytes_per_second / std::max(config.framerate, 1));
+      frame_budget = std::max<std::size_t>(static_cast<std::size_t>(config::video.pyrowave_min_frame_kb) * 1024, bytes_per_second / std::max(config.framerate, 1));
+      // The client may cap the frame size (already clamped to the floor above by the RTSP handler)
+      if (config.pyrowaveMaxFrameKb > 0) {
+        frame_budget = std::min<std::size_t>(frame_budget, static_cast<std::size_t>(config.pyrowaveMaxFrameKb) * 1024);
+      }
+      BOOST_LOG(info) << "PyroWave: packet size "sv << packet_size << " bytes, frame budget "sv << frame_budget / 1024 << " KB"sv;
     }
 
     int convert(platf::img_t &img) override {

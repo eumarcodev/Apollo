@@ -1095,6 +1095,98 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
 </table>
 
+### pyrowave_packet_size
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Largest PyroWave packet, in bytes (400 to 1300). It has to fit the RTP payload the client negotiated,
+            otherwise the frame is dropped and an error is logged. Restart the stream after changing it.
+            @note{Applies to Windows only, and only to builds made with PyroWave.}
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}1200@endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}pyrowave_packet_size = 1100@endcode</td>
+    </tr>
+</table>
+
+### pyrowave_min_frame_kb
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Floor of the per-frame byte budget, in KB (1 to 4096). The budget is the bitrate divided by the frame
+            rate, but never smaller than this value.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}16@endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}pyrowave_min_frame_kb = 32@endcode</td>
+    </tr>
+</table>
+
+### pyrowave_priority
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Vulkan global queue priority of the PyroWave encoder. High and realtime need driver support; if the GPU
+            refuses the priority Helios logs a warning and uses medium.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}medium@endcode</td>
+    </tr>
+    <tr>
+        <td>Choices</td>
+        <td colspan="2">
+            <table>
+                <tr><td>low</td><td></td></tr>
+                <tr><td>medium</td><td></td></tr>
+                <tr><td>high</td><td></td></tr>
+                <tr><td>realtime</td><td></td></tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}pyrowave_priority = high@endcode</td>
+    </tr>
+</table>
+
+### pyrowave_simulated_loss
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            For tests only: drops this percent of PyroWave video packets before sending (0 to 100). The environment
+            variable `HELIOS_PYROWAVE_LOSS` overrides it.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}0@endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}pyrowave_simulated_loss = 5@endcode</td>
+    </tr>
+</table>
+
 ### isolated_virtual_display_option
 
 <table>

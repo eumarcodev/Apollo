@@ -30,6 +30,7 @@ extern "C" {
 #include "network.h"
 #include "platform/common.h"
 #include "process.h"
+#include "pyrowave_protocol.h"
 #include "stream.h"
 #include "sync.h"
 #include "system_tray.h"
@@ -1362,6 +1363,16 @@ namespace stream {
     auto *prefix = (video_packet_enc_prefix_t *) buffer.data();
     auto *out = (video_packet_raw_t *) (buffer.data() + prefix_size);
 
+    // Host processing latency (capture to send, so it includes the encode) in units of 0.1 ms, like the other
+    // codecs report in their frame header. PyroWave has no frame header, so it travels in the 4 bytes after the
+    // RTP header (little endian, the same value in every packet of the frame). Repeated frames have no capture
+    // time and report 0.
+    uint16_t host_latency = 0;
+    if (frame.frame_timestamp) {
+      const auto latency_us = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - *frame.frame_timestamp).count();
+      host_latency = pyrowave::host_latency_units(latency_us);
+    }
+
     // RTP video timestamps use a 90 KHz clock. Repeated frames have no capture time, so rate control time is used.
     if (!frame.frame_timestamp) {
       frame.frame_timestamp = ratecontrol_next_frame_start;
@@ -1385,6 +1396,8 @@ namespace stream {
       out->rtp.header = 0x80 | FLAG_EXTENSION;
       out->rtp.sequenceNumber = util::endian::big<uint16_t>(lowseq + x);
       out->rtp.timestamp = util::endian::big<uint32_t>(timestamp);
+      out->reserved[0] = (char) (host_latency & 0xFF);
+      out->reserved[1] = (char) (host_latency >> 8);
       out->packet.streamPacketIndex = ((uint32_t) lowseq + x) << 8;
       out->packet.frameIndex = frame.frame_index();
       out->packet.flags = FLAG_CONTAINS_PIC_DATA;
@@ -1430,10 +1443,11 @@ namespace stream {
         session.video.peer.port(),
         session.localAddress,
       };
-      // Test knob: HELIOS_PYROWAVE_LOSS=<percent> drops that share of PyroWave packets before sending, to try the client on a lossy link.
+      // Test knob: the pyrowave_simulated_loss option, or the HELIOS_PYROWAVE_LOSS environment variable (which wins),
+      // drops that share of PyroWave packets before sending, to try the client on a lossy link.
       static const double simulated_loss = [] {
         const char *value = std::getenv("HELIOS_PYROWAVE_LOSS");
-        return value ? std::atof(value) : 0.0;
+        return value ? std::atof(value) : config::video.pyrowave_simulated_loss;
       }();
       static thread_local std::mt19937 loss_rng {12345};
       if (simulated_loss <= 0.0 || std::uniform_real_distribution<double> {0.0, 100.0}(loss_rng) >= simulated_loss) {
@@ -1803,6 +1817,19 @@ namespace stream {
     // Audio traffic is sent on this thread
     platf::adjust_thread_priority(platf::thread_priority_e::high);
 
+    // Test knob: HELIOS_AUDIO_LOSS=<percent> drops that share of audio packets (data and FEC) before sending,
+    // to check the client audio loss counters and FEC recovery.
+    static const double simulated_audio_loss = [] {
+      const char *value = std::getenv("HELIOS_AUDIO_LOSS");
+      return value ? std::atof(value) : 0.0;
+    }();
+    std::mt19937 audio_loss_rng {54321};
+    auto send_audio = [&](platf::send_info_t &info) {
+      if (simulated_audio_loss <= 0.0 || std::uniform_real_distribution<double> {0.0, 100.0}(audio_loss_rng) >= simulated_audio_loss) {
+        platf::send(info);
+      }
+    };
+
     while (auto packet = packets->pop()) {
       if (shutdown_event->peek()) {
         break;
@@ -1844,7 +1871,7 @@ namespace stream {
           session->audio.peer.port(),
           session->localAddress,
         };
-        platf::send(send_info);
+        send_audio(send_info);
 
         auto &fec_packet = session->audio.fec_packet;
         // initialize the FEC header at the beginning of the FEC block
@@ -1871,7 +1898,7 @@ namespace stream {
               session->audio.peer.port(),
               session->localAddress,
             };
-            platf::send(send_info);
+            send_audio(send_info);
             BOOST_LOG(verbose) << "Audio FEC ["sv << (sequenceNumber & ~(RTPA_DATA_SHARDS - 1)) << ' ' << x << "] ::  send..."sv;
           }
         }

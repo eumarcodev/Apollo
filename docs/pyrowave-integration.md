@@ -65,6 +65,18 @@ opaque payload split into packets by the encoder, with little or no FEC. A strea
 chroma format and bitstream version. Clients without PyroWave support never see the new format, and keep
 using the existing codecs.
 
+### Client preferences
+
+A Helios-aware client can ask for a smaller packet or a frame size cap with two extra attributes in the SDP it
+sends in ANNOUNCE (Helios extension, other hosts ignore them):
+
+| Attribute | Meaning | Host handling |
+| --- | --- | --- |
+| `x-ss-pyrowave.packetSize` | Largest packet in bytes | Clamped to 400 up to the `pyrowave_packet_size` option |
+| `x-ss-pyrowave.maxFrameKb` | Cap on one frame in KB | Clamped to the `pyrowave_min_frame_kb` option up to 4096 |
+
+Missing or 0 means no preference. They are only sent for PyroWave streams.
+
 ## Phases
 
 | Phase | Goal | Notes |
@@ -101,3 +113,33 @@ Set `HELIOS_PYROWAVE_LOSS=<percent>` (together with `HELIOS_PYROWAVE=1`) before 
 PyroWave packets before they are sent. Measured on the Redmi tablet at 1920x1200 and 80 Mbps with a full-screen animation:
 5% loss gives a clean-looking picture, 15% loss makes it soft and blocky but it keeps moving and recovers by itself (no
 freezes, no key frame request needed). Only single screenshots were inspected, not a quantitative quality measure.
+
+Set `HELIOS_AUDIO_LOSS=<percent>` the same way to drop that share of the audio packets (data and FEC) and check the
+audio counters in the Selene overlay. It works with any video codec.
+
+## Using PyroWave
+
+Requirements:
+- Helios built with PyroWave (the Windows installers from release candidate 1.4.0-rc.1 on) and a GPU/driver with Vulkan
+  and D3D11 interop. If the interop is not available the codec is not offered.
+- Selene 1.1.0-rc.1 or newer on a device with Vulkan and a driver that can run the decoder (tested: Redmi tablet).
+- Bandwidth: every frame is intra-only, so it needs a lot of bandwidth. At 80 Mbps a 90 fps stream is about 110 KB per
+  frame. On Wi-Fi use 60 Mbps or less: at 80 Mbps the link showed latency spikes of about 90 ms and the audio broke up
+  now and then (with HEVC as well as PyroWave, see Selene issue 21), and at 60 Mbps it was better. Put the PC on a cable
+  when you can. Lower bitrates make the picture softer.
+- Resolution: the decoder runs on the tablet GPU and takes about 8 ms at 1280x720, 21 ms at 1920x1200 and 33 ms at
+  2560x1600. For a 20 to 50 ms total delay use 1920x1200 or lower.
+
+Turn it on: Helios web UI, Configuration > Audio/Video > PyroWave codec, or `pyrowave = enabled` in the config file,
+then restart Helios. In Selene, enable the PyroWave option in the video settings.
+
+The host only encodes when the screen changes, so a still desktop sends few frames; this is normal.
+
+## Manual test with Selene
+
+1. Start Helios with the option on and confirm the log has no PyroWave errors.
+2. Pair Selene as usual and start a stream with the PyroWave option enabled. The Selene log (`adb logcat -s SelenePyroWave`)
+   prints `PyroWave player ready: WxH`.
+3. Show something that moves (a full-screen animation or a game) and check the picture is smooth and current.
+4. Optional: start Helios with `HELIOS_PYROWAVE_LOSS=5` to see the behavior with 5% packet loss.
+5. Switch the Selene option off and check the stream falls back to HEVC/H.264.

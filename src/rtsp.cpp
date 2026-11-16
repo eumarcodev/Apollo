@@ -991,6 +991,9 @@ namespace rtsp_stream {
     args.try_emplace("x-ss-general.encryptionEnabled"sv, "0"sv);
     args.try_emplace("x-ss-video[0].chromaSamplingType"sv, "0"sv);
     args.try_emplace("x-ss-video[0].intraRefresh"sv, "0"sv);
+    // PyroWave preferences of the client (Helios extension), 0 means no preference
+    args.try_emplace("x-ss-pyrowave.packetSize"sv, "0"sv);
+    args.try_emplace("x-ss-pyrowave.maxFrameKb"sv, "0"sv);
 
     stream::config_t config;
 
@@ -1028,6 +1031,8 @@ namespace rtsp_stream {
       config.monitor.dynamicRange = util::from_view(args.at("x-nv-video[0].dynamicRangeMode"sv));
       config.monitor.chromaSamplingType = util::from_view(args.at("x-ss-video[0].chromaSamplingType"sv));
       config.monitor.enableIntraRefresh = util::from_view(args.at("x-ss-video[0].intraRefresh"sv));
+      config.monitor.pyrowavePacketSize = util::from_view(args.at("x-ss-pyrowave.packetSize"sv));
+      config.monitor.pyrowaveMaxFrameKb = util::from_view(args.at("x-ss-pyrowave.maxFrameKb"sv));
 
       if (config::video.limit_framerate) {
         config.monitor.encodingFramerate = session.fps;
@@ -1157,6 +1162,25 @@ namespace rtsp_stream {
 
       respond(sock, session, &option, 400, "BAD REQUEST", req->sequenceNumber, {});
       return;
+    }
+
+    // The client may ask for a smaller PyroWave packet or a cap on the frame size. Keep each value inside what this
+    // host allows: never above pyrowave_packet_size, never below the pyrowave_min_frame_kb floor.
+    if (pyrowave::is_pyrowave_format(config.monitor.videoFormat)) {
+      auto &monitor = config.monitor;
+      if (monitor.pyrowavePacketSize > 0) {
+        const int asked = monitor.pyrowavePacketSize;
+        monitor.pyrowavePacketSize = pyrowave::clamp_packet_size(asked, config::video.pyrowave_packet_size);
+        BOOST_LOG(info) << "PyroWave: the client asked for packets of "sv << asked << " bytes, using "sv << monitor.pyrowavePacketSize;
+      }
+      if (monitor.pyrowaveMaxFrameKb > 0) {
+        const int asked = monitor.pyrowaveMaxFrameKb;
+        monitor.pyrowaveMaxFrameKb = pyrowave::clamp_max_frame_kb(asked, config::video.pyrowave_min_frame_kb);
+        BOOST_LOG(info) << "PyroWave: the client asked for frames of at most "sv << asked << " KB, using "sv << monitor.pyrowaveMaxFrameKb;
+      }
+    } else {
+      config.monitor.pyrowavePacketSize = 0;
+      config.monitor.pyrowaveMaxFrameKb = 0;
     }
 
     // Check that any required encryption is enabled
