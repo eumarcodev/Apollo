@@ -1815,6 +1815,19 @@ namespace stream {
     // Audio traffic is sent on this thread
     platf::adjust_thread_priority(platf::thread_priority_e::high);
 
+    // Test knob: HELIOS_AUDIO_LOSS=<percent> drops that share of audio packets (data and FEC) before sending,
+    // to check the client audio loss counters and FEC recovery.
+    static const double simulated_audio_loss = [] {
+      const char *value = std::getenv("HELIOS_AUDIO_LOSS");
+      return value ? std::atof(value) : 0.0;
+    }();
+    std::mt19937 audio_loss_rng {54321};
+    auto send_audio = [&](platf::send_info_t &info) {
+      if (simulated_audio_loss <= 0.0 || std::uniform_real_distribution<double> {0.0, 100.0}(audio_loss_rng) >= simulated_audio_loss) {
+        platf::send(info);
+      }
+    };
+
     while (auto packet = packets->pop()) {
       if (shutdown_event->peek()) {
         break;
@@ -1856,7 +1869,7 @@ namespace stream {
           session->audio.peer.port(),
           session->localAddress,
         };
-        platf::send(send_info);
+        send_audio(send_info);
 
         auto &fec_packet = session->audio.fec_packet;
         // initialize the FEC header at the beginning of the FEC block
@@ -1883,7 +1896,7 @@ namespace stream {
               session->audio.peer.port(),
               session->localAddress,
             };
-            platf::send(send_info);
+            send_audio(send_info);
             BOOST_LOG(verbose) << "Audio FEC ["sv << (sequenceNumber & ~(RTPA_DATA_SHARDS - 1)) << ' ' << x << "] ::  send..."sv;
           }
         }
