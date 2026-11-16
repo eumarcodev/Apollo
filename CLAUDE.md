@@ -13,7 +13,7 @@ The fork is now independent of upstream (the original maintainer stopped updatin
 - Android client (currently `moonlight-android`/Artemis): **Selene Game Streaming**.
 - README keeps the credits and lineage section (ClassicOldSong, LizardByte/Sunshine, Moonlight); keep it when renaming. Don't use Nintendo/Zelda names.
 - Still named after upstream on purpose: `sunshine.exe`/`sunshinesvc.exe`, `test_sunshine`, the `apollo.*` icon and logo files, the `APOLLO_UPDATE_REPO` CMake option, and `APOLLO_*` env vars (kept as deprecated aliases of `HELIOS_*`).
-- `src_assets/windows/misc/migration/migrate-from-apollo.bat` (run by the NSIS installer) migrates an existing Apollo install (config, service, firewall rule). It has not been tested on a real upgrade yet; test Apollo 1.2.0 -> Helios before the first release.
+- `src_assets/windows/misc/migration/migrate-from-apollo.bat` (run by the NSIS installer) migrates an existing Apollo install (config, service, firewall rule). Verified manually (2026-11-16) on a real Apollo 1.2.0 -> Helios upgrade with the normal installer: service, firewall, config, credentials and client pairings carried over. Not yet verified: silent install (`/S`) and uninstalling Helios.
 - Before opening a PR, run the local MSYS2 build and the local tests; the CI build takes about 10 minutes.
 
 ## Build (Windows, MSYS2 UCRT64)
