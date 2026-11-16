@@ -36,6 +36,7 @@
 #include "system_tray.h"
 #include "utility.h"
 #include "uuid.h"
+#include "pyrowave_protocol.h"
 #include "video.h"
 #include "zwpad.h"
 
@@ -986,6 +987,7 @@ namespace nvhttp {
         codec_mode_flags |= SCM_AV1_HIGH10_444;
       }
     }
+    codec_mode_flags |= pyrowave::codec_mode_flags(video::pyrowave_available(), false);
     tree.put("root.ServerCodecModeSupport", codec_mode_flags);
 
     tree.put("root.PairStatus", pair_status);

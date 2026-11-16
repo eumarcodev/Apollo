@@ -339,6 +339,13 @@ namespace video {
 
   extern int active_hevc_mode;
   extern int active_av1_mode;
+
+  /**
+   * @brief Whether this host can encode PyroWave. False until the encode session exists.
+   */
+  bool
+    pyrowave_available();
+
   extern bool last_encoder_probe_supported_ref_frames_invalidation;
   extern std::array<bool, 3> last_encoder_probe_supported_yuv444_for_codec;  // 0 - H.264, 1 - HEVC, 2 - AV1
 
