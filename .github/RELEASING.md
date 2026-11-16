@@ -81,7 +81,7 @@ Hotfixes only target the latest stable line. Fixing an older line needs its own 
 `cmake/`, `third-party/`, `packaging/`, `scripts/`, `tests/`, build files or the workflows). Draft PRs are skipped. Add the
 `build` label to force it.
 
-## Update notifications in Apollo
+## Update notifications in Helios
 
 Builds published from this repository check **this** repository's releases (`APOLLO_UPDATE_REPO`). The home page
 follows an update channel, set in **Configuration > General > Update Channel**:

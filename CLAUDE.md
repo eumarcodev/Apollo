@@ -4,15 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Apollo is a fork of LizardByte Sunshine (a self-hosted game-stream host for Moonlight/Artemis clients), adding virtual display (SudoVDA), per-client permissions and clipboard sync. This checkout is the fork `eumarcodev/Helios-Server` (renamed on GitHub from `eumarcodev/Apollo`, which still redirects; upstream: `ClassicOldSong/Apollo`). Much of the code, docs and CMake still use the `sunshine` name (`config::sunshine`, `test_sunshine`, `sunshine.exe`).
+Helios (formerly Apollo) is a fork of LizardByte Sunshine (a self-hosted game-stream host for Moonlight/Artemis clients), adding virtual display (SudoVDA), per-client permissions and clipboard sync. This checkout is the fork `eumarcodev/Helios-Server` (renamed on GitHub from `eumarcodev/Apollo`, which still redirects; upstream: `ClassicOldSong/Apollo`). Much of the code, docs and CMake still use the `sunshine` name (`config::sunshine`, `test_sunshine`, `sunshine.exe`).
 
 ## Naming decision (independent fork)
 
 The fork is now independent of upstream (the original maintainer stopped updating). Decided names, continuing the sun/moon lineage Sunshine/Moonlight → Apollo/Artemis → Helios/Selene:
-- Server (this repo, currently still "Apollo" in code): **Helios**.
+- Server (this repo; code and installer still say Apollo until the rename PRs land): **Helios**.
 - Android client (currently `moonlight-android`/Artemis): **Selene Game Streaming**.
 - README keeps the credits and lineage section (ClassicOldSong, LizardByte/Sunshine, Moonlight); keep it when renaming. Don't use Nintendo/Zelda names.
-- The rename of repo, binaries, installer, CMake, web UI strings, mDNS name, config paths (with migration) and `APOLLO_UPDATE_REPO` is a separate, pending step; until it lands, code and docs still say Apollo/Sunshine.
+- The rename of binaries, installer, CMake, mDNS name, config paths (with migration) and `APOLLO_UPDATE_REPO` is a separate, pending step; until it lands, code and docs still say Apollo/Sunshine.
 
 ## Build (Windows, MSYS2 UCRT64)
 
