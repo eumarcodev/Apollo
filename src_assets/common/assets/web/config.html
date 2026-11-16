@@ -211,11 +211,6 @@
               "fallback_mode": "",
               "headless_mode": "disabled",
               "double_refreshrate": "disabled",
-              "pyrowave": "disabled",
-              "pyrowave_packet_size": 1200,
-              "pyrowave_min_frame_kb": 16,
-              "pyrowave_priority": "medium",
-              "pyrowave_simulated_loss": 0,
               "max_bitrate": 0,
               "minimum_fps_target": 0,
               "isolated_virtual_display_option": "disabled",
@@ -302,6 +297,17 @@
             },
           },
           {
+            id: "pyrowave",
+            name: "PyroWave Encoder (experimental)",
+            options: {
+              "pyrowave": "disabled",
+              "pyrowave_packet_size": 1200,
+              "pyrowave_min_frame_kb": 16,
+              "pyrowave_priority": "medium",
+              "pyrowave_simulated_loss": 0,
+            },
+          },
+          {
             id: "vt",
             name: "VideoToolbox Encoder",
             options: {
@@ -350,12 +356,12 @@
           }
           if (this.platform === "linux") {
             this.tabs = this.tabs.filter((el) => {
-              return el.id !== "amd" && el.id !== "qsv" && el.id !== "vt";
+              return el.id !== "amd" && el.id !== "qsv" && el.id !== "vt" && el.id !== "pyrowave";
             });
           }
           if (this.platform === "macos") {
             this.tabs = this.tabs.filter((el) => {
-              return el.id !== "amd" && el.id !== "nv" && el.id !== "qsv" && el.id !== "vaapi";
+              return el.id !== "amd" && el.id !== "nv" && el.id !== "qsv" && el.id !== "vaapi" && el.id !== "pyrowave";
             });
           }
 
