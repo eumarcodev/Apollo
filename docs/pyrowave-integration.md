@@ -65,6 +65,18 @@ opaque payload split into packets by the encoder, with little or no FEC. A strea
 chroma format and bitstream version. Clients without PyroWave support never see the new format, and keep
 using the existing codecs.
 
+### Client preferences
+
+A Helios-aware client can ask for a smaller packet or a frame size cap with two extra attributes in the SDP it
+sends in ANNOUNCE (Helios extension, other hosts ignore them):
+
+| Attribute | Meaning | Host handling |
+| --- | --- | --- |
+| `x-ss-pyrowave.packetSize` | Largest packet in bytes | Clamped to 400 up to the `pyrowave_packet_size` option |
+| `x-ss-pyrowave.maxFrameKb` | Cap on one frame in KB | Clamped to the `pyrowave_min_frame_kb` option up to 4096 |
+
+Missing or 0 means no preference. They are only sent for PyroWave streams.
+
 ## Phases
 
 | Phase | Goal | Notes |
