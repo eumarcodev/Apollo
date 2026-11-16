@@ -30,7 +30,7 @@ Gotchas learned the hard way:
 - `node.exe` (Windows Node, not the MSYS2 package) must be on `PATH` for the `web-ui` target.
 - Boost: `cmake/dependencies/Boost_Sunshine.cmake` pins an EXACT version (`find_package(Boost CONFIG ... EXACT)`). If the MSYS2 system Boost doesn't match, it falls back to FetchContent, which builds Boost from source and (with CMake 4.x) fails in Boost.Locale on `source_group` unless the patch `cmake/dependencies/patch_boost_locale.cmake` applies. Keep `BOOST_VERSION` aligned with the MSYS2 package version to avoid the fallback (slow, and CI runners rebuild it every time).
 - `BUILD_VERSION` and `BRANCH` environment variables make `cmake/prep/build_version.cmake` set `PROJECT_VERSION`. The value may carry a suffix (`1.2.0-nightly.20261115`); CMake extracts `X.Y.Z` for resource files while the full string is embedded as ProductVersion.
-- `APOLLO_UPDATE_REPO` (CMake cache var, default `ClassicOldSong/Apollo`) is compiled in and exposed by `/api/config` as `update_repo`; CI passes the fork's repository.
+- `APOLLO_UPDATE_REPO` (CMake cache var, default `eumarcodev/Helios-Server`) is compiled in and exposed by `/api/config` as `update_repo`; CI passes the fork's repository.
 
 ## Tests
 

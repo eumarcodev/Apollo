@@ -98,7 +98,7 @@
         this.updateChannel = resolveUpdateChannel(config.update_channel, config.notify_pre_releases, this.version);
         console.log("Update channel: ", this.updateChannel)
         // Repository whose releases are checked for updates, configurable at build time (APOLLO_UPDATE_REPO)
-        const updateRepo = config.update_repo || "ClassicOldSong/Apollo";
+        const updateRepo = config.update_repo || "eumarcodev/Helios-Server";
         const releases = await fetch(`https://api.github.com/repos/${updateRepo}/releases?per_page=30`).then((r) => r.json());
         this.latestVersion = pickLatestRelease(releases, this.updateChannel);
         console.log("Latest version: ", this.latestVersion?.version)

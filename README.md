@@ -185,7 +185,7 @@ No real time chat support will ever be provided for Apollo and Artemis. Includin
 
 **Recommended**
 
-[Releases](https://github.com/ClassicOldSong/Apollo/releases)
+[Releases](https://github.com/eumarcodev/Helios-Server/releases)
 
 ### WinGet
 

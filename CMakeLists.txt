@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(Apollo VERSION 0.0.0
         DESCRIPTION "Self-hosted game stream host for Artemis"
-        HOMEPAGE_URL "https://github.com/ClassicOldSong/Apollo")
+        HOMEPAGE_URL "https://github.com/eumarcodev/Helios-Server")
 
 set(PROJECT_LICENSE "GPL-3.0-only")
 
