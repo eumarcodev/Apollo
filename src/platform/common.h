@@ -454,6 +454,24 @@ namespace platf {
     nvenc::nvenc_base *nvenc = nullptr;
   };
 
+  /**
+   * @brief Encodes captured frames with PyroWave. convert() takes the captured image, encode() produces the frame.
+   * Every frame is independent, so encode() can be called again to repeat the last image.
+   */
+  struct pyrowave_encode_device_t: encode_device_t {
+    virtual bool init_encoder(const video::config_t &client_config) = 0;
+
+    /**
+     * @param frame_budget Maximum frame size in bytes.
+     * @param packet_size Maximum size of one PyroWave packet in bytes.
+     * Fills `bitstream` and `packets` (offset and size of each packet inside `bitstream`).
+     */
+    virtual bool encode(std::size_t frame_budget, std::size_t packet_size) = 0;
+
+    std::vector<std::uint8_t> bitstream;
+    std::vector<std::pair<std::size_t, std::size_t>> packets;
+  };
+
   enum class capture_e : int {
     ok,  ///< Success
     reinit,  ///< Need to reinitialize
@@ -510,6 +528,10 @@ namespace platf {
     }
 
     virtual std::unique_ptr<nvenc_encode_device_t> make_nvenc_encode_device(pix_fmt_e pix_fmt) {
+      return nullptr;
+    }
+
+    virtual std::unique_ptr<pyrowave_encode_device_t> make_pyrowave_encode_device() {
       return nullptr;
     }
 

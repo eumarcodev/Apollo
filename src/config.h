@@ -23,6 +23,7 @@ namespace config {
     bool headless_mode;
     bool limit_framerate;
     bool double_refreshrate;
+    bool pyrowave;  // offer the experimental PyroWave codec to clients
     // ffmpeg params
     int qp;  // higher == more compression and less quality
 

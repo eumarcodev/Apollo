@@ -26,6 +26,11 @@ if(NOT DEFINED CMAKE_CUDA_STANDARD)
 endif()
 
 target_link_libraries(sunshine ${SUNSHINE_EXTERNAL_LIBRARIES} ${EXTRA_LIBS})
+if(HELIOS_ENABLE_PYROWAVE)
+    # the PyroWave DLL has to sit next to sunshine.exe
+    add_custom_command(TARGET sunshine POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:pyrowave::shared> $<TARGET_FILE_DIR:sunshine>)
+endif()
 target_compile_definitions(sunshine PUBLIC ${SUNSHINE_DEFINITIONS})
 set_target_properties(sunshine PROPERTIES CXX_STANDARD 23
         VERSION ${PROJECT_VERSION}

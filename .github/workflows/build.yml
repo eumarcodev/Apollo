@@ -46,7 +46,16 @@ jobs:
         uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
-          submodules: recursive
+          # Not recursive: PyroWave's Granite submodule has many nested submodules we do not need.
+          submodules: true
+
+      - name: Fetch the nested submodules we need
+        shell: bash
+        run: |
+          for path in $(git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | awk '{print $2}' | grep -v '^third-party/pyrowave$'); do
+            git submodule update --init --recursive "$path"
+          done
+          bash third-party/pyrowave/checkout_granite.sh
 
       # path-type: inherit keeps the runner's official Node.js/npm on PATH, as required by docs/building.md
       - name: Set up MSYS2
@@ -73,7 +82,7 @@ jobs:
 
       # APOLLO_UPDATE_REPO makes the web UI check this repository's releases for new versions
       - name: Configure
-        run: cmake -B build -G Ninja -S . -DAPOLLO_UPDATE_REPO=${{ github.repository }}
+        run: cmake -B build -G Ninja -S . -DAPOLLO_UPDATE_REPO=${{ github.repository }} -DHELIOS_ENABLE_PYROWAVE=ON
 
       - name: Build
         run: ninja -C build
