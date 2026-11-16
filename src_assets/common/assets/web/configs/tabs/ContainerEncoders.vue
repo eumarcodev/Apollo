@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import NvidiaNvencEncoder from './encoders/NvidiaNvencEncoder.vue'
 import IntelQuickSyncEncoder from './encoders/IntelQuickSyncEncoder.vue'
 import AmdAmfEncoder from './encoders/AmdAmfEncoder.vue'
+import PyroWaveEncoder from './encoders/PyroWaveEncoder.vue'
 import VideotoolboxEncoder from './encoders/VideotoolboxEncoder.vue'
 import SoftwareEncoder from './encoders/SoftwareEncoder.vue'
 import VAAPIEncoder from './encoders/VAAPIEncoder.vue'
@@ -35,6 +36,13 @@ const config = ref(props.config)
   <!-- AMD AMF Encoder Tab -->
   <AmdAmfEncoder
       v-if="currentTab === 'amd'"
+      :platform="platform"
+      :config="config"
+  />
+
+  <!-- PyroWave Encoder Tab -->
+  <PyroWaveEncoder
+      v-if="currentTab === 'pyrowave'"
       :platform="platform"
       :config="config"
   />
