@@ -10,6 +10,32 @@ Major features:
 - [x] Commands for client connection/disconnection (checkout [Auto pause/resume games](https://github.com/ClassicOldSong/Apollo/wiki/Auto-pause-resume-games))
 - [x] Input only mode
 
+## Lineage and credits
+
+This project is an independent fork. It is being renamed to continue a family of names: the host is **Helios** (the sun) and the Android client is **Selene Game Streaming** (the moon), following the lineage below.
+
+| Project | Role | Name origin | Authors |
+|---------|------|-------------|---------|
+| [Moonlight](https://github.com/moonlight-stream) | Original open-source client for NVIDIA GameStream | Moon | Cameron Gutman and the Moonlight contributors |
+| [Sunshine](https://github.com/LizardByte/Sunshine) | Self-hosted GameStream-compatible host | Sun | Elia Zammuto (original author), then LizardByte and contributors |
+| [Apollo](https://github.com/ClassicOldSong/Apollo) | Sunshine fork with virtual display (SudoVDA), per-client permissions and clipboard sync | Greek god of the sun | ClassicOldSong |
+| [Artemis (Moonlight Noir)](https://github.com/ClassicOldSong/moonlight-android) | Moonlight Android fork that pairs with Apollo | Greek goddess of the moon | ClassicOldSong |
+| [**Helios**](https://github.com/eumarcodev/Helios-Server) | This project, the host (fork of Apollo) | Greek personification of the sun, older than Apollo | Maintained by [eumarcodev](https://github.com/eumarcodev) |
+| **Selene Game Streaming** | This project, the Android client (fork of Artemis) | Greek personification of the moon, older than Artemis | Maintained by [eumarcodev](https://github.com/eumarcodev) |
+
+Sunshine and Moonlight pair as sun and moon, Apollo and Artemis as the twin gods, and Helios and Selene go one generation further back, to the Titans they descend from.
+
+### Thanks
+
+Almost everything here exists because of other people's work, and we are grateful to:
+
+- **ClassicOldSong**, for Apollo, Artemis and SudoVDA, which are the base of this fork.
+- **LizardByte** and every Sunshine contributor, and **Elia Zammuto**, for creating Sunshine.
+- **Cameron Gutman** and the **Moonlight** contributors, for the client, the streaming protocol work and `moonlight-common-c`.
+- Everyone who reported issues, sent patches or documented the quirks of game streaming along the way.
+
+This fork keeps the original license (GPLv3) and the copyright notices of the upstream projects. The upstream history is preserved in this repository's git log.
+
 ## Usage
 
 Refer to LizardByte's documentation hosted on [Read the Docs](https://docs.lizardbyte.dev/projects/sunshine) for now.
