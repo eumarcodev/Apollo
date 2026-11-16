@@ -83,6 +83,7 @@
     "env_qres_path": "qres path",
     "env_rtss_cli_example": "Example - rtss-cli for FPS Limitation:",
     "env_sunshine_compatibility": "Environment variables starting with \"SUNSHINE_\" are deprecated but still kept for compatibility with Sunshine related tools. The SUNSHINE_CLIENT_FPS variable is modified to FLOAT for fractional refresh rate support(especially for Special-K), if your script/tool can't take floating number input, go to Advanced tab to enable \"ENVVAR compatibility mode\". APOLLO_CLIENT_FPS is always FLOAT type.",
+    "env_apollo_compatibility": "Environment variables starting with \"APOLLO_\" are deprecated aliases of the \"HELIOS_\" ones and are kept for scripts written for Apollo.",
     "env_var_name": "Var Name",
     "env_vars_about": "About Environment Variables",
     "env_vars_desc": "All commands get these environment variables by default:",
