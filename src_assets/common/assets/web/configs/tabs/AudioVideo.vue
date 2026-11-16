@@ -161,6 +161,15 @@ const validateFallbackMode = (event) => {
               v-if="platform === 'windows'"
     ></Checkbox>
 
+    <!-- PyroWave -->
+    <Checkbox class="mb-3"
+              id="pyrowave"
+              locale-prefix="config"
+              v-model="config.pyrowave"
+              default="false"
+              v-if="platform === 'windows'"
+    ></Checkbox>
+
     <!-- Isolated Virtual Display -->
     <Checkbox class="mb-3"
               id="isolated_virtual_display_option"

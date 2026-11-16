@@ -275,7 +275,7 @@ editing the `conf` file in a text editor. Use the examples as reference.
                 <li>rc: stable releases and release candidates (`1.3.0-rc.2`)</li>
                 <li>nightly: stable releases, release candidates and the daily builds (`1.4.0-nightly.20261116`)</li>
             </ul>
-            When not set, Apollo follows the channel of the installed version: a nightly or rc build keeps
+            When not set, Helios follows the channel of the installed version: a nightly or rc build keeps
             following its own channel, and a stable build follows stable.
         </td>
     </tr>
@@ -1069,6 +1069,29 @@ editing the `conf` file in a text editor. Use the examples as reference.
         <td colspan="2">@code{}
             output_name = {daeac860-f4db-5208-b1f5-cf59444fb768}
             @endcode</td>
+    </tr>
+</table>
+
+### pyrowave
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Offers the experimental PyroWave codec to clients that support it. PyroWave is an intra-only codec that
+            encodes on the GPU with Vulkan. It has very low latency but needs a high bandwidth link (50 Mbps or more).
+            Every frame is independent, so there is no FEC and no IDR request. Restart Helios after changing it.
+            @note{Applies to Windows only, and only to builds made with PyroWave. Setting the environment variable
+            `HELIOS_PYROWAVE=1` turns it on as well.}
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}disabled@endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}pyrowave = enabled@endcode</td>
     </tr>
 </table>
 

@@ -110,6 +110,12 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC ${SUNSHINE_DEFINITIONS} ${TEST
 target_compile_options(${PROJECT_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${SUNSHINE_COMPILE_OPTIONS}>;$<$<COMPILE_LANGUAGE:CUDA>:${SUNSHINE_COMPILE_OPTIONS_CUDA};-std=c++17>)  # cmake-lint: disable=C0301
 target_link_options(${PROJECT_NAME} PRIVATE)
 
+if (HELIOS_ENABLE_PYROWAVE)
+    # the PyroWave DLL has to sit next to the test executable
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:pyrowave::shared> $<TARGET_FILE_DIR:${PROJECT_NAME}>)
+endif ()
+
 if (WIN32)
     # prefer static libraries since we're linking statically
     # this fixes libcurl linking errors when using non MSYS2 version of CMake

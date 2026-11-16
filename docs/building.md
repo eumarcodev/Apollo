@@ -128,8 +128,8 @@ visible to CMake.
 Ensure [git](https://git-scm.com) is installed on your system, then clone the repository using the following command:
 
 ```bash
-git clone https://github.com/ClassicOldSong/Apollo.git --recurse-submodules
-cd Apollo
+git clone https://github.com/eumarcodev/Helios-Server.git --recurse-submodules
+cd Helios-Server
 mkdir build
 ```
 

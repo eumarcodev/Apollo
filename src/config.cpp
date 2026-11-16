@@ -440,6 +440,7 @@ namespace config {
     false, // headless_mode
     true, // limit_framerate
     false, // double_refreshrate
+    false, // pyrowave
 
     28,  // qp
 
@@ -1108,6 +1109,7 @@ namespace config {
     bool_f(vars, "headless_mode", video.headless_mode);
     bool_f(vars, "limit_framerate", video.limit_framerate);
     bool_f(vars, "double_refreshrate", video.double_refreshrate);
+    bool_f(vars, "pyrowave", video.pyrowave);
     int_f(vars, "qp", video.qp);
     int_between_f(vars, "hevc_mode", video.hevc_mode, {0, 3});
     int_between_f(vars, "av1_mode", video.av1_mode, {0, 3});
@@ -1481,7 +1483,7 @@ namespace config {
     // so that service instance will do the work instead.
 
     if (!config_loaded && !shortcut_launch) {
-      BOOST_LOG(fatal) << "To relaunch Apollo successfully, use the shortcut in the Start Menu. Do not run sunshine.exe manually."sv;
+      BOOST_LOG(fatal) << "To relaunch Helios successfully, use the shortcut in the Start Menu. Do not run sunshine.exe manually."sv;
       std::this_thread::sleep_for(10s);
 #else
     if (!config_loaded) {

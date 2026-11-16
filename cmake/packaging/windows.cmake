@@ -1,5 +1,8 @@
 # windows specific packaging
 install(TARGETS sunshine RUNTIME DESTINATION "." COMPONENT application)
+if(HELIOS_ENABLE_PYROWAVE)
+    install(FILES "${PYROWAVE_DLL}" DESTINATION "." COMPONENT application)
+endif()
 
 # Hardening: include zlib1.dll (loaded via LoadLibrary() in openssl's libcrypto.a)
 install(FILES "${ZLIB}" DESTINATION "." COMPONENT application)
@@ -86,7 +89,7 @@ set(CPACK_COMPONENT_APPLICATION_DEPENDS assets)
 
 # service auto-start script
 set(CPACK_COMPONENT_AUTOSTART_DISPLAY_NAME "Launch on Startup")
-set(CPACK_COMPONENT_AUTOSTART_DESCRIPTION "If enabled, launches Apollo automatically on system startup.")
+set(CPACK_COMPONENT_AUTOSTART_DESCRIPTION "If enabled, launches Helios automatically on system startup.")
 set(CPACK_COMPONENT_AUTOSTART_GROUP "Core")
 
 # assets

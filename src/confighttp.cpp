@@ -491,7 +491,7 @@ namespace confighttp {
   }
 
   /**
-   * @brief Get the Apollo logo image.
+   * @brief Get the Helios logo image.
    * @param response The HTTP response object.
    * @param request The HTTP request object.
    *
@@ -1319,7 +1319,7 @@ namespace confighttp {
   }
 
   /**
-   * @brief Restart Apollo.
+   * @brief Restart Helios.
    * @param response The HTTP response object.
    * @param request The HTTP request object.
    *
@@ -1339,7 +1339,7 @@ namespace confighttp {
   }
 
   /**
-   * @brief Quit Apollo.
+   * @brief Quit Helios.
    * @param response The HTTP response object.
    * @param request The HTTP request object.
    *

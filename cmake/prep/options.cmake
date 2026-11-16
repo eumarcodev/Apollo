@@ -1,12 +1,12 @@
 # Publisher Metadata
-set(SUNSHINE_PUBLISHER_NAME "SudoMaker"
+set(SUNSHINE_PUBLISHER_NAME "eumarcodev"
         CACHE STRING "The name of the publisher (or fork developer) of the application.")
-set(SUNSHINE_PUBLISHER_WEBSITE "https://www.sudomaker.com"
+set(SUNSHINE_PUBLISHER_WEBSITE "https://github.com/eumarcodev/Helios-Server"
         CACHE STRING "The URL of the publisher's website.")
-set(SUNSHINE_PUBLISHER_ISSUE_URL "https://github.com/ClassicOldSong/Apollo/issues"
+set(SUNSHINE_PUBLISHER_ISSUE_URL "https://github.com/eumarcodev/Helios-Server/issues"
         CACHE STRING "The URL of the publisher's support site or issue tracker.
         If you provide a modified version of Sunshine, we kindly request that you use your own url.")
-set(APOLLO_UPDATE_REPO "ClassicOldSong/Apollo"
+set(APOLLO_UPDATE_REPO "eumarcodev/Helios-Server"
         CACHE STRING "The GitHub repository (owner/name) whose releases the web UI checks for new versions.
         Forks that publish their own releases should set this to their own repository.")
 
@@ -15,6 +15,8 @@ option(BUILD_TESTS "Build tests" OFF)
 option(NPM_OFFLINE "Use offline npm packages. You must ensure packages are in your npm cache." OFF)
 
 option(BUILD_WERROR "Enable -Werror flag." OFF)
+
+option(HELIOS_ENABLE_PYROWAVE "Build with the PyroWave codec (experimental, Windows only). Needs the third-party/pyrowave submodule with its nested submodules." OFF)
 
 # if this option is set, the build will exit after configuring special package configuration files
 option(SUNSHINE_CONFIGURE_ONLY "Configure special files only, then exit." OFF)

@@ -64,5 +64,8 @@
 	branch = master
 [submodule "third-party/moonlight-common-c"]
 	path = third-party/moonlight-common-c
-	url = https://github.com/ClassicOldSong/moonlight-common-c
+	url = https://github.com/eumarcodev/moonlight-common-c
 	branch = master
+[submodule "third-party/pyrowave"]
+	path = third-party/pyrowave
+	url = https://github.com/eumarcodev/pyrowave

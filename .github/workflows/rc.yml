@@ -96,7 +96,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v8
         with:
-          name: apollo-windows-x64
+          name: helios-windows-x64
           path: dist
 
       - name: Create pre-release
@@ -105,7 +105,7 @@ jobs:
           gh release create "${TAG}" dist/* \
             --repo "${GITHUB_REPOSITORY}" \
             --target "${SHA}" \
-            --title "Apollo ${TAG}" \
+            --title "Helios ${TAG}" \
             --prerelease \
             --latest=false \
             --generate-notes
