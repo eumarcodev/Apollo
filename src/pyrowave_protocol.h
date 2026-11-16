@@ -68,6 +68,17 @@ namespace pyrowave {
   }
 
   /**
+   * @brief Host processing latency as the 16 bit value sent to the client, in units of 0.1 ms (rounded to the
+   * nearest unit, never negative, saturating at 65535 which is about 6.5 s).
+   * @param latency_us Time from capture to send in microseconds.
+   */
+  constexpr uint16_t
+    host_latency_units(long long latency_us) {
+    const long long units = (latency_us + 50) / 100;
+    return units < 0 ? 0 : (units > 65535 ? 65535 : static_cast<uint16_t>(units));
+  }
+
+  /**
    * @brief Frame size cap in KB to use when the client asks for `asked`. 0 or less means no cap.
    * The cap never goes below the host floor (the pyrowave_min_frame_kb option) or above MAX_FRAME_KB.
    */
