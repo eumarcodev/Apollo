@@ -987,6 +987,7 @@ namespace nvhttp {
         codec_mode_flags |= SCM_AV1_HIGH10_444;
       }
     }
+    static_assert(pyrowave::CODEC_FLAG == SCM_PYROWAVE && pyrowave::CODEC_FLAG_444 == SCM_PYROWAVE_444, "PyroWave flags must match Limelight.h");
     codec_mode_flags |= pyrowave::codec_mode_flags(video::pyrowave_available(), false);
     tree.put("root.ServerCodecModeSupport", codec_mode_flags);
 

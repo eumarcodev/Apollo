@@ -9,9 +9,9 @@
 
 TEST(PyroWaveProtocol, ScmFlagsDoNotCollideWithKnownCodecs) {
   // Highest bit used by the other codecs is SCM_AV1_HIGH10_444 (0x00400000).
-  EXPECT_GT(pyrowave::SCM_PYROWAVE, 0x00400000u);
-  EXPECT_NE(pyrowave::SCM_PYROWAVE, pyrowave::SCM_PYROWAVE_444);
-  EXPECT_EQ(pyrowave::SCM_PYROWAVE & pyrowave::SCM_PYROWAVE_444, 0u);
+  EXPECT_GT(pyrowave::CODEC_FLAG, 0x00400000u);
+  EXPECT_NE(pyrowave::CODEC_FLAG, pyrowave::CODEC_FLAG_444);
+  EXPECT_EQ(pyrowave::CODEC_FLAG & pyrowave::CODEC_FLAG_444, 0u);
 }
 
 TEST(PyroWaveProtocol, AdvertisesNothingWhenUnavailable) {
@@ -20,8 +20,8 @@ TEST(PyroWaveProtocol, AdvertisesNothingWhenUnavailable) {
 }
 
 TEST(PyroWaveProtocol, AdvertisesChromaModesWhenAvailable) {
-  EXPECT_EQ(pyrowave::codec_mode_flags(true, false), pyrowave::SCM_PYROWAVE);
-  EXPECT_EQ(pyrowave::codec_mode_flags(true, true), pyrowave::SCM_PYROWAVE | pyrowave::SCM_PYROWAVE_444);
+  EXPECT_EQ(pyrowave::codec_mode_flags(true, false), pyrowave::CODEC_FLAG);
+  EXPECT_EQ(pyrowave::codec_mode_flags(true, true), pyrowave::CODEC_FLAG | pyrowave::CODEC_FLAG_444);
 }
 
 TEST(PyroWaveProtocol, BitstreamFormatIsDistinctFromOtherCodecs) {

@@ -17,9 +17,10 @@
 #include <cstdint>
 
 namespace pyrowave {
-  // Sunshine extension bits of ServerCodecModeSupport that are free.
-  constexpr std::uint32_t SCM_PYROWAVE = 0x00800000;
-  constexpr std::uint32_t SCM_PYROWAVE_444 = 0x01000000;
+  // Helios extension bits of ServerCodecModeSupport. Limelight.h (moonlight-common-c) defines the same values
+  // as the macros SCM_PYROWAVE and SCM_PYROWAVE_444, hence the different names here; nvhttp.cpp checks they match.
+  constexpr std::uint32_t CODEC_FLAG = 0x00800000;
+  constexpr std::uint32_t CODEC_FLAG_444 = 0x01000000;
 
   // Value of x-nv-vqos[0].bitStreamFormat (0 - H.264, 1 - HEVC, 2 - AV1).
   constexpr int BITSTREAM_FORMAT = 3;
@@ -37,7 +38,7 @@ namespace pyrowave {
    */
   constexpr std::uint32_t
     codec_mode_flags(bool available, bool yuv444) {
-    return available ? (SCM_PYROWAVE | (yuv444 ? SCM_PYROWAVE_444 : 0)) : 0;
+    return available ? (CODEC_FLAG | (yuv444 ? CODEC_FLAG_444 : 0)) : 0;
   }
 
   /**
