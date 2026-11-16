@@ -10,10 +10,10 @@ Helios (formerly Apollo) is a fork of LizardByte Sunshine (a self-hosted game-st
 
 The fork is now independent of upstream (the original maintainer stopped updating). Decided names, continuing the sun/moon lineage Sunshine/Moonlight → Apollo/Artemis → Helios/Selene:
 - Server (this repo, `eumarcodev/Helios-Server`): **Helios**. The product, installer (`Helios.exe`), `HeliosService`, firewall rule and web UI are renamed.
-- Android client (currently `moonlight-android`/Artemis): **Selene Game Streaming**.
+- Android client: **Selene Game Streaming**, repo `eumarcodev/Selene-Game-Streaming` (default branch `moonlight-noir`, local clone `../moonlight-android`). Both repos were detached from their upstream forks on GitHub.
 - README keeps the credits and lineage section (ClassicOldSong, LizardByte/Sunshine, Moonlight); keep it when renaming. Don't use Nintendo/Zelda names.
 - Still named after upstream on purpose: `sunshine.exe`/`sunshinesvc.exe`, `test_sunshine`, the `apollo.*` icon and logo files, the `APOLLO_UPDATE_REPO` CMake option, and `APOLLO_*` env vars (kept as deprecated aliases of `HELIOS_*`).
-- `src_assets/windows/misc/migration/migrate-from-apollo.bat` (run by the NSIS installer) migrates an existing Apollo install (config, service, firewall rule). Verified manually (2026-11-16) on a real Apollo 1.2.0 -> Helios upgrade with the normal installer: service, firewall, config, credentials and client pairings carried over. Not yet verified: silent install (`/S`) and uninstalling Helios.
+- `src_assets/windows/misc/migration/migrate-from-apollo.bat` (run by the NSIS installer) migrates an existing Apollo install (config, service, firewall rule). Verified manually (2026-11-16) on a real Apollo 1.2.0 -> Helios upgrade with the normal installer: service, firewall, config, credentials and client pairings carried over. Silent install (`/S`) and uninstalling Helios were also verified by the maintainer.
 - Before opening a PR, run the local MSYS2 build and the local tests; the CI build takes about 10 minutes.
 
 ## Build (Windows, MSYS2 UCRT64)
