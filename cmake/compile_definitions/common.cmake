@@ -145,6 +145,9 @@ include_directories(
 if(HELIOS_ENABLE_PYROWAVE)
     list(APPEND SUNSHINE_DEFINITIONS HELIOS_ENABLE_PYROWAVE=1)
     list(APPEND SUNSHINE_EXTERNAL_LIBRARIES pyrowave::shared)
+    list(APPEND SUNSHINE_TARGET_FILES
+            "${CMAKE_SOURCE_DIR}/src/pyrowave_encode.cpp"
+            "${CMAKE_SOURCE_DIR}/src/pyrowave_encode.h")
 endif()
 
 list(APPEND SUNSHINE_EXTERNAL_LIBRARIES
