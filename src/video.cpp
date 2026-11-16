@@ -28,6 +28,7 @@ extern "C" {
 #include "logging.h"
 #include "nvenc/nvenc_base.h"
 #include "platform/common.h"
+#include "pyrowave_protocol.h"
 #include "sync.h"
 #include "video.h"
 
@@ -391,6 +392,38 @@ namespace video {
 
     // inject sps/vps data into idr pictures
     int inject;
+  };
+
+  /**
+   * @brief PyroWave encodes every frame on its own, so there are no IDR frames and no reference frames to
+   * invalidate: the request_* calls do nothing.
+   */
+  class pyrowave_encode_session_t: public encode_session_t {
+  public:
+    // Largest PyroWave packet. The transport (#23) decides the final value from the negotiated RTP payload size.
+    static constexpr std::size_t default_packet_size = 1200;
+
+    pyrowave_encode_session_t(const config_t &config, std::unique_ptr<platf::pyrowave_encode_device_t> encode_device):
+        device(std::move(encode_device)),
+        packet_size(default_packet_size) {
+      // Per-frame byte budget from the requested bitrate (kilobits per second) and frame rate
+      const std::size_t bytes_per_second = static_cast<std::size_t>(std::max(config.bitrate, 1)) * 1000 / 8;
+      frame_budget = std::max<std::size_t>(16 * 1024, bytes_per_second / std::max(config.framerate, 1));
+    }
+
+    int convert(platf::img_t &img) override {
+      return device ? device->convert(img) : -1;
+    }
+
+    void request_idr_frame() override {}
+
+    void request_normal_frame() override {}
+
+    void invalidate_ref_frames(int64_t first_frame, int64_t last_frame) override {}
+
+    std::unique_ptr<platf::pyrowave_encode_device_t> device;
+    std::size_t frame_budget;
+    std::size_t packet_size;
   };
 
   class nvenc_encode_session_t: public encode_session_t {
@@ -1068,8 +1101,16 @@ namespace video {
 
   bool
     pyrowave_available() {
-    // The PyroWave encode session is not implemented yet, so the host never advertises it.
+#ifdef HELIOS_ENABLE_PYROWAVE
+    // Experimental: the RTP transport for PyroWave is not done yet (#23), so it is only offered when asked for.
+    static const bool enabled = [] {
+      const char *value = std::getenv("HELIOS_PYROWAVE");
+      return value && *value && std::string_view {value} != "0";
+    }();
+    return enabled;
+#else
     return false;
+#endif
   }
   bool last_encoder_probe_supported_ref_frames_invalidation = false;
   std::array<bool, 3> last_encoder_probe_supported_yuv444_for_codec = {
@@ -1515,11 +1556,30 @@ namespace video {
     return 0;
   }
 
+  int encode_pyrowave(int64_t frame_nr, pyrowave_encode_session_t &session, safe::mail_raw_t::queue_t<packet_t> &packets, void *channel_data, std::optional<std::chrono::steady_clock::time_point> frame_timestamp) {
+    auto &device = *session.device;
+    if (!device.encode(session.frame_budget, session.packet_size)) {
+      BOOST_LOG(error) << "PyroWave encode failed";
+      return -1;
+    }
+
+    // Every PyroWave frame can be decoded on its own, so each one counts as an IDR frame
+    auto packet = std::make_unique<packet_raw_pyrowave>(std::move(device.bitstream), frame_nr, true);
+    packet->pyrowave_packets = device.packets;
+    packet->channel_data = channel_data;
+    packet->frame_timestamp = frame_timestamp;
+    packets->raise(std::move(packet));
+
+    return 0;
+  }
+
   int encode(int64_t frame_nr, encode_session_t &session, safe::mail_raw_t::queue_t<packet_t> &packets, void *channel_data, std::optional<std::chrono::steady_clock::time_point> frame_timestamp) {
     if (auto avcodec_session = dynamic_cast<avcodec_encode_session_t *>(&session)) {
       return encode_avcodec(frame_nr, *avcodec_session, packets, channel_data, frame_timestamp);
     } else if (auto nvenc_session = dynamic_cast<nvenc_encode_session_t *>(&session)) {
       return encode_nvenc(frame_nr, *nvenc_session, packets, channel_data, frame_timestamp);
+    } else if (auto pyrowave_session = dynamic_cast<pyrowave_encode_session_t *>(&session)) {
+      return encode_pyrowave(frame_nr, *pyrowave_session, packets, channel_data, frame_timestamp);
     }
 
     return -1;
@@ -1906,7 +1966,13 @@ namespace video {
   }
 
   std::unique_ptr<encode_session_t> make_encode_session(platf::display_t *disp, const encoder_t &encoder, const config_t &config, int width, int height, std::unique_ptr<platf::encode_device_t> encode_device) {
-    if (dynamic_cast<platf::avcodec_encode_device_t *>(encode_device.get())) {
+    if (dynamic_cast<platf::pyrowave_encode_device_t *>(encode_device.get())) {
+      std::unique_ptr<platf::pyrowave_encode_device_t> pyrowave_device {static_cast<platf::pyrowave_encode_device_t *>(encode_device.release())};
+      if (!pyrowave_device->init_encoder(config)) {
+        return nullptr;
+      }
+      return std::make_unique<pyrowave_encode_session_t>(config, std::move(pyrowave_device));
+    } else if (dynamic_cast<platf::avcodec_encode_device_t *>(encode_device.get())) {
       auto avcodec_encode_device = boost::dynamic_pointer_cast<platf::avcodec_encode_device_t>(std::move(encode_device));
       return make_avcodec_encode_session(disp, encoder, config, width, height, std::move(avcodec_encode_device));
     } else if (dynamic_cast<platf::nvenc_encode_device_t *>(encode_device.get())) {
@@ -2107,6 +2173,15 @@ namespace video {
     std::unique_ptr<platf::encode_device_t> result;
 
     auto colorspace = colorspace_from_client_config(config, disp.is_hdr());
+
+    if (pyrowave::is_pyrowave_format(config.videoFormat)) {
+      BOOST_LOG(info) << "Creating encoder "sv << logging::bracket(std::string {"pyrowave"});
+      result = disp.make_pyrowave_encode_device();
+      if (result) {
+        result->colorspace = colorspace;
+      }
+      return result;
+    }
 
     platf::pix_fmt_e pix_fmt;
     if (config.chromaSamplingType == 1) {
@@ -2465,7 +2540,7 @@ namespace video {
     auto idr_events = mail->event<bool>(mail::idr);
 
     idr_events->raise(true);
-    if (chosen_encoder->flags & PARALLEL_ENCODING) {
+    if ((chosen_encoder->flags & PARALLEL_ENCODING) || pyrowave::is_pyrowave_format(config.videoFormat)) {
       capture_async(std::move(mail), config, channel_data);
     } else {
       safe::signal_t join_event;
