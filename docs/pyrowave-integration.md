@@ -102,6 +102,9 @@ PyroWave packets before they are sent. Measured on the Redmi tablet at 1920x1200
 5% loss gives a clean-looking picture, 15% loss makes it soft and blocky but it keeps moving and recovers by itself (no
 freezes, no key frame request needed). Only single screenshots were inspected, not a quantitative quality measure.
 
+Set `HELIOS_AUDIO_LOSS=<percent>` the same way to drop that share of the audio packets (data and FEC) and check the
+audio counters in the Selene overlay. It works with any video codec.
+
 ## Using PyroWave
 
 Requirements:
