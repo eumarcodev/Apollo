@@ -1,6 +1,6 @@
 name: Build (Windows)
 
-# Reusable workflow: builds Apollo on Windows (MSYS2 UCRT64) and uploads the installer and the portable zip
+# Reusable workflow: builds Helios on Windows (MSYS2 UCRT64) and uploads the installer and the portable zip
 # as a workflow artifact. Called by pr.yml, nightly.yml, rc.yml and stable.yml. It never publishes anything.
 on:
   workflow_call:
@@ -18,7 +18,7 @@ on:
         description: Name of the uploaded artifact
         type: string
         required: false
-        default: apollo-windows-x64
+        default: helios-windows-x64
 
 permissions:
   contents: read
@@ -86,8 +86,8 @@ jobs:
       - name: Rename artifacts
         run: |
           cd build/cpack_artifacts
-          mv Apollo.exe "Apollo-${BUILD_VERSION}-windows-x64-installer.exe"
-          mv Apollo.zip "Apollo-${BUILD_VERSION}-windows-x64-portable.zip"
+          mv Helios.exe "Helios-${BUILD_VERSION}-windows-x64-installer.exe"
+          mv Helios.zip "Helios-${BUILD_VERSION}-windows-x64-portable.zip"
           ls -la
 
       - name: Upload artifacts
@@ -95,6 +95,6 @@ jobs:
         with:
           name: ${{ inputs.artifact-name }}
           path: |
-            build/cpack_artifacts/Apollo-*-installer.exe
-            build/cpack_artifacts/Apollo-*-portable.zip
+            build/cpack_artifacts/Helios-*-installer.exe
+            build/cpack_artifacts/Helios-*-portable.zip
           if-no-files-found: error

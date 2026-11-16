@@ -1,7 +1,7 @@
 # Publisher Metadata
-set(SUNSHINE_PUBLISHER_NAME "SudoMaker"
+set(SUNSHINE_PUBLISHER_NAME "eumarcodev"
         CACHE STRING "The name of the publisher (or fork developer) of the application.")
-set(SUNSHINE_PUBLISHER_WEBSITE "https://www.sudomaker.com"
+set(SUNSHINE_PUBLISHER_WEBSITE "https://github.com/eumarcodev/Helios-Server"
         CACHE STRING "The URL of the publisher's website.")
 set(SUNSHINE_PUBLISHER_ISSUE_URL "https://github.com/eumarcodev/Helios-Server/issues"
         CACHE STRING "The URL of the publisher's support site or issue tracker.
