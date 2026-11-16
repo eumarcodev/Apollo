@@ -191,6 +191,8 @@ It is not affiliated with LizardByte, Moonlight, Apollo or Artemis. Compatibilit
 
 Pull requests and ideas are welcome.
 
+Work in progress: integrating the low-latency [PyroWave](https://github.com/Themaister/pyrowave) codec. See [docs/pyrowave-integration.md](docs/pyrowave-integration.md) and the [project board](https://github.com/users/eumarcodev/projects/5).
+
 ## License
 
 GPLv3
