@@ -1162,10 +1162,20 @@ namespace platf::dxgi {
 
       width = client_config.width;
       height = client_config.height;
-      session = pyrowave_enc::session_t::create(base.device.get(), base.device_ctx.get(), {client_config.width, client_config.height, client_config.chromaSamplingType == 1});
+      yuv444 = client_config.chromaSamplingType == 1;
+      return create_session(base.display->width, base.display->height);
+    }
+
+    // The session imports one shared texture of the capture size and the encoder scales it to the stream size
+    bool create_session(int capture_width, int capture_height) {
+      session.reset();
+      session = pyrowave_enc::session_t::create(base.device.get(), base.device_ctx.get(), {width, height, yuv444, capture_width, capture_height});
       if (!session) {
         return false;
       }
+
+      source_width = capture_width;
+      source_height = capture_height;
 
       // Something to encode before the first captured frame arrives
       session->clear();
@@ -1178,9 +1188,12 @@ namespace platf::dxgi {
       }
 
       auto &img = (img_d3d_t &) img_base;
-      if (!img.blank && (img.width != width || img.height != height)) {
-        BOOST_LOG(error) << "PyroWave needs the capture size to match the stream size (" << img.width << 'x' << img.height << " vs " << width << 'x' << height << ')';
-        return -1;
+      if (!img.blank && (img.width != source_width || img.height != source_height)) {
+        // The capture size changed (display mode switch): import a texture of the new size
+        BOOST_LOG(info) << "PyroWave: capture size is now " << img.width << 'x' << img.height << ", stream size is " << width << 'x' << height;
+        if (!create_session(img.width, img.height)) {
+          return -1;
+        }
       }
 
       return base.with_capture_texture(img_base, [this](ID3D11Texture2D *texture) {
@@ -1217,6 +1230,9 @@ namespace platf::dxgi {
     std::unique_ptr<pyrowave_enc::session_t> session;
     int width = 0;
     int height = 0;
+    int source_width = 0;
+    int source_height = 0;
+    bool yuv444 = false;
   };
 #endif  // HELIOS_ENABLE_PYROWAVE
 

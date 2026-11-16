@@ -41,6 +41,10 @@ namespace pyrowave_enc {
 
   bool session_t::init(ID3D11Device *device, ID3D11DeviceContext *context, const config_t &config) {
     config_ = config;
+    if (config_.source_width <= 0 || config_.source_height <= 0) {
+      config_.source_width = config.width;
+      config_.source_height = config.height;
+    }
     if (config.width <= 0 || config.height <= 0 || (!config.yuv444 && ((config.width | config.height) & 1))) {
       BOOST_LOG(error) << "PyroWave: unsupported size " << config.width << "x" << config.height;
       return false;
@@ -77,8 +81,8 @@ namespace pyrowave_enc {
 
     // Texture shared with Vulkan. Captured frames are copied into it.
     D3D11_TEXTURE2D_DESC texture_desc = {};
-    texture_desc.Width = config.width;
-    texture_desc.Height = config.height;
+    texture_desc.Width = config_.source_width;
+    texture_desc.Height = config_.source_height;
     texture_desc.MipLevels = 1;
     texture_desc.ArraySize = 1;
     texture_desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -99,7 +103,7 @@ namespace pyrowave_enc {
 
     VkImageCreateInfo image_create_info = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     image_create_info.imageType = VK_IMAGE_TYPE_2D;
-    image_create_info.extent = {static_cast<uint32_t>(config.width), static_cast<uint32_t>(config.height), 1};
+    image_create_info.extent = {static_cast<uint32_t>(config_.source_width), static_cast<uint32_t>(config_.source_height), 1};
     image_create_info.format = VK_FORMAT_B8G8R8A8_UNORM;
     image_create_info.mipLevels = 1;
     image_create_info.arrayLayers = 1;
