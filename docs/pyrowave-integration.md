@@ -74,6 +74,7 @@ sends in ANNOUNCE (Helios extension, other hosts ignore them):
 | --- | --- | --- |
 | `x-ss-pyrowave.packetSize` | Largest packet in bytes | Clamped to 400 up to the `pyrowave_packet_size` option |
 | `x-ss-pyrowave.maxFrameKb` | Cap on one frame in KB | Clamped to the `pyrowave_min_frame_kb` option up to 4096 |
+| `x-ss-pyrowave.staticBoost` | Bigger budget for frames repeated while the screen is still: 1 on, 2 off | Missing or 0 uses the `pyrowave_static_boost` option |
 
 Missing or 0 means no preference. They are only sent for PyroWave streams.
 

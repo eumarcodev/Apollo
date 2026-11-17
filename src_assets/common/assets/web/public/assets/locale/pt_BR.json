@@ -375,6 +375,8 @@
     "port_web_ui": "UI da Web",
     "qp": "Parâmetro de quantização",
     "qp_desc": "Alguns dispositivos podem não suportar Constant Bit Rate. Para esses dispositivos, o QP (parâmetro de quantização) é usado em seu lugar. Um valor mais alto significa mais compactação, mas menos qualidade.",
+    "pyrowave_static_boost": "PyroWave: tela parada mais nítida",
+    "pyrowave_static_boost_desc": "Enquanto a tela não muda, só alguns quadros por segundo são enviados. Esses quadros recebem 4 vezes o orçamento normal, então uma imagem parada (área de trabalho, menus, jogo pausado) fica nítida sem passar do bitrate. O cliente pode ligar ou desligar na sessão dele. Padrão: ativado.",
     "qsv_coder": "Codificador QuickSync (H264)",
     "qsv_preset": "Predefinição de QuickSync",
     "qsv_preset_fast": "rápido (baixa qualidade)",

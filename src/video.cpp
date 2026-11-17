@@ -412,7 +412,19 @@ namespace video {
       if (config.pyrowaveMaxFrameKb > 0) {
         frame_budget = std::min<std::size_t>(frame_budget, static_cast<std::size_t>(config.pyrowaveMaxFrameKb) * 1024);
       }
-      BOOST_LOG(info) << "PyroWave: packet size "sv << packet_size << " bytes, frame budget "sv << frame_budget / 1024 << " KB"sv;
+      // While the screen is still, the encode loop only repeats the last frame at the minimum frame rate (a fifth of
+      // the frame rate or less). Each repeat is intra-only like any PyroWave frame, so a bigger budget for them sharpens
+      // a still picture (desktop, menus, a paused game) while the stream stays within the requested bitrate.
+      const bool boost = config.pyrowaveStaticBoost == 0 ? config::video.pyrowave_static_boost : config.pyrowaveStaticBoost == 1;
+      static_frame_budget = frame_budget;
+      if (boost) {
+        static_frame_budget = std::min<std::size_t>(frame_budget * static_boost_factor, static_cast<std::size_t>(pyrowave::MAX_FRAME_KB) * 1024);
+        if (config.pyrowaveMaxFrameKb > 0) {
+          static_frame_budget = std::min<std::size_t>(static_frame_budget, static_cast<std::size_t>(config.pyrowaveMaxFrameKb) * 1024);
+        }
+      }
+      BOOST_LOG(info) << "PyroWave: packet size "sv << packet_size << " bytes, frame budget "sv << frame_budget / 1024 << " KB"sv
+                      << ", still screen "sv << static_frame_budget / 1024 << " KB"sv;
     }
 
     int convert(platf::img_t &img) override {
@@ -427,6 +439,8 @@ namespace video {
 
     std::unique_ptr<platf::pyrowave_encode_device_t> device;
     std::size_t frame_budget;
+    std::size_t static_frame_budget;  // budget of a frame repeated because the screen did not change
+    static constexpr std::size_t static_boost_factor = 4;
     std::size_t packet_size;
   };
 
@@ -1562,7 +1576,9 @@ namespace video {
 
   int encode_pyrowave(int64_t frame_nr, pyrowave_encode_session_t &session, safe::mail_raw_t::queue_t<packet_t> &packets, void *channel_data, std::optional<std::chrono::steady_clock::time_point> frame_timestamp) {
     auto &device = *session.device;
-    if (!device.encode(session.frame_budget, session.packet_size)) {
+    // A frame without a capture timestamp is a repeat of the last image: the screen did not change
+    const std::size_t budget = frame_timestamp ? session.frame_budget : session.static_frame_budget;
+    if (!device.encode(budget, session.packet_size)) {
       BOOST_LOG(error) << "PyroWave encode failed";
       return -1;
     }

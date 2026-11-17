@@ -263,6 +263,8 @@
     "pyrowave_tab_note": "Experimental. PyroWave needs a high bandwidth link (50 Mbps or more) and a GPU with Vulkan and D3D11 interop. Only available in builds made with PyroWave. Restart Helios after turning it on or off; the other options apply to the next stream.",
     "pyrowave_min_frame_kb": "PyroWave minimum frame size (KB)",
     "pyrowave_min_frame_kb_desc": "Floor of the per-frame byte budget. The budget is the bitrate divided by the frame rate, but never below this value. Default: 16.",
+    "pyrowave_static_boost": "PyroWave sharper still screen",
+    "pyrowave_static_boost_desc": "While the screen does not change, only a few frames per second are sent. Give those frames 4 times the normal budget so a still picture (desktop, menus, a paused game) gets sharp, without going over the bitrate. Clients can turn it on or off for their stream. Default: enabled.",
     "pyrowave_packet_size": "PyroWave packet size (bytes)",
     "pyrowave_packet_size_desc": "Largest PyroWave packet, 400 to 1300. It has to fit the RTP payload of the client or the frame is dropped. Default: 1200.",
     "pyrowave_priority": "PyroWave GPU queue priority",

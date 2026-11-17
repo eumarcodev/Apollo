@@ -26,6 +26,7 @@ namespace config {
     bool pyrowave;  // offer the experimental PyroWave codec to clients
     int pyrowave_packet_size;  // largest PyroWave packet in bytes
     int pyrowave_min_frame_kb;  // floor of the per-frame byte budget
+    bool pyrowave_static_boost;  // bigger budget for the frames repeated while the screen is still
     std::string pyrowave_priority;  // Vulkan queue priority: low, medium, high or realtime
     double pyrowave_simulated_loss;  // percent of PyroWave packets dropped before sending (tests only)
     // ffmpeg params
