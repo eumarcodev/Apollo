@@ -6,6 +6,9 @@
 
   #include "pyrowave_encode.h"
 
+  #include <algorithm>
+  #include <cstdlib>
+
   #include <dxgi1_2.h>
 
   #include "logging.h"
@@ -14,6 +17,9 @@ using Microsoft::WRL::ComPtr;
 
 namespace pyrowave_enc {
   namespace {
+    // See pyrowave_encoder_set_rate_control_hysteresis. 16 of the 2048 rate control steps.
+    constexpr int default_rate_control_hysteresis = 16;
+
     bool check(pyrowave_result result, const char *what) {
       if (result != PYROWAVE_SUCCESS) {
         BOOST_LOG(error) << "PyroWave: " << what << " failed with result " << static_cast<int>(result);
@@ -85,6 +91,18 @@ namespace pyrowave_enc {
     if (!check(pyrowave_encoder_create(&encoder_info, &encoder_), "create encoder")) {
       return false;
     }
+
+    // Stable rate control: keep the same quantization for blocks that did not change, so a still part of the
+    // screen does not flicker when something else moves. It costs a few percent of the frame budget.
+    // HELIOS_PYROWAVE_RATE_HYSTERESIS overrides the value for testing, 0 turns it off.
+    int hysteresis = default_rate_control_hysteresis;
+    if (const char *value = std::getenv("HELIOS_PYROWAVE_RATE_HYSTERESIS")) {
+      hysteresis = std::clamp(std::atoi(value), 0, 2048);
+    }
+    if (!check(pyrowave_encoder_set_rate_control_hysteresis(encoder_, hysteresis), "set rate control hysteresis")) {
+      return false;
+    }
+    BOOST_LOG(info) << "PyroWave: rate control hysteresis " << hysteresis;
 
     // Texture shared with Vulkan. Captured frames are copied into it.
     D3D11_TEXTURE2D_DESC texture_desc = {};
