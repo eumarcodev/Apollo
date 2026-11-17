@@ -2092,9 +2092,17 @@ namespace stream {
       return;
     }
 
-    // Enable local prioritization and QoS tagging on audio traffic if requested by the client
+    // Enable local prioritization and QoS tagging on audio traffic if requested by the client.
+    // audio_qos picks the class: "video" (default) puts audio in the same Wi-Fi queue as the video
+    // (DSCP 40), because on some routers and clients the Voice queue (DSCP 56) is delivered in
+    // ~200 ms batches, which made the client drop audio (issue #67).
     auto address = session->audio.peer.address();
-    session->audio.qos = platf::enable_socket_qos(ref->audio_sock.native_handle(), address, session->audio.peer.port(), platf::qos_data_type_e::audio, session->config.audioQosType != 0);
+    const auto &audio_qos = config::stream.audio_qos;
+    const auto audio_qos_type = audio_qos == "voice"sv ? platf::qos_data_type_e::audio : platf::qos_data_type_e::video;
+    const bool audio_dscp_tagging = session->config.audioQosType != 0 && audio_qos != "disabled"sv;
+    BOOST_LOG(info) << "Audio QoS: "sv << (audio_dscp_tagging ? audio_qos : "disabled"s)
+                    << (session->config.audioQosType != 0 ? ""sv : " (client did not ask for QoS)"sv);
+    session->audio.qos = platf::enable_socket_qos(ref->audio_sock.native_handle(), address, session->audio.peer.port(), audio_qos_type, audio_dscp_tagging);
 
     BOOST_LOG(debug) << "Start capturing Audio"sv;
     audio::capture(session->mail, session->config.audio, session);

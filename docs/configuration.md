@@ -1851,6 +1851,45 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
 </table>
 
+### audio_qos
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Network priority (QoS/DSCP) class used for audio when the client asks for QoS tagging
+            (Moonlight-based clients do this on the local network).
+            @tip{Some Wi-Fi routers and clients deliver the Voice queue in batches of about 200 ms, which causes
+            audio stutters. Sending audio in the same class as the video avoids it.}
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            video
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            audio_qos = voice
+            @endcode</td>
+    </tr>
+    <tr>
+        <td rowspan="3">Choices</td>
+        <td>video</td>
+        <td>DSCP 40 (CS5), the same class as the video stream.</td>
+    </tr>
+    <tr>
+        <td>voice</td>
+        <td>DSCP 56 (CS7), the Voice class used before Helios 1.7.</td>
+    </tr>
+    <tr>
+        <td>disabled</td>
+        <td>Audio is not tagged.</td>
+    </tr>
+</table>
+
 ## Config Files
 
 ### file_apps

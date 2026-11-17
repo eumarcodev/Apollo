@@ -152,6 +152,17 @@ const effectivePort = computed(() => +config.value?.port ?? defaultMoonlightPort
       <div class="form-text">{{ $t('config.ping_timeout_desc') }}</div>
     </div>
 
+    <!-- Audio QoS class -->
+    <div class="mb-3">
+      <label for="audio_qos" class="form-label">{{ $t('config.audio_qos') }}</label>
+      <select id="audio_qos" class="form-select" v-model="config.audio_qos">
+        <option value="video">{{ $t('config.audio_qos_video') }}</option>
+        <option value="voice">{{ $t('config.audio_qos_voice') }}</option>
+        <option value="disabled">{{ $t('config.audio_qos_disabled') }}</option>
+      </select>
+      <div class="form-text">{{ $t('config.audio_qos_desc') }}</div>
+    </div>
+
   </div>
 </template>
 
