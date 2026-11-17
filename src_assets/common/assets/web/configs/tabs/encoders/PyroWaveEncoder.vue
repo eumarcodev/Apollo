@@ -38,6 +38,14 @@ const config = ref(props.config)
       <div class="form-text">{{ $t('config.pyrowave_min_frame_kb_desc') }}</div>
     </div>
 
+    <!-- Sharper still screen -->
+    <Checkbox class="mb-3"
+              id="pyrowave_static_boost"
+              locale-prefix="config"
+              v-model="config.pyrowave_static_boost"
+              default="true"
+    ></Checkbox>
+
     <!-- PyroWave GPU queue priority -->
     <div class="mb-3">
       <label for="pyrowave_priority" class="form-label">{{ $t('config.pyrowave_priority') }}</label>

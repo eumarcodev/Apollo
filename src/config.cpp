@@ -443,6 +443,7 @@ namespace config {
     false, // pyrowave
     1200, // pyrowave_packet_size
     16, // pyrowave_min_frame_kb
+    true, // pyrowave_static_boost
     "medium", // pyrowave_priority
     0.0, // pyrowave_simulated_loss
 
@@ -1118,6 +1119,7 @@ namespace config {
     bool_f(vars, "pyrowave", video.pyrowave);
     int_between_f(vars, "pyrowave_packet_size", video.pyrowave_packet_size, {400, 1300});
     int_between_f(vars, "pyrowave_min_frame_kb", video.pyrowave_min_frame_kb, {1, 4096});
+    bool_f(vars, "pyrowave_static_boost", video.pyrowave_static_boost);
     string_restricted_f(vars, "pyrowave_priority", video.pyrowave_priority, {"low"sv, "medium"sv, "high"sv, "realtime"sv});
     double_between_f(vars, "pyrowave_simulated_loss", video.pyrowave_simulated_loss, {0.0, 100.0});
     int_f(vars, "qp", video.qp);

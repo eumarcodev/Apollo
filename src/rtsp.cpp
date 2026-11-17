@@ -994,6 +994,7 @@ namespace rtsp_stream {
     // PyroWave preferences of the client (Helios extension), 0 means no preference
     args.try_emplace("x-ss-pyrowave.packetSize"sv, "0"sv);
     args.try_emplace("x-ss-pyrowave.maxFrameKb"sv, "0"sv);
+    args.try_emplace("x-ss-pyrowave.staticBoost"sv, "0"sv);
 
     stream::config_t config;
 
@@ -1033,6 +1034,7 @@ namespace rtsp_stream {
       config.monitor.enableIntraRefresh = util::from_view(args.at("x-ss-video[0].intraRefresh"sv));
       config.monitor.pyrowavePacketSize = util::from_view(args.at("x-ss-pyrowave.packetSize"sv));
       config.monitor.pyrowaveMaxFrameKb = util::from_view(args.at("x-ss-pyrowave.maxFrameKb"sv));
+      config.monitor.pyrowaveStaticBoost = util::from_view(args.at("x-ss-pyrowave.staticBoost"sv));
 
       if (config::video.limit_framerate) {
         config.monitor.encodingFramerate = session.fps;
@@ -1182,6 +1184,7 @@ namespace rtsp_stream {
     } else {
       config.monitor.pyrowavePacketSize = 0;
       config.monitor.pyrowaveMaxFrameKb = 0;
+      config.monitor.pyrowaveStaticBoost = 0;
     }
 
     // Check that any required encryption is enabled
