@@ -103,6 +103,18 @@ SDR actually provides much more stable color accuracy, and are widely supported 
 
 Follow the instructions in the [Wiki](https://github.com/ClassicOldSong/Apollo/wiki/How-to-start-multiple-instances-of-Apollo).
 
+## Tested setup, recommended settings and troubleshooting
+
+[docs/streaming-guide.md](docs/streaming-guide.md) has the setup Helios and Selene were tuned on (Ryzen 7 5700X + RX 9070 XT host, wired; Redmi Pad 2 on Wi-Fi 5), the measured results (audio stalls, video loss, PyroWave picture quality against HEVC), the settings that worked best per kind of network, and a troubleshooting table based on what the Selene performance overlay shows.
+
+Summary of that setup at 1920x1080, 60 FPS:
+
+| | HEVC 60 Mbit/s | PyroWave 150 Mbit/s + sharper still screen |
+|---|---|---|
+| Still picture (PSNR) | 41.6 dB | 42.2 dB |
+| Text in motion (SSIM) | 0.959 | 0.953 |
+| Video loss / audio stalls | 0% / none | 0% / none |
+
 ## FAQ
 Moved to [WiKi](https://github.com/ClassicOldSong/Apollo/wiki/FAQ)
 
