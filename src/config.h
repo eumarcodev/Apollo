@@ -179,6 +179,9 @@ namespace config {
     // Video encryption settings for LAN and WAN streams
     int lan_encryption_mode;
     int wan_encryption_mode;
+
+    // QoS class used for audio when the client asks for QoS tagging: video|voice|disabled
+    std::string audio_qos;
   };
 
   struct nvhttp_t {
