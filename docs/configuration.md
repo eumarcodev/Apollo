@@ -1136,6 +1136,28 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
 </table>
 
+### pyrowave_static_boost
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            While the screen does not change, the host only repeats the last frame a few times per second. With this
+            option those repeated frames get 4 times the normal PyroWave budget (still within the frame size cap the
+            client asked for), so a still picture gets sharp without going over the bitrate. A client can turn it on
+            or off for its own stream (`x-ss-pyrowave.staticBoost`).
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}enabled@endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}pyrowave_static_boost = disabled@endcode</td>
+    </tr>
+</table>
+
 ### pyrowave_priority
 
 <table>
