@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="branding/helios-icon.png" width="160" alt="Helios icon">
+</p>
+
 # Helios
 
 Helios is a self-hosted desktop stream host for [Selene Game Streaming](https://github.com/eumarcodev/Selene-Game-Streaming) (the Android client of this project), [Artemis (Moonlight Noir)](https://github.com/ClassicOldSong/moonlight-android) and Moonlight clients. Offering low latency, native client resolution, cloud gaming server capabilities with support for AMD, Intel, and Nvidia GPUs for hardware encoding. Software encoding is also available. A web UI is provided to allow configuration and client pairing from your favorite web browser. Pair from the local server or any mobile device.
@@ -13,6 +17,12 @@ Major features:
 ## Lineage and credits
 
 This project is an independent fork. Its names continue a family of names: the host is **Helios** (the sun) and the Android client is **Selene Game Streaming** (the moon), following the lineage below.
+
+<p align="center">
+  <img src="branding/helios-selene.png" width="600" alt="Helios and Selene icons joined by the stream">
+</p>
+
+The icons tell the same story: Helios, the sun, emits the stream (orange waves leaving the ruby core), and Selene, the moon, receives it and reflects it (the waves cool into cyan as they reach the sapphire). Sources and the generator live in [`branding/`](branding).
 
 | Project | Role | Name origin | Authors |
 |---------|------|-------------|---------|
