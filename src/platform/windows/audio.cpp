@@ -507,7 +507,8 @@ namespace platf::audio {
 
       REFERENCE_TIME default_latency;
       audio_client->GetDevicePeriod(&default_latency, nullptr);
-      default_latency_ms = default_latency / 1000;
+      // REFERENCE_TIME is in 100 ns units: 10,000 per millisecond (issue #68)
+      default_latency_ms = std::max<REFERENCE_TIME>(default_latency / 10000, 1);
 
       std::uint32_t frames;
       status = audio_client->GetBufferSize(&frames);
