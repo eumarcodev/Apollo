@@ -1126,7 +1126,8 @@ namespace rtsp_stream {
 
       // If the FEC percentage isn't too high, adjust the configured bitrate to ensure video
       // traffic doesn't exceed the user's selected bitrate when the FEC shards are included.
-      if (config::stream.fec_percentage <= 80) {
+      // PyroWave frames are sent without FEC shards, so nothing is reserved for them.
+      if (config::stream.fec_percentage <= 80 && !pyrowave::is_pyrowave_format(config.monitor.videoFormat)) {
         configuredBitrateKbps /= 100.f / (100 - config::stream.fec_percentage);
       }
 
