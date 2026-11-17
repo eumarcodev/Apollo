@@ -1,12 +1,11 @@
-"""Render the branding SVGs and write every raster icon into Helios and Selene.
+"""Render the Helios branding SVGs and write every raster icon of this repository.
 
-Usage (from the Helios-Server root, after `node branding/generate.cjs`):
-    python branding/export.py [--selene ../Selene-Game-Streaming] [--chrome PATH]
+Usage (from the repository root, after `node branding/generate.cjs`):
+    python branding/export.py [--chrome PATH]
 
 Needs Google Chrome or Microsoft Edge (headless rendering) and Pillow.
 """
 import argparse
-import os
 import shutil
 import subprocess
 import tempfile
@@ -74,8 +73,7 @@ def save_ico(r, path, small_svg, large_svg, sizes, split=32):
     print("  ", path, "sizes", got)
 
 
-def helios(r):
-    print("Helios")
+def export(r):
     images = ROOT / "src_assets/common/assets/web/public/images"
     ico_sizes = [16, 20, 24, 32, 40, 48, 64, 96, 128, 256]
 
@@ -101,50 +99,16 @@ def helios(r):
             save_png(r.sized(svg, s), images / f"apollo-{state}-{s}.png")
         save_ico(r, images / f"apollo-{state}.ico", svg, svg, ico_sizes)
 
-    # README images.
-    docs = ROOT / "branding"
-    save_png(r.sized("helios-icon-rounded.svg", 256), docs / "helios-icon.png")
-    save_png(r.render("helios-selene-lockup.svg", 2048, 1024).resize((1200, 600), Image.LANCZOS),
-             docs / "helios-selene.png")
+    # README icon.
+    save_png(r.sized("helios-icon-rounded.svg", 256), ROOT / "branding/helios-icon.png")
 
-
-def selene(r, repo):
-    print("Selene")
-    res = repo / "app/src/main/res"
-    densities = {"mdpi": 1, "hdpi": 1.5, "xhdpi": 2, "xxhdpi": 3, "xxxhdpi": 4}
-    for d, k in densities.items():
-        legacy, adaptive = round(48 * k), round(108 * k)
-        save_png(r.sized("selene-icon-rounded.svg", legacy), res / f"mipmap-{d}/ic_launcher.png")
-        save_png(r.sized("selene-foreground.svg", adaptive), res / f"mipmap-{d}/ic_launcher_foreground.png")
-        save_png(r.sized("selene-background.svg", adaptive), res / f"mipmap-{d}/ic_launcher_background.png")
-        save_png(r.sized("selene-monochrome.svg", adaptive), res / f"mipmap-{d}/ic_launcher_monochrome.png")
-    save_png(r.sized("selene-icon.svg", 512), repo / "app/src/main/ic_launcher-web.png")
-    save_png(r.sized("selene-monochrome-small.svg", 96), res / "drawable/app_icon.png")
-    save_png(r.render("selene-banner-tv.svg", 320, 180), res / "drawable-xhdpi/atv_banner.png")
-    save_png(r.render("selene-banner-ouya.svg", 732, 412).convert("RGB"), res / "drawable-xhdpi/ouya_icon.png")
-    shutil.copyfile(SVG / "selene-monochrome.xml", res / "drawable/ic_lime_layer.xml")
-
-    docs = repo / "branding"
-    docs.mkdir(exist_ok=True)
-    for svg in ("selene-icon.svg", "selene-icon-rounded.svg", "selene-foreground.svg",
-                "selene-background.svg", "selene-monochrome.svg", "helios-selene-lockup.svg"):
-        shutil.copyfile(SVG / svg, docs / svg)
-    save_png(r.sized("selene-icon-rounded.svg", 256), docs / "selene-icon.png")
-    shutil.copyfile(ROOT / "branding/helios-selene.png", docs / "helios-selene.png")
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--selene", default=str(ROOT.parent / "Selene-Game-Streaming"))
     ap.add_argument("--chrome")
     args = ap.parse_args()
-    r = Renderer(find_chrome(args.chrome))
-    helios(r)
-    sel = Path(args.selene)
-    if sel.exists():
-        selene(r, sel)
-    else:
-        print(f"Selene checkout not found at {sel}, skipped")
+    export(Renderer(find_chrome(args.chrome)))
 
 
 if __name__ == "__main__":

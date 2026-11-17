@@ -1,33 +1,35 @@
 # Branding
 
-Icon family for Helios (the sun, host) and Selene (the moon, Android client).
+Helios icon: the sun. Gold ring, ruby core and sun rays on the left that turn into orange waves leaving to the right:
+the host emits the stream. It pairs with the Selene icon (the moon, which receives the stream and reflects it), kept in
+[Selene-Game-Streaming/branding](https://github.com/eumarcodev/Selene-Game-Streaming/tree/develop/branding).
 
-- Helios: gold ring, ruby core, sun rays on the left that turn into orange waves leaving to the right. The host emits the stream.
-- Selene: silver ring, crescent moon, sapphire core, waves arriving from the left that cool from orange to cyan. The client receives the stream and reflects it.
+Palette: gold `#F5B82E`, orange `#FF6B1A`, ruby `#E0263B`, amber `#FFC861`, obsidian background `#0A0B0F`.
+Selene side: silver `#D9DEE8`, cyan `#5CE1FF`, sapphire `#2F5BFF`, amethyst `#8B5CF6`.
 
-Palette: gold `#F5B82E`, orange `#FF6B1A`, ruby `#E0263B`, amber `#FFC861`, silver `#D9DEE8`, cyan `#5CE1FF`,
-sapphire `#2F5BFF`, amethyst `#8B5CF6`, obsidian background `#0A0B0F`.
+## Files
+
+| Path | What |
+|---|---|
+| `icon-core.cjs` | Shared building blocks (palette, ring, gem, waves). **Identical copy in Selene**: change both. |
+| `generate.cjs` | Writes the Helios SVGs to `svg/` |
+| `export.py` | Renders `svg/` with headless Chrome/Edge and writes every raster icon of this repo (needs Pillow) |
+| `svg/` | Generated Helios SVGs |
+| `helios-icon.png` | README icon |
+| `helios-selene-lockup.svg`, `helios-selene.png` | The pair (README banner). Same files in both repos. |
 
 ## Regenerating
 
 ```bash
-node branding/generate.cjs        # writes branding/svg/*.svg (and the Android vector drawable)
-python branding/export.py         # renders with headless Chrome/Edge, writes every icon in both repos
+node branding/generate.cjs
+python branding/export.py
 ```
-
-`export.py` expects the Selene checkout next to this one (`../Selene-Game-Streaming`, or `--selene PATH`) and needs Pillow.
 
 | SVG | Used for |
 |---|---|
 | `helios-icon-rounded` | `apollo.svg/.png/.icns`, `apollo.ico` from 40 px up (executable, installer) |
 | `helios-mark` | `apollo.ico` up to 32 px, web favicon, `logo-apollo*` (navbar) |
 | `helios-mark-{playing,pausing,locked}` | tray icons `apollo-{state}*` |
-| `selene-foreground` / `selene-background` / `selene-monochrome` | Android adaptive launcher layers |
-| `selene-icon-rounded` | legacy launcher `ic_launcher.png` |
-| `selene-icon` | `ic_launcher-web.png` (Play Store, 512 px) |
-| `selene-monochrome-small` | notification icon `drawable/app_icon.png` |
-| `selene-monochrome.xml` | TV channel logo `drawable/ic_lime_layer.xml` |
-| `selene-banner-tv` / `selene-banner-ouya` | `atv_banner.png`, `ouya_icon.png` |
-| `helios-selene-lockup` | README banner (`helios-selene.png`) |
+| `helios-icon` | full-bleed square, for previews |
 
 The `apollo*` file names are kept on purpose (see the naming notes in `CLAUDE.md`); only the artwork changed.
