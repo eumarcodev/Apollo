@@ -9,6 +9,9 @@
 
   #include <cmath>
   #include <cstdint>
+  #include <cstdlib>
+  #include <iostream>
+  #include <algorithm>
   #include <vector>
 
   #include <gtest/gtest.h>
@@ -115,6 +118,189 @@ TEST(PyroWaveCodec, EncodePacketizeDecodeRoundTrip) {
   pyrowave_decoder_destroy(decoder);
   pyrowave_encoder_destroy(encoder);
   pyrowave_device_destroy(device);
+}
+
+namespace {
+  struct still_area_result_t {
+    bool ran = false;
+    long changed_pixels = 0;  ///< Pixels of the still area that differ from the previous decoded frame, summed over the frames
+    int largest_change = 0;  ///< Largest difference of one pixel, in 8-bit levels
+    size_t average_frame_bytes = 0;
+    size_t largest_frame_bytes = 0;
+  };
+
+  /**
+   * @brief Encodes frames where only a small patch changes and measures how much the rest of the picture changes.
+   * @param hysteresis Value for pyrowave_encoder_set_rate_control_hysteresis, 0 is the default rate control.
+   */
+  still_area_result_t measure_still_area(int hysteresis) {
+    constexpr int width = 1280;
+    constexpr int height = 720;
+    constexpr int frames = 16;
+    constexpr size_t budget = 70 * 1024;  // small enough that the rate control has to cut
+    constexpr int patch_size = 160;
+    constexpr int still_from_x = 800;  // the patch stays left of x = 400
+
+    still_area_result_t result;
+
+    pyrowave_device device = nullptr;
+    if (pyrowave_create_default_device(&device) != PYROWAVE_SUCCESS) {
+      return result;
+    }
+
+    pyrowave_encoder_create_info encoder_info = {};
+    encoder_info.device = device;
+    encoder_info.width = width;
+    encoder_info.height = height;
+    encoder_info.chroma = PYROWAVE_CHROMA_SUBSAMPLING_420;
+
+    pyrowave_decoder_create_info decoder_info = {};
+    decoder_info.device = device;
+    decoder_info.width = width;
+    decoder_info.height = height;
+    decoder_info.chroma = PYROWAVE_CHROMA_SUBSAMPLING_420;
+
+    pyrowave_encoder encoder = nullptr;
+    pyrowave_decoder decoder = nullptr;
+    if (pyrowave_encoder_create(&encoder_info, &encoder) != PYROWAVE_SUCCESS ||
+        pyrowave_decoder_create(&decoder_info, &decoder) != PYROWAVE_SUCCESS ||
+        pyrowave_encoder_set_rate_control_hysteresis(encoder, hysteresis) != PYROWAVE_SUCCESS) {
+      ADD_FAILURE() << "Could not create the PyroWave encoder or decoder";
+      return result;
+    }
+
+    auto make_buffer = [&](std::vector<uint8_t> &y, std::vector<uint8_t> &cb, std::vector<uint8_t> &cr) {
+      pyrowave_cpu_buffer b = {};
+      b.format = PYROWAVE_CPU_BUFFER_FORMAT_YUV420P;
+      b.width = width;
+      b.height = height;
+      b.data[0] = y.data();
+      b.data[1] = cb.data();
+      b.data[2] = cr.data();
+      b.row_stride_in_bytes[0] = width;
+      b.row_stride_in_bytes[1] = width / 2;
+      b.row_stride_in_bytes[2] = width / 2;
+      b.plane_size_in_bytes[0] = y.size();
+      b.plane_size_in_bytes[1] = cb.size();
+      b.plane_size_in_bytes[2] = cr.size();
+      return b;
+    };
+
+    // Detailed still picture: waves plus a fixed pseudo-random texture
+    std::vector<uint8_t> still(width * height);
+    uint32_t seed = 12345;
+    auto next_random = [&seed]() {
+      seed = seed * 1664525u + 1013904223u;
+      return seed >> 24;
+    };
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x) {
+        const double wave = 60.0 * std::sin(x * 0.11) * std::cos(y * 0.07) + 30.0 * std::sin((x + y) * 0.31);
+        still[y * width + x] = static_cast<uint8_t>(128.0 + wave + (static_cast<int>(next_random()) % 31) - 15);
+      }
+    }
+
+    std::vector<uint8_t> source_y(width * height);
+    std::vector<uint8_t> source_cb(width * height / 4, 128);
+    std::vector<uint8_t> source_cr(width * height / 4, 128);
+    std::vector<uint8_t> decoded_y(width * height);
+    std::vector<uint8_t> decoded_cb(width * height / 4);
+    std::vector<uint8_t> decoded_cr(width * height / 4);
+    std::vector<uint8_t> previous_y;
+    std::vector<uint8_t> bitstream(budget + 64 * 1024);
+    size_t total_bytes = 0;
+
+    for (int frame = 0; frame < frames; ++frame) {
+      // The patch moves and its content and amount of detail change every frame
+      source_y = still;
+      const int patch_x = 40 + (frame * 23) % 240;
+      const int patch_y = 200 + (frame * 37) % 300;
+      const int detail = 1 + (frame * 7) % 5;
+      for (int y = 0; y < patch_size; ++y) {
+        for (int x = 0; x < patch_size; ++x) {
+          // Flat on some frames and noisy on others, so the bytes the patch needs change a lot
+          source_y[(patch_y + y) * width + patch_x + x] = detail == 1 ? 128 : static_cast<uint8_t>((next_random() / detail) * detail);
+        }
+      }
+
+      auto input = make_buffer(source_y, source_cb, source_cr);
+      const pyrowave_rate_control rate_control = {budget};
+      if (pyrowave_encoder_encode_cpu(encoder, &input, &rate_control) != PYROWAVE_SUCCESS) {
+        ADD_FAILURE() << "encode failed on frame " << frame;
+        return result;
+      }
+
+      size_t num_packets = 0;
+      pyrowave_encoder_compute_num_packets(encoder, kPacketBoundary, &num_packets);
+      std::vector<pyrowave_packet> packets(num_packets);
+      if (pyrowave_encoder_packetize(encoder, packets.data(), kPacketBoundary, &num_packets, bitstream.data(), bitstream.size()) != PYROWAVE_SUCCESS) {
+        ADD_FAILURE() << "packetize failed on frame " << frame;
+        return result;
+      }
+
+      pyrowave_decoder_clear(decoder);
+      size_t frame_bytes = 0;
+      for (size_t i = 0; i < num_packets; ++i) {
+        frame_bytes += packets[i].size;
+        pyrowave_decoder_push_packet(decoder, bitstream.data() + packets[i].offset, packets[i].size);
+      }
+      total_bytes += frame_bytes;
+      result.largest_frame_bytes = std::max(result.largest_frame_bytes, frame_bytes);
+
+      auto output = make_buffer(decoded_y, decoded_cb, decoded_cr);
+      if (pyrowave_decoder_decode_cpu_buffer_synchronous(decoder, &output) != PYROWAVE_SUCCESS) {
+        ADD_FAILURE() << "decode failed on frame " << frame;
+        return result;
+      }
+
+      // The first frames are left out: the stable mode needs a frame or two to settle on a cutoff
+      if (frame >= 4) {
+        for (int y = 0; y < height; ++y) {
+          for (int x = still_from_x; x < width; ++x) {
+            const int change = std::abs(int(decoded_y[y * width + x]) - int(previous_y[y * width + x]));
+            if (change != 0) {
+              ++result.changed_pixels;
+              result.largest_change = std::max(result.largest_change, change);
+            }
+          }
+        }
+      }
+      previous_y = decoded_y;
+    }
+
+    result.average_frame_bytes = total_bytes / frames;
+    result.ran = true;
+
+    pyrowave_decoder_destroy(decoder);
+    pyrowave_encoder_destroy(encoder);
+    pyrowave_device_destroy(device);
+    return result;
+  }
+}  // namespace
+
+/**
+ * A change in one part of the picture must not make the still part flicker. With the default rate control it
+ * does, because which blocks are cut depends on the whole frame. The stable mode has to remove most of it.
+ */
+TEST(PyroWaveCodec, StableRateControlKeepsStillAreas) {
+  const auto normal = measure_still_area(0);
+  if (!normal.ran) {
+    GTEST_SKIP() << "No Vulkan device available for PyroWave";
+  }
+  const auto stable = measure_still_area(16);
+  ASSERT_TRUE(stable.ran);
+
+  std::cout << "default rate control: " << normal.changed_pixels << " changed pixels, largest change " << normal.largest_change
+            << ", frames of " << normal.average_frame_bytes << " bytes on average, largest " << normal.largest_frame_bytes << std::endl;
+  std::cout << "stable rate control:  " << stable.changed_pixels << " changed pixels, largest change " << stable.largest_change
+            << ", frames of " << stable.average_frame_bytes << " bytes on average, largest " << stable.largest_frame_bytes << std::endl;
+
+  // The test only means something if the default rate control makes the still area change
+  ASSERT_GT(normal.changed_pixels, 1000) << "the test content no longer makes the default rate control flicker";
+  EXPECT_LT(stable.changed_pixels * 10, normal.changed_pixels);
+  // The stable mode must still respect the frame budget, and not throw most of it away
+  EXPECT_LE(stable.largest_frame_bytes, 70u * 1024u);
+  EXPECT_GT(stable.average_frame_bytes * 10, normal.average_frame_bytes * 7);
 }
 
 TEST(PyroWaveEncodeSession, EncodesAD3D11Texture) {

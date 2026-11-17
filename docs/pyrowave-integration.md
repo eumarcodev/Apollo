@@ -117,6 +117,22 @@ freezes, no key frame request needed). Only single screenshots were inspected, n
 Set `HELIOS_AUDIO_LOSS=<percent>` the same way to drop that share of the audio packets (data and FEC) and check the
 audio counters in the Selene overlay. It works with any video codec.
 
+## Rate control and flicker
+
+Every PyroWave frame is encoded on its own and has to fit the frame budget. The encoder decides which blocks get a
+coarser quantizer from the content of the whole frame, so with the original rate control a small change in one part
+of the screen could change the quantizer of blocks that did not change, and still areas flickered.
+
+Helios turns on a stable mode in the encoder (`pyrowave_encoder_set_rate_control_hysteresis`, added in the
+`eumarcodev/pyrowave` fork). Blocks that did not change keep their quantizer while the frame still fits the budget,
+and the cut only moves when the content changes enough. Frames come out a few percent under the budget. In the unit
+test `PyroWaveCodec.StableRateControlKeepsStillAreas` (1280x720, a patch that alternates between flat and noisy) the
+pixels of the still area that changed between frames went from 1054360 with changes of up to 16 levels to 48912 with
+changes of 1 level, and the average frame went from 71.6 KB to 63.5 KB.
+
+Set `HELIOS_PYROWAVE_RATE_HYSTERESIS=0` before starting Helios to get the original rate control back for a
+comparison. Other values (1 to 2048) change how far above the needed cut the encoder may stay; the default is 16.
+
 ## Using PyroWave
 
 Requirements:
