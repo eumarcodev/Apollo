@@ -1,7 +1,7 @@
 name: Build (Windows)
 
 # Reusable workflow: builds Helios on Windows (MSYS2 UCRT64) and uploads the installer and the portable zip
-# as a workflow artifact. Called by pr.yml, nightly.yml, rc.yml and stable.yml. It never publishes anything.
+# as a workflow artifact. Called by pr.yml, rc.yml and promote.yml. It never publishes anything.
 on:
   workflow_call:
     inputs:

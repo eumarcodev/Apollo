@@ -31,7 +31,7 @@ Gotchas learned the hard way:
 - Set `PROCESSOR_ARCHITECTURE=AMD64` in the environment, otherwise the prebuilt FFmpeg path resolves to `third-party/build-deps/dist/Windows-` and fails.
 - `node.exe` (Windows Node, not the MSYS2 package) must be on `PATH` for the `web-ui` target.
 - Boost: `cmake/dependencies/Boost_Sunshine.cmake` pins an EXACT version (`find_package(Boost CONFIG ... EXACT)`). If the MSYS2 system Boost doesn't match, it falls back to FetchContent, which builds Boost from source and (with CMake 4.x) fails in Boost.Locale on `source_group` unless the patch `cmake/dependencies/patch_boost_locale.cmake` applies. Keep `BOOST_VERSION` aligned with the MSYS2 package version to avoid the fallback (slow, and CI runners rebuild it every time).
-- `BUILD_VERSION` and `BRANCH` environment variables make `cmake/prep/build_version.cmake` set `PROJECT_VERSION`. The value may carry a suffix (`1.2.0-nightly.20261115`); CMake extracts `X.Y.Z` for resource files while the full string is embedded as ProductVersion.
+- `BUILD_VERSION` and `BRANCH` environment variables make `cmake/prep/build_version.cmake` set `PROJECT_VERSION`. The value may carry a suffix (`1.10.0-rc.2`); CMake extracts `X.Y.Z` for resource files while the full string is embedded as ProductVersion.
 - `APOLLO_UPDATE_REPO` (CMake cache var, default `eumarcodev/Helios-Server`) is compiled in and exposed by `/api/config` as `update_repo`; CI passes the fork's repository.
 
 ## Tests
@@ -53,10 +53,10 @@ Gotchas learned the hard way:
 ## Releases and update channels
 
 Documented in full in `.github/RELEASING.md`. Summary:
-- Channels: **nightly** (`develop`, daily 03:00 Brasilia via `nightly.yml`, last 7 kept), **RC** (push to `release/X.Y` or `hotfix/X.Y.Z` via `rc.yml`, tags `vX.Y.Z-rc.N`), **stable** (tag `vX.Y.Z` on `master` via `stable.yml`). `cut-release.yml` (manual) creates the branches. Reusable build is `build.yml`; `pr.yml` only builds when code paths change or the PR has the `build` label.
-- Versions come from branch/tag names, not commit messages. Nightly is one minor above the highest stable/rc tag, so it is always newer than the RC in progress. Ordering: `nightly < beta < rc < stable` for equal `X.Y.Z`.
-- Branches: `master` = what was released, `develop` = integration (PRs go here after the first release), `release/X.Y` only for fixes. `develop` must never be created from a stale local `master` (it caused a nightly to build without fixes); create or move it from `origin/master`.
-- Pushes made with `GITHUB_TOKEN` do not trigger other workflows, so `cut-release` dispatches `rc.yml` explicitly. Scheduled workflows run from the default branch and GitHub pauses them after 60 days without activity. The stable `sync-back` job needs the repo setting "Allow GitHub Actions to create and approve pull requests".
+- Channels: **RC** (every push to `develop` that changes more than docs, via `rc.yml`, tags `vX.Y.Z-rc.N`) and **stable** (manual `promote.yml`: rebuilds the chosen RC's commit with the stable version, fast-forwards `master` to it, publishes `vX.Y.Z` and bumps `VERSION` on `develop` to the next minor). No nightly, no `release/*` or `hotfix/*` branches (the old ones are history). Reusable build is `build.yml`; `pr.yml` only builds when the PR has the `build` label.
+- The version comes from the `VERSION` file on `develop`. A patch release is a PR that sets `VERSION` to `X.Y.Z+1`. `rc.yml` refuses a `VERSION` that is already tagged or lower than the latest stable.
+- Branches: `master` = what was released (only fast-forwarded by `promote.yml`), `develop` = integration (PRs go here). `master` must stay an ancestor of `develop`, otherwise the promotion fails.
+- Pushes made with `GITHUB_TOKEN` do not trigger other workflows, so the `VERSION` bump commit from `promote.yml` does not build an RC.
 - The home page picks the newest release for the channel set in `update_channel` (`stable|rc|nightly`, empty = follow the installed version); legacy `notify_pre_releases` behaves like `rc`.
 
 ## Git and PR conventions
