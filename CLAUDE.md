@@ -53,10 +53,10 @@ Gotchas learned the hard way:
 ## Releases and update channels
 
 Documented in full in `.github/RELEASING.md`. Summary:
-- Channels: **RC** (every push to `develop` that changes more than docs, via `rc.yml`, tags `vX.Y.Z-rc.N`) and **stable** (manual `promote.yml`: rebuilds the chosen RC's commit with the stable version, fast-forwards `master` to it, publishes `vX.Y.Z` and bumps `VERSION` on `develop` to the next minor). No nightly, no `release/*` or `hotfix/*` branches (the old ones are history). Reusable build is `build.yml`; `pr.yml` only builds when the PR has the `build` label.
-- The version comes from the `VERSION` file on `develop`. A patch release is a PR that sets `VERSION` to `X.Y.Z+1`. `rc.yml` refuses a `VERSION` that is already tagged or lower than the latest stable.
+- Channels: **RC** (every push to `develop` that changes more than docs, via `rc.yml`, tags `vX.Y.Z-rc.N`) and **stable** (manual `promote.yml`: rebuilds the chosen RC's commit with the stable version, fast-forwards `master` to it, publishes `vX.Y.Z` and bumps `version.txt` on `develop` to the next minor). No nightly, no `release/*` or `hotfix/*` branches (the old ones are history). Reusable build is `build.yml`; `pr.yml` only builds when the PR has the `build` label.
+- The version comes from the `version.txt` file on `develop` (not `VERSION`: on Windows that file shadows the C++ `<version>` header, since the repo root is on the include path). A patch release is a PR that sets `version.txt` to `X.Y.Z+1`. `rc.yml` refuses a `version.txt` that is already tagged or lower than the latest stable.
 - Branches: `master` = what was released (only fast-forwarded by `promote.yml`), `develop` = integration (PRs go here). `master` must stay an ancestor of `develop`, otherwise the promotion fails.
-- Pushes made with `GITHUB_TOKEN` do not trigger other workflows, so the `VERSION` bump commit from `promote.yml` does not build an RC.
+- Pushes made with `GITHUB_TOKEN` do not trigger other workflows, so the `version.txt` bump commit from `promote.yml` does not build an RC.
 - The home page picks the newest release for the channel set in `update_channel` (`stable|rc|nightly`, empty = follow the installed version); legacy `notify_pre_releases` behaves like `rc`.
 
 ## Git and PR conventions
