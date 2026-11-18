@@ -28,6 +28,26 @@ Scope for now is **PyroWave only**. Other codecs (HEVC, H.264, AV1) are out of s
 - Server: no protocol change. A lower stream resolution is just a smaller resolution request from the client.
   Check that SudoVDA and the PyroWave encoder handle arbitrary resolutions.
 
+## Server check: arbitrary stream resolutions (done)
+
+Checked on 2026-11-18 with Helios 1.11.0 and a Redmi Pad 2 (2560x1600 panel), isolated virtual display on, PyroWave
+4:2:0 at 60 fps, an animated page on the streamed display:
+
+| Requested | Streamed | Result |
+| --- | --- | --- |
+| 1920x1200 (75%) | same | 60 fps |
+| 1712x1072 (67%) | same | 60 fps |
+| 1280x800 (50%) | same | 60 fps |
+| 1366x768 | same | 60 fps |
+| 2560x1080 (21:9) | same | about 49 fps, limited by the tablet GPU (present step), not by the host |
+| 1715x1071 | 1714x1070 | 60 fps once Selene asks for an even size |
+
+- SudoVDA creates the virtual display at every size above, odd sizes included.
+- The PyroWave encoder needs an even width and height for 4:2:0 and refuses an odd size (`PyroWave: unsupported size`),
+  which ended the stream. Selene now rounds the requested size down to even numbers when PyroWave is on
+  (Selene-Game-Streaming PR 83), so a scale option only has to produce any size and the client fixes the parity.
+- No server change was needed.
+
 ## Phases
 
 | Phase | Goal | Done when |
