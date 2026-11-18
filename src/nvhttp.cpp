@@ -472,7 +472,9 @@ namespace nvhttp {
   }
 
   void remove_session(const pair_session_t &sess) {
-    map_id_sess.erase(sess.client.uniqueID);
+    // Copy the key first: `sess` is usually the value stored in map_id_sess, so it dies during the erase
+    const std::string unique_id = sess.client.uniqueID;
+    map_id_sess.erase(unique_id);
   }
 
   void fail_pair(pair_session_t &sess, pt::ptree &tree, const std::string status_msg) {
@@ -637,9 +639,8 @@ namespace nvhttp {
       named_cert_p->allow_client_commands = true;
       named_cert_p->always_use_virtual_display = false;
 
-      auto it = map_id_sess.find(client.uniqueID);
-      map_id_sess.erase(it);
-
+      // The session is removed by remove_session() below. Erasing it here as well destroyed `sess` (it lives in
+      // map_id_sess) before remove_session() read it, and was undefined behaviour when the session was not there.
       add_authorized_client(named_cert_p);
     } else {
       tree.put("root.paired", 0);

@@ -13,6 +13,7 @@
 #include <display_device/retry_scheduler.h>
 #include <display_device/settings_manager_interface.h>
 #include <mutex>
+#include <numeric>
 #include <regex>
 
 // local includes
@@ -368,7 +369,12 @@ namespace display_device {
         case refresh_rate_option_e::automatic:
           {
             if (session.fps >= 0) {
-              config.m_refresh_rate = Rational {static_cast<unsigned int>(session.fps), 1000};
+              // The client frame rate is in thousandths of a frame per second. Reduce the fraction so that
+              // 60000/1000 becomes 60/1: the mode remapping compares it with the requested FPS of its
+              // entries ("60" is 60/1), and Rational values are compared field by field.
+              const auto fps {static_cast<unsigned int>(session.fps)};
+              const auto divisor {std::gcd(fps, 1000u)};
+              config.m_refresh_rate = Rational {fps / divisor, 1000u / divisor};
             } else {
               BOOST_LOG(error) << "FPS value provided by client session config is invalid: " << session.fps;
               return false;
