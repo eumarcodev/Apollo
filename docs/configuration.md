@@ -238,6 +238,29 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
 </table>
 
+### global_state_cmd
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            A list of commands to run when an application is resumed (the first client connects while no client is connected) or paused (all clients disconnect). The do command runs on resume and the undo command on pause. The pause command is not run when the session ends, so clean up any side effect in the undo commands of the preparation commands.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            []
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            global_state_cmd = [{"do":"nircmd.exe setdisplay 1280 720 32 144","undo":"nircmd.exe setdisplay 2560 1440 32 144"}]
+            @endcode</td>
+    </tr>
+</table>
+
 ### notify_pre_releases
 
 <table>
@@ -312,6 +335,75 @@ editing the `conf` file in a text editor. Use the examples as reference.
         <td>Example</td>
         <td colspan="2">@code{}
             system_tray = enabled
+            @endcode</td>
+    </tr>
+</table>
+
+### hide_tray_controls
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Do not show "Force Stop", "Restart" and "Quit" in the tray menu.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            disabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            hide_tray_controls = enabled
+            @endcode</td>
+    </tr>
+</table>
+
+### enable_pairing
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Allow Moonlight clients to pair with this host. Turn it off to stop new clients from pairing; clients that are already paired keep working.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            enabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            enable_pairing = disabled
+            @endcode</td>
+    </tr>
+</table>
+
+### enable_discovery
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Announce the host on the local network (mDNS) so clients find it automatically. When disabled, enter the host IP address on the client to pair.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            enabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            enable_discovery = disabled
             @endcode</td>
     </tr>
 </table>
@@ -719,6 +811,52 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
 </table>
 
+### enable_input_only_mode
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Add an "Input Only" app entry. When enabled, the app list only shows the running app and the Input Only entry while streaming. The Input Only entry receives no picture or audio, which is useful to control the desktop on a TV from a phone, or to connect peripherals the TV does not support.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            disabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            enable_input_only_mode = enabled
+            @endcode</td>
+    </tr>
+</table>
+
+### forward_rumble
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Forward rumble messages from games to the clients.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            enabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            forward_rumble = disabled
+            @endcode</td>
+    </tr>
+</table>
+
 ### keybindings
 
 <table>
@@ -905,6 +1043,52 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
 </table>
 
+### keep_sink_default
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Keep the selected virtual sink as the default audio device (effective when the host audio output is disabled).
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            enabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            keep_sink_default = disabled
+            @endcode</td>
+    </tr>
+</table>
+
+### auto_capture_sink
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Capture the current audio sink again after the default audio device changes.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            enabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            auto_capture_sink = disabled
+            @endcode</td>
+    </tr>
+</table>
+
 ### adapter_name
 
 <table>
@@ -1072,143 +1256,6 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
 </table>
 
-### pyrowave
-
-<table>
-    <tr>
-        <td>Description</td>
-        <td colspan="2">
-            Offers the experimental PyroWave codec to clients that support it. PyroWave is an intra-only codec that
-            encodes on the GPU with Vulkan. It has very low latency but needs a high bandwidth link (50 Mbps or more).
-            Every frame is independent, so there is no FEC and no IDR request. Restart Helios after changing it.
-            @note{Applies to Windows only, and only to builds made with PyroWave. Setting the environment variable
-            `HELIOS_PYROWAVE=1` turns it on as well.}
-        </td>
-    </tr>
-    <tr>
-        <td>Default</td>
-        <td colspan="2">@code{}disabled@endcode</td>
-    </tr>
-    <tr>
-        <td>Example</td>
-        <td colspan="2">@code{}pyrowave = enabled@endcode</td>
-    </tr>
-</table>
-
-### pyrowave_packet_size
-
-<table>
-    <tr>
-        <td>Description</td>
-        <td colspan="2">
-            Largest PyroWave packet, in bytes (400 to 1300). It has to fit the RTP payload the client negotiated,
-            otherwise the frame is dropped and an error is logged. Restart the stream after changing it.
-            @note{Applies to Windows only, and only to builds made with PyroWave.}
-        </td>
-    </tr>
-    <tr>
-        <td>Default</td>
-        <td colspan="2">@code{}1200@endcode</td>
-    </tr>
-    <tr>
-        <td>Example</td>
-        <td colspan="2">@code{}pyrowave_packet_size = 1100@endcode</td>
-    </tr>
-</table>
-
-### pyrowave_min_frame_kb
-
-<table>
-    <tr>
-        <td>Description</td>
-        <td colspan="2">
-            Floor of the per-frame byte budget, in KB (1 to 4096). The budget is the bitrate divided by the frame
-            rate, but never smaller than this value.
-        </td>
-    </tr>
-    <tr>
-        <td>Default</td>
-        <td colspan="2">@code{}16@endcode</td>
-    </tr>
-    <tr>
-        <td>Example</td>
-        <td colspan="2">@code{}pyrowave_min_frame_kb = 32@endcode</td>
-    </tr>
-</table>
-
-### pyrowave_static_boost
-
-<table>
-    <tr>
-        <td>Description</td>
-        <td colspan="2">
-            While the screen does not change, the host only repeats the last frame a few times per second. With this
-            option those repeated frames get 4 times the normal PyroWave budget (still within the frame size cap the
-            client asked for), so a still picture gets sharp without going over the bitrate. A client can turn it on
-            or off for its own stream (`x-ss-pyrowave.staticBoost`).
-        </td>
-    </tr>
-    <tr>
-        <td>Default</td>
-        <td colspan="2">@code{}enabled@endcode</td>
-    </tr>
-    <tr>
-        <td>Example</td>
-        <td colspan="2">@code{}pyrowave_static_boost = disabled@endcode</td>
-    </tr>
-</table>
-
-### pyrowave_priority
-
-<table>
-    <tr>
-        <td>Description</td>
-        <td colspan="2">
-            Vulkan global queue priority of the PyroWave encoder. High and realtime need driver support; if the GPU
-            refuses the priority Helios logs a warning and uses medium.
-        </td>
-    </tr>
-    <tr>
-        <td>Default</td>
-        <td colspan="2">@code{}medium@endcode</td>
-    </tr>
-    <tr>
-        <td>Choices</td>
-        <td colspan="2">
-            <table>
-                <tr><td>low</td><td></td></tr>
-                <tr><td>medium</td><td></td></tr>
-                <tr><td>high</td><td></td></tr>
-                <tr><td>realtime</td><td></td></tr>
-            </table>
-        </td>
-    </tr>
-    <tr>
-        <td>Example</td>
-        <td colspan="2">@code{}pyrowave_priority = high@endcode</td>
-    </tr>
-</table>
-
-### pyrowave_simulated_loss
-
-<table>
-    <tr>
-        <td>Description</td>
-        <td colspan="2">
-            For tests only: drops this percent of PyroWave video packets before sending (0 to 100). The environment
-            variable `HELIOS_PYROWAVE_LOSS` overrides it.
-        </td>
-    </tr>
-    <tr>
-        <td>Default</td>
-        <td colspan="2">@code{}0@endcode</td>
-    </tr>
-    <tr>
-        <td>Example</td>
-        <td colspan="2">@code{}pyrowave_simulated_loss = 5@endcode</td>
-    </tr>
-</table>
-
 ### isolated_virtual_display_option
 
 <table>
@@ -1229,6 +1276,29 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
 </table>
 
+
+### fallback_mode
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            The display mode used when the client does not provide one, or when an app is started from the web UI. Format: [Width]x[Height]x[FPS].
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            1920x1080x60
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            fallback_mode = 2560x1440x120
+            @endcode</td>
+    </tr>
+</table>
 
 ### dd_configuration_option
 
@@ -1582,6 +1652,52 @@ editing the `conf` file in a text editor. Use the examples as reference.
               ]
             }@endcode
         </td>
+    </tr>
+</table>
+
+### headless_mode
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Start in headless mode: every app starts on a virtual display.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            disabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            headless_mode = enabled
+            @endcode</td>
+    </tr>
+</table>
+
+### double_refreshrate
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Double the requested refresh rate when creating virtual displays. The streamed frame rate stays the same. Can reduce stutter on some systems.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            disabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            double_refreshrate = enabled
+            @endcode</td>
     </tr>
 </table>
 
@@ -2138,6 +2254,98 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
 </table>
 
+### limit_framerate
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Limit the capture frame rate to the frame rate requested by the client. The capture may not reach the full frame rate when vsync is on and the display refresh rate does not match the requested frame rate. Disabling it can cause lag on some clients.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            enabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            limit_framerate = disabled
+            @endcode</td>
+    </tr>
+</table>
+
+### envvar_compatibility_mode
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Compatibility mode for the environment variables given to apps and commands (for example `SUNSHINE_CLIENT_FPS` as a whole number), for older scripts and tools.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            disabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            envvar_compatibility_mode = enabled
+            @endcode</td>
+    </tr>
+</table>
+
+### legacy_ordering
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Ordering workaround for the app list of legacy clients. Can cause issues with clients or scripts that do not handle UTF-8 correctly. Artemis clients support ordering without it.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            disabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            legacy_ordering = enabled
+            @endcode</td>
+    </tr>
+</table>
+
+### ignore_encoder_probe_failure
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Allow streaming to continue even if probing for encoders fails. Streaming may then fail if no encoder is available.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            disabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            ignore_encoder_probe_failure = enabled
+            @endcode</td>
+    </tr>
+</table>
+
 ### hevc_mode
 
 <table>
@@ -2587,6 +2795,29 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
 </table>
 
+### nvenc_intra_refresh
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Use intra refresh, which some clients need to show the stream correctly over time (for example the Xbox client).
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            disabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            nvenc_intra_refresh = enabled
+            @endcode</td>
+    </tr>
+</table>
+
 ## Intel QuickSync Encoder
 
 ### qsv_preset
@@ -2944,6 +3175,145 @@ editing the `conf` file in a text editor. Use the examples as reference.
     <tr>
         <td>cavlc</td>
         <td>context adaptive variable-length coding - higher quality</td>
+    </tr>
+</table>
+
+## PyroWave Encoder
+
+### pyrowave
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Offers the experimental PyroWave codec to clients that support it. PyroWave is an intra-only codec that
+            encodes on the GPU with Vulkan. It has very low latency but needs a high bandwidth link (50 Mbps or more).
+            Every frame is independent, so there is no FEC and no IDR request. Restart Helios after changing it.
+            @note{Applies to Windows only, and only to builds made with PyroWave. Setting the environment variable
+            `HELIOS_PYROWAVE=1` turns it on as well.}
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}disabled@endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}pyrowave = enabled@endcode</td>
+    </tr>
+</table>
+
+### pyrowave_packet_size
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Largest PyroWave packet, in bytes (400 to 1300). It has to fit the RTP payload the client negotiated,
+            otherwise the frame is dropped and an error is logged. Restart the stream after changing it.
+            @note{Applies to Windows only, and only to builds made with PyroWave.}
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}1200@endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}pyrowave_packet_size = 1100@endcode</td>
+    </tr>
+</table>
+
+### pyrowave_min_frame_kb
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Floor of the per-frame byte budget, in KB (1 to 4096). The budget is the bitrate divided by the frame
+            rate, but never smaller than this value.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}16@endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}pyrowave_min_frame_kb = 32@endcode</td>
+    </tr>
+</table>
+
+### pyrowave_static_boost
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            While the screen does not change, the host only repeats the last frame a few times per second. With this
+            option those repeated frames get 4 times the normal PyroWave budget (still within the frame size cap the
+            client asked for), so a still picture gets sharp without going over the bitrate. A client can turn it on
+            or off for its own stream (`x-ss-pyrowave.staticBoost`).
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}enabled@endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}pyrowave_static_boost = disabled@endcode</td>
+    </tr>
+</table>
+
+### pyrowave_priority
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Vulkan global queue priority of the PyroWave encoder. High and realtime need driver support; if the GPU
+            refuses the priority Helios logs a warning and uses medium.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}medium@endcode</td>
+    </tr>
+    <tr>
+        <td>Choices</td>
+        <td colspan="2">
+            <table>
+                <tr><td>low</td><td></td></tr>
+                <tr><td>medium</td><td></td></tr>
+                <tr><td>high</td><td></td></tr>
+                <tr><td>realtime</td><td></td></tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}pyrowave_priority = high@endcode</td>
+    </tr>
+</table>
+
+### pyrowave_simulated_loss
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            For tests only: drops this percent of PyroWave video packets before sending (0 to 100). The environment
+            variable `HELIOS_PYROWAVE_LOSS` overrides it.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}0@endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}pyrowave_simulated_loss = 5@endcode</td>
     </tr>
 </table>
 

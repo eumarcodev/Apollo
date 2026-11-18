@@ -34,6 +34,7 @@ protected:
       {"NVIDIA NVENC Encoder", "nv"},
       {"Intel QuickSync Encoder", "qsv"},
       {"AMD AMF Encoder", "amd"},
+      {"PyroWave Encoder", "pyrowave"},
       {"VideoToolbox Encoder", "vt"},
       {"VA-API Encoder", "vaapi"},
       {"Software Encoder", "sw"}
