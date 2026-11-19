@@ -16,7 +16,13 @@ option(NPM_OFFLINE "Use offline npm packages. You must ensure packages are in yo
 
 option(BUILD_WERROR "Enable -Werror flag." OFF)
 
-option(HELIOS_ENABLE_PYROWAVE "Build with the PyroWave codec (experimental, Windows only). Needs the third-party/pyrowave submodule with its nested submodules." OFF)
+# PyroWave is on by default on Windows (its only platform), so a local build matches the release build
+if(WIN32)
+    set(HELIOS_ENABLE_PYROWAVE_DEFAULT ON)
+else()
+    set(HELIOS_ENABLE_PYROWAVE_DEFAULT OFF)
+endif()
+option(HELIOS_ENABLE_PYROWAVE "Build with the PyroWave codec (Windows only). Needs the third-party/pyrowave submodule with its nested submodules." ${HELIOS_ENABLE_PYROWAVE_DEFAULT})
 
 # if this option is set, the build will exit after configuring special package configuration files
 option(SUNSHINE_CONFIGURE_ONLY "Configure special files only, then exit." OFF)

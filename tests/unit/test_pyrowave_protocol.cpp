@@ -71,3 +71,41 @@ TEST(PyroWaveProtocol, TestPatternLaunchArgumentNeedsExactlyOne) {
   EXPECT_FALSE(pyrowave::is_test_pattern_request("true"));
   EXPECT_FALSE(pyrowave::is_test_pattern_request("10"));
 }
+
+TEST(PyroWaveProtocol, FrameBudgetPacketTypeIsTheNextHeliosExtension) {
+  // 0x3000-0x3002 are taken by the server command, clipboard and file transfer extensions
+  EXPECT_EQ(pyrowave::FRAME_BUDGET_PACKET_TYPE, 0x3003);
+}
+
+TEST(PyroWaveProtocol, ParsesFrameBudgetLittleEndian) {
+  using namespace std::literals;
+  EXPECT_EQ(pyrowave::parse_frame_budget("\x40\x0d\x03\x00"sv), 200000u);
+  EXPECT_EQ(pyrowave::parse_frame_budget("\xff\xff\xff\xff"sv), 0xffffffffu);
+  // Extra bytes are ignored so the message can grow
+  EXPECT_EQ(pyrowave::parse_frame_budget("\x01\x00\x00\x00\x99"sv), 1u);
+}
+
+TEST(PyroWaveProtocol, RejectsShortFrameBudgetPayload) {
+  using namespace std::literals;
+  EXPECT_EQ(pyrowave::parse_frame_budget(""sv), 0u);
+  EXPECT_EQ(pyrowave::parse_frame_budget("\x01\x02\x03"sv), 0u);
+}
+
+TEST(PyroWaveProtocol, RuntimeFrameBudgetFloorIs20MbitEquivalent) {
+  // 20 Mbit/s at 60 fps = 41666 bytes per frame
+  EXPECT_EQ(pyrowave::min_runtime_frame_budget(312500, 60), 41666u);
+  EXPECT_EQ(pyrowave::min_runtime_frame_budget(312500, 120), 20833u);
+  // Never above the session start budget (a session started below 20 Mbit/s)
+  EXPECT_EQ(pyrowave::min_runtime_frame_budget(30000, 60), 30000u);
+  // A zero frame rate does not divide by zero
+  EXPECT_EQ(pyrowave::min_runtime_frame_budget(10000000, 0), 2500000u);
+}
+
+TEST(PyroWaveProtocol, ClampsRuntimeFrameBudget) {
+  // Session started at 150 Mbit/s and 60 fps: 312500 bytes per frame
+  EXPECT_EQ(pyrowave::clamp_runtime_frame_budget(250000, 312500, 60), 250000u);
+  EXPECT_EQ(pyrowave::clamp_runtime_frame_budget(400000, 312500, 60), 312500u);
+  EXPECT_EQ(pyrowave::clamp_runtime_frame_budget(1000, 312500, 60), 41666u);
+  EXPECT_EQ(pyrowave::clamp_runtime_frame_budget(312500, 312500, 60), 312500u);
+  EXPECT_EQ(pyrowave::clamp_runtime_frame_budget(41666, 312500, 60), 41666u);
+}

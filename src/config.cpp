@@ -440,7 +440,7 @@ namespace config {
     false, // headless_mode
     true, // limit_framerate
     false, // double_refreshrate
-    false, // pyrowave
+    true, // pyrowave
     1200, // pyrowave_packet_size
     16, // pyrowave_min_frame_kb
     true, // pyrowave_static_boost

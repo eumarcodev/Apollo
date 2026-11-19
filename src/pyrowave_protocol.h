@@ -14,6 +14,7 @@
  */
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <string_view>
 
@@ -103,5 +104,48 @@ namespace pyrowave {
       return 0;
     }
     return asked < host_min_kb ? host_min_kb : (asked > MAX_FRAME_KB ? MAX_FRAME_KB : asked);
+  }
+
+  // Helios extension control message 0x3003 (client to host): new PyroWave frame budget in bytes for the rest of
+  // the session, payload u32 little endian. The client lowers it when frames take too long to arrive and raises it
+  // back when the link recovers (eumarcodev/Helios-Server#131).
+  constexpr std::uint16_t FRAME_BUDGET_PACKET_TYPE = 0x3003;
+
+  // The budget never goes below the equivalent of this bitrate, in kilobits per second.
+  constexpr int MIN_RUNTIME_BITRATE_KBPS = 20000;
+
+  /**
+   * @brief Reads the frame budget of a 0x3003 message. Returns 0 when the payload is too short.
+   * Bytes after the first four are ignored so the message can grow.
+   */
+  constexpr std::uint32_t
+    parse_frame_budget(std::string_view payload) {
+    if (payload.size() < 4) {
+      return 0;
+    }
+    return static_cast<std::uint32_t>(static_cast<std::uint8_t>(payload[0])) |
+           (static_cast<std::uint32_t>(static_cast<std::uint8_t>(payload[1])) << 8) |
+           (static_cast<std::uint32_t>(static_cast<std::uint8_t>(payload[2])) << 16) |
+           (static_cast<std::uint32_t>(static_cast<std::uint8_t>(payload[3])) << 24);
+  }
+
+  /**
+   * @brief Lowest frame budget in bytes a client may ask for during a session: the MIN_RUNTIME_BITRATE_KBPS
+   * equivalent at `framerate`, but never above the budget of the session start.
+   */
+  constexpr std::size_t
+    min_runtime_frame_budget(std::size_t start_budget, int framerate) {
+    const std::size_t floor = static_cast<std::size_t>(MIN_RUNTIME_BITRATE_KBPS) * 1000 / 8 / static_cast<std::size_t>(framerate < 1 ? 1 : framerate);
+    return floor < start_budget ? floor : start_budget;
+  }
+
+  /**
+   * @brief Frame budget to use when the client asks for `asked` bytes: clamped between min_runtime_frame_budget()
+   * and the budget of the session start, which the client can never exceed.
+   */
+  constexpr std::size_t
+    clamp_runtime_frame_budget(std::size_t asked, std::size_t start_budget, int framerate) {
+    const std::size_t lower = min_runtime_frame_budget(start_budget, framerate);
+    return asked < lower ? lower : (asked > start_budget ? start_budget : asked);
   }
 }  // namespace pyrowave
