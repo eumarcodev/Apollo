@@ -629,6 +629,26 @@ namespace rtsp_stream {
       return uuids;
     }
 
+    std::vector<std::string>
+    streaming_client_uuids() {
+      std::vector<std::string> uuids;
+      {
+        auto lg = _session_slots.lock();
+        for (auto &slot : *_session_slots) {
+          if (slot && !stream::session::input_only(*slot) && stream::session::state(*slot) != stream::session::state_e::STOPPING) {
+            uuids.push_back(stream::session::uuid(*slot));
+          }
+        }
+      }
+
+      // A launch that is accepted but not connected yet also holds the host
+      auto pending = launch_event.view(0s);
+      if (pending && !pending->input_only) {
+        uuids.push_back(pending->unique_id);
+      }
+      return uuids;
+    }
+
   private:
     std::unordered_map<std::string_view, cmd_func_t> _map_cmd_cb;
 
@@ -664,6 +684,10 @@ namespace rtsp_stream {
 
   std::list<std::string> get_all_session_uuids() {
     return server.get_all_session_uuids();
+  }
+
+  std::vector<std::string> streaming_client_uuids() {
+    return server.streaming_client_uuids();
   }
 
   void terminate_sessions() {

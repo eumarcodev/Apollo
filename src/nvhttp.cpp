@@ -8,6 +8,7 @@
 // standard includes
 #include <filesystem>
 #include <format>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <string>
@@ -32,6 +33,7 @@
 #include "platform/common.h"
 #include "process.h"
 #include "rtsp.h"
+#include "session_policy.h"
 #include "stream.h"
 #include "system_tray.h"
 #include "utility.h"
@@ -52,6 +54,37 @@ namespace nvhttp {
   namespace pt = boost::property_tree;
 
   using p_named_cert_t = crypto::p_named_cert_t;
+
+  // One device at a time (Helios): the client that opened the host owns it until it leaves or its claim expires.
+  // Disabled in input-only mode, where a second device is expected to join for input.
+  std::mutex host_claim_mutex;
+  session_policy::host_claim_t host_claim;
+
+  /// Whether another client streams or owns the host.
+  bool host_busy_for(const std::string &uuid) {
+    if (config::input.enable_input_only_mode) {
+      return false;
+    }
+    auto streaming = rtsp_stream::streaming_client_uuids();
+    std::lock_guard lg {host_claim_mutex};
+    return session_policy::busy_for(streaming, host_claim, uuid, session_policy::clock::now());
+  }
+
+  /// Claims or renews the host for this client. Returns true when the client owns it afterwards.
+  bool claim_host(const std::string &uuid) {
+    if (config::input.enable_input_only_mode) {
+      return true;
+    }
+    auto streaming = rtsp_stream::streaming_client_uuids();
+    std::lock_guard lg {host_claim_mutex};
+    return session_policy::try_claim(host_claim, streaming, uuid, session_policy::clock::now());
+  }
+
+  /// Releases the host if this client owns it.
+  void release_host(const std::string &uuid) {
+    std::lock_guard lg {host_claim_mutex};
+    session_policy::release(host_claim, uuid);
+  }
   using PERM = crypto::PERM;
 
   struct client_t {
@@ -918,6 +951,25 @@ namespace nvhttp {
       tree.put("root.mac", platf::get_mac_address(net::addr_to_normalized_string(local_endpoint.address())));
 
       auto named_cert_p = get_verified_cert(request);
+
+      // Helios extension, one device at a time: "helioslock=1" claims or renews the host for this client (sent when
+      // it opens the host and while it shows the app list), "helioslock=0" releases it. BusyWithOtherClient tells
+      // the client that another device owns the host, so it can say so instead of opening the app list.
+      auto args = request->parse_query_string();
+      auto lock_arg = args.find("helioslock"s);
+      if (lock_arg != std::end(args)) {
+        if (lock_arg->second == "0") {
+          release_host(named_cert_p->uuid);
+        } else {
+          const bool granted = claim_host(named_cert_p->uuid);
+          tree.put("root.HeliosLock", granted ? 1 : 0);
+          if (!granted) {
+            BOOST_LOG(info) << "Host in use: refusing ["sv << named_cert_p->name << "] the app list"sv;
+          }
+        }
+      }
+      tree.put("root.BusyWithOtherClient", host_busy_for(named_cert_p->uuid) ? 1 : 0);
+
       if (!!(named_cert_p->perm & PERM::server_cmd)) {
         pt::ptree& root_node = tree.get_child("root");
 
@@ -1091,6 +1143,14 @@ namespace nvhttp {
     apps.put("<xmlattr>.status_code", 200);
 
     auto named_cert_p = get_verified_cert(request);
+    if (host_busy_for(named_cert_p->uuid)) {
+      // One device at a time: another device owns the host, so this one does not get the app list
+      BOOST_LOG(info) << "Host in use: refusing ["sv << named_cert_p->name << "] the app list"sv;
+      apps.put("<xmlattr>.status_code", session_policy::BUSY_STATUS);
+      apps.put("<xmlattr>.status_message", std::string(session_policy::BUSY_MESSAGE));
+      return;
+    }
+
     if (!!(named_cert_p->perm & PERM::_all_actions)) {
       auto current_appid = proc::proc.running();
       auto should_hide_inactive_apps = config::input.enable_input_only_mode && current_appid > 0 && current_appid != proc::input_only_app_id;
@@ -1153,6 +1213,24 @@ namespace nvhttp {
       return;
     }
 
+  }
+
+  /**
+   * @brief Fills a refusal reply when another client streams or owns the host (one device at a time).
+   *        Otherwise the requester owns the host from now on (input-only sessions excepted).
+   * @return True when the request was refused and the caller must return.
+   */
+  bool refuse_busy_host(pt::ptree &tree, const crypto::named_cert_t *named_cert_p, bool input_only) {
+    if (input_only || claim_host(named_cert_p->uuid)) {
+      return false;
+    }
+
+    BOOST_LOG(info) << "Refusing ["sv << named_cert_p->name << "]: the host is in use by another client"sv;
+    tree.put("root.resume", 0);
+    tree.put("root.<xmlattr>.status_code", session_policy::BUSY_STATUS);
+    tree.put("root.<xmlattr>.status_message", std::string(session_policy::BUSY_MESSAGE));
+    tree.put("root.gamesession", 0);
+    return true;
   }
 
   void launch(bool &host_audio, resp_https_t response, req_https_t request) {
@@ -1242,6 +1320,10 @@ namespace nvhttp {
 
         return;
       }
+    }
+
+    if (refuse_busy_host(tree, named_cert_p, is_input_only)) {
+      return;
     }
 
     host_audio = util::from_view(get_arg(args, "localAudioPlayMode"));
@@ -1396,6 +1478,10 @@ namespace nvhttp {
       tree.put("root.<xmlattr>.status_code", 503);
       tree.put("root.<xmlattr>.status_message", "No running app to resume");
 
+      return;
+    }
+
+    if (refuse_busy_host(tree, named_cert_p, current_appid == proc::input_only_app_id)) {
       return;
     }
 

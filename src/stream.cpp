@@ -2127,6 +2127,10 @@ namespace stream {
       return session.device_uuid == uuid;
     }
 
+    bool input_only(const session_t &session) {
+      return session.config.monitor.input_only;
+    }
+
     bool update_device_info(session_t& session, const std::string& name, const crypto::PERM& newPerm) {
       session.permission = newPerm;
       if (!(newPerm & crypto::PERM::_allow_view)) {
