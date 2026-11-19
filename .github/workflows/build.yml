@@ -42,27 +42,43 @@ jobs:
         shell: pwsh
         run: git config --global core.autocrlf false
 
-      - name: Checkout (with submodules)
+      # Shallow, and without submodules: the next step fetches only the ones the Windows build uses
+      - name: Checkout
         uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
-          # Not recursive: PyroWave's Granite submodule has many nested submodules we do not need.
-          submodules: true
 
-      - name: Fetch the nested submodules we need
+      # Skipped (Linux packaging, docs, tests are off): flatpak deps, wayland-protocols, wlr-protocols, inputtino,
+      # doxyconfig, googletest. PyroWave is not recursive: of Granite's many nested submodules only two are needed
+      # (the same ones as third-party/pyrowave/checkout_granite.sh). Each one is shallow (depth 1); if a server
+      # refuses a shallow fetch of the pinned commit, that one is fetched in full.
+      - name: Fetch the submodules the Windows build uses
         shell: bash
         run: |
-          for path in $(git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | awk '{print $2}' | grep -v '^third-party/pyrowave$'); do
-            git submodule update --init --recursive "$path"
+          set -euo pipefail
+          fetch() {  # fetch <repo dir> <submodule path> [--recursive]
+            git -C "$1" submodule update --init --depth 1 "${@:3}" "$2" ||
+              git -C "$1" submodule update --init "${@:3}" "$2"
+          }
+          skip='^third-party/(pyrowave|doxyconfig|googletest|inputtino|wayland-protocols|wlr-protocols)$|^packaging/linux/'
+          for path in $(git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | awk '{print $2}' | grep -Ev "${skip}"); do
+            fetch . "$path" --recursive
           done
-          bash third-party/pyrowave/checkout_granite.sh
+          fetch . third-party/pyrowave
+          fetch third-party/pyrowave Granite
+          for module in third_party/volk third_party/khronos/vulkan-headers; do
+            fetch third-party/pyrowave/Granite "$module"
+          done
+          git submodule status --recursive | cut -c1-60
 
-      # path-type: inherit keeps the runner's official Node.js/npm on PATH, as required by docs/building.md
+      # path-type: inherit keeps the runner's official Node.js/npm on PATH, as required by docs/building.md.
+      # update: false skips the full system upgrade (pacman -Syuu, most of this step's time); the packages below still
+      # come from the current repositories and are cached by the action.
       - name: Set up MSYS2
         uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
-          update: true
+          update: false
           path-type: inherit
           install: >-
             git
