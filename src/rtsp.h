@@ -8,6 +8,8 @@
 #include <atomic>
 #include <memory>
 #include <list>
+#include <string>
+#include <vector>
 
 // local includes
 #include "crypto.h"
@@ -83,6 +85,13 @@ namespace rtsp_stream {
 
   std::list<std::string>
   get_all_session_uuids();
+
+  /**
+   * @brief Unique ids of the clients that stream video now or have a launch pending.
+   * @note Input-only sessions and sessions that are stopping are not included.
+   */
+  std::vector<std::string>
+  streaming_client_uuids();
 
   /**
    * @brief Terminates all running streaming sessions.
