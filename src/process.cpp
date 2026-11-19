@@ -182,6 +182,15 @@ namespace proc {
 #endif
   }
 
+  void proc_t::launch_test_pattern() {
+    _app_id = test_pattern_app_id;
+    _app_name = "Test pattern";
+    _app.uuid.clear();
+    _app.terminate_on_pause = true;
+    allow_client_commands = false;
+    placebo = true;
+  }
+
   int proc_t::execute(const ctx_t& app, std::shared_ptr<rtsp_stream::launch_session_t> launch_session) {
     if (_app_id == input_only_app_id) {
       terminate(false, false);

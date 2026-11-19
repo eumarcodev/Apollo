@@ -462,6 +462,7 @@ namespace nvhttp {
     launch_session->enable_hdr = util::from_view(get_arg(args, "hdrMode", "0"));
     launch_session->virtual_display = util::from_view(get_arg(args, "virtualDisplay", "0")) || named_cert_p->always_use_virtual_display;
     launch_session->scale_factor = util::from_view(get_arg(args, "scaleFactor", "100"));
+    launch_session->test_pattern = pyrowave::is_test_pattern_request(get_arg(args, pyrowave::TEST_PATTERN_LAUNCH_ARG.data(), "0"));
 
     launch_session->client_do_cmds = named_cert_p->do_cmds;
     launch_session->client_undo_cmds = named_cert_p->undo_cmds;
@@ -1259,7 +1260,22 @@ namespace nvhttp {
 
     bool no_active_sessions = rtsp_stream::session_count() == 0;
 
-    if (is_input_only) {
+    if (launch_session->test_pattern && !is_input_only) {
+      // Test session: nothing is started and no display is configured, the video thread renders the picture
+      if (current_appid > 0 && current_appid != proc::test_pattern_app_id) {
+        tree.put("root.resume", 0);
+        tree.put("root.<xmlattr>.status_code", 400);
+        tree.put("root.<xmlattr>.status_message", "An app is already running on this host");
+        return;
+      }
+      BOOST_LOG(info) << "Launching test pattern session"sv;
+      launch_session->client_do_cmds.clear();
+      launch_session->client_undo_cmds.clear();
+      launch_session->virtual_display = false;
+      if (current_appid == 0) {
+        proc::proc.launch_test_pattern();
+      }
+    } else if (is_input_only) {
       BOOST_LOG(info) << "Launching input only session..."sv;
 
       launch_session->client_do_cmds.clear();

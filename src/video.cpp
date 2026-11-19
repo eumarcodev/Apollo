@@ -2079,6 +2079,46 @@ namespace video {
       }
     }
 
+    if (config.testPattern) {
+      auto *pyrowave_session = dynamic_cast<pyrowave_encode_session_t *>(session.get());
+      if (!pyrowave_session) {
+        // Only PyroWave can render the picture; never fall back to the screen in a test session
+        BOOST_LOG(warning) << "Test pattern is only available with PyroWave: sending a blank frame"sv;
+        if (encode(frame_nr++, *session, packets, channel_data, std::chrono::steady_clock::now())) {
+          return;
+        }
+        while (!shutdown_event->peek() && images->running() && !reinit_event.peek()) {
+          std::this_thread::sleep_for(300ms);
+        }
+        return;
+      }
+
+      BOOST_LOG(info) << "Test pattern session: "sv << config.width << 'x' << config.height << " at "sv << config.encodingFramerate / 1000.0 << " fps, no capture"sv;
+      const auto period = std::chrono::nanoseconds(1000ms) * 1000 / std::max(config.encodingFramerate, 1000);
+      auto next_frame = std::chrono::steady_clock::now();
+      while (!shutdown_event->peek() && images->running() && !(reinit_event.peek() && frame_nr > 1)) {
+        // The capture thread may still deliver screen images: drop them unseen
+        while (images->peek()) {
+          images->pop(0ms);
+        }
+        std::this_thread::sleep_until(next_frame);
+        next_frame += period;
+        const auto now = std::chrono::steady_clock::now();
+        if (now > next_frame + period) {
+          next_frame = now;  // fell behind (for example after a stall): do not burst to catch up
+        }
+        if (!pyrowave_session->device->render_test_pattern(static_cast<std::uint32_t>(frame_nr))) {
+          BOOST_LOG(error) << "Could not render the test pattern"sv;
+          return;
+        }
+        if (encode(frame_nr++, *session, packets, channel_data, now)) {
+          BOOST_LOG(error) << "Could not encode video packet"sv;
+          return;
+        }
+      }
+      return;
+    }
+
     std::chrono::steady_clock::time_point encode_frame_timestamp;
     bool missing_frame_timestamp_warning_logged = false;
 

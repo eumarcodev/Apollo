@@ -50,6 +50,7 @@ namespace rtsp_stream {
     bool enable_sops;
     bool virtual_display;
     uint32_t scale_factor;
+    bool test_pattern = false;  // Helios test session: no app, no virtual display, synthetic PyroWave picture
 
     std::optional<crypto::cipher::gcm_t> rtsp_cipher;
     std::string rtsp_url_scheme;

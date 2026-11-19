@@ -1163,7 +1163,13 @@ namespace platf::dxgi {
       width = client_config.width;
       height = client_config.height;
       yuv444 = client_config.chromaSamplingType == 1;
-      return create_session(base.display->width, base.display->height);
+      test_pattern = client_config.testPattern;
+      // A test session renders at the stream size: nothing to scale
+      return test_pattern ? create_session(width, height) : create_session(base.display->width, base.display->height);
+    }
+
+    bool render_test_pattern(std::uint32_t frame_index) override {
+      return session && session->render_test_pattern(frame_index);
     }
 
     // The session imports one shared texture of the capture size and the encoder scales it to the stream size
@@ -1190,6 +1196,10 @@ namespace platf::dxgi {
       }
 
       auto &img = (img_d3d_t &) img_base;
+      if (test_pattern) {
+        // The captured screen is never used in a test session
+        return 0;
+      }
       if (!img.blank && (img.width != source_width || img.height != source_height)) {
         // The capture size changed (display mode switch): import a texture of the new size
         BOOST_LOG(info) << "PyroWave: capture size is now " << img.width << 'x' << img.height << ", stream size is " << width << 'x' << height;
@@ -1235,6 +1245,7 @@ namespace platf::dxgi {
     int source_width = 0;
     int source_height = 0;
     bool yuv444 = false;
+    bool test_pattern = false;
   };
 #endif  // HELIOS_ENABLE_PYROWAVE
 
