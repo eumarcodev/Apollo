@@ -3186,7 +3186,7 @@ editing the `conf` file in a text editor. Use the examples as reference.
     <tr>
         <td>Description</td>
         <td colspan="2">
-            Offers the experimental PyroWave codec to clients that support it. PyroWave is an intra-only codec that
+            Offers the PyroWave codec to clients that support it. PyroWave is an intra-only codec that
             encodes on the GPU with Vulkan. It has very low latency but needs a high bandwidth link (50 Mbps or more).
             Every frame is independent, so there is no FEC and no IDR request. Restart Helios after changing it.
             @note{Applies to Windows only, and only to builds made with PyroWave. Setting the environment variable
@@ -3195,11 +3195,11 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
     <tr>
         <td>Default</td>
-        <td colspan="2">@code{}disabled@endcode</td>
+        <td colspan="2">@code{}enabled@endcode</td>
     </tr>
     <tr>
         <td>Example</td>
-        <td colspan="2">@code{}pyrowave = enabled@endcode</td>
+        <td colspan="2">@code{}pyrowave = disabled@endcode</td>
     </tr>
 </table>
 
