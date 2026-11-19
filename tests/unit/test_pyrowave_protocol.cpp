@@ -62,3 +62,12 @@ TEST(PyroWaveProtocol, HostLatencyIsSentInTenthsOfAMillisecond) {
   EXPECT_EQ(pyrowave::host_latency_units(6553500), 65535);
   EXPECT_EQ(pyrowave::host_latency_units(100000000), 65535);  // saturates instead of wrapping
 }
+
+TEST(PyroWaveProtocol, TestPatternLaunchArgumentNeedsExactlyOne) {
+  EXPECT_EQ(pyrowave::TEST_PATTERN_LAUNCH_ARG, "testPattern");
+  EXPECT_TRUE(pyrowave::is_test_pattern_request("1"));
+  EXPECT_FALSE(pyrowave::is_test_pattern_request("0"));
+  EXPECT_FALSE(pyrowave::is_test_pattern_request(""));
+  EXPECT_FALSE(pyrowave::is_test_pattern_request("true"));
+  EXPECT_FALSE(pyrowave::is_test_pattern_request("10"));
+}

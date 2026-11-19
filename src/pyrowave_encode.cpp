@@ -8,7 +8,9 @@
 
   #include <algorithm>
   #include <cstdlib>
+  #include <cstring>
 
+  #include <d3dcompiler.h>
   #include <dxgi1_2.h>
 
   #include "logging.h"
@@ -192,6 +194,120 @@ namespace pyrowave_enc {
     }
     const float black[4] = {0.0f, 0.0f, 0.0f, 1.0f};
     context_->ClearRenderTargetView(shared_rtv_.Get(), black);
+  }
+
+  namespace {
+    // Full-screen triangle, no vertex buffer.
+    constexpr const char *pattern_vs_hlsl = R"(
+float4 main(uint id : SV_VertexID) : SV_Position {
+  float2 uv = float2((id << 1) & 2, id & 2);
+  return float4(uv * float2(2, -2) + float2(-1, 1), 0, 1);
+}
+)";
+
+    // Same mix as the page used for the bitrate measurements (eumarcodev/Helios-Server#62), all derived from the
+    // frame index: a moving colour gradient, 40 moving blocks, twelve lines of text-like stripes that change
+    // every frame and a 256x256 noise square (sizes scale with the height, 1080p reference).
+    constexpr const char *pattern_ps_hlsl = R"(
+cbuffer params : register(b0) { uint frame; uint width; uint height; uint pad; };
+
+uint hash(uint x) { x ^= x >> 16; x *= 0x7feb352d; x ^= x >> 15; x *= 0x846ca68b; x ^= x >> 16; return x; }
+
+float3 hsv(float h, float s, float v) {
+  float3 k = saturate(abs(frac(h + float3(0, 2.0 / 3, 1.0 / 3)) * 6 - 3) - 1);
+  return v * lerp(float3(1, 1, 1), k, s);
+}
+
+float4 main(float4 pos : SV_Position) : SV_Target {
+  float2 p = pos.xy;
+  float w = width, h = height, t = frame;
+  float scale = h / 1080.0;
+  float g = (p.x / w + p.y / h) * 0.5;
+  float3 c = lerp(hsv(frac(t / 360.0), 0.7, 0.4), hsv(frac(t / 360.0 + 0.5), 0.7, 0.6), g);
+  float block = 60 * scale;
+  for (uint i = 0; i < 40; i++) {
+    float2 center = float2((sin(t / 30 + i) * 0.45 + 0.5) * w, (cos(t / 23 + i * 1.7) * 0.45 + 0.5) * h);
+    if (all(abs(p - center) < block)) {
+      c = hsv(frac((i * 37 + t * 3) / 360.0), 0.8, 0.85);
+    }
+  }
+  float lineH = h / 36, textTop = h * 0.55;
+  float row = floor((p.y - textTop) / lineH);
+  if (row >= 0 && row < 12 && p.x > 20 * scale && p.x < w * 0.4 && frac((p.y - textTop) / lineH) < 0.7) {
+    uint glyph = (uint)(p.x / (lineH * 0.55));
+    if ((hash(glyph * 131 + (uint)row * 7919 + frame * 104729) & 3) != 0 &&
+        frac(p.x / (lineH * 0.55)) < 0.75) {
+      c = float3(1, 1, 1);
+    }
+  }
+  float noise = 256 * scale;
+  float nx = fmod(t * 5 * scale, max(w - noise, 1)), ny = h - noise - 44 * scale;
+  if (p.x >= nx && p.x < nx + noise && p.y >= ny && p.y < ny + noise) {
+    c = (hash((uint)p.x + (uint)p.y * 4099 + frame * 2654435761) & 255) / 255.0;
+  }
+  return float4(c, 1);
+}
+)";
+
+    ComPtr<ID3DBlob> compile_shader(const char *source, const char *profile) {
+      ComPtr<ID3DBlob> code, errors;
+      HRESULT hr = D3DCompile(source, std::strlen(source), "test_pattern", nullptr, nullptr, "main", profile,
+                              D3DCOMPILE_OPTIMIZATION_LEVEL3, 0, &code, &errors);
+      if (FAILED(hr)) {
+        BOOST_LOG(error) << "PyroWave: test pattern shader: "
+                         << (errors ? static_cast<const char *>(errors->GetBufferPointer()) : "compile failed");
+        return nullptr;
+      }
+      return code;
+    }
+  }  // namespace
+
+  bool session_t::render_test_pattern(std::uint32_t frame_index) {
+    ComPtr<ID3D11Device> device;
+    context_->GetDevice(&device);
+    if (!shared_rtv_ && FAILED(device->CreateRenderTargetView(shared_texture_.Get(), nullptr, &shared_rtv_))) {
+      BOOST_LOG(error) << "PyroWave: could not create a render target view for the test pattern";
+      return false;
+    }
+    if (!pattern_ps_) {
+      auto vs = compile_shader(pattern_vs_hlsl, "vs_5_0");
+      auto ps = compile_shader(pattern_ps_hlsl, "ps_5_0");
+      D3D11_BUFFER_DESC desc = {};
+      desc.ByteWidth = 16;
+      desc.Usage = D3D11_USAGE_DEFAULT;
+      desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+      if (!vs || !ps ||
+          !check(device->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), nullptr, &pattern_vs_), "test pattern vertex shader") ||
+          !check(device->CreatePixelShader(ps->GetBufferPointer(), ps->GetBufferSize(), nullptr, &pattern_ps_), "test pattern pixel shader") ||
+          !check(device->CreateBuffer(&desc, nullptr, &pattern_cb_), "test pattern constants")) {
+        pattern_ps_.Reset();
+        return false;
+      }
+    }
+
+    const std::uint32_t params[4] = {frame_index, static_cast<std::uint32_t>(config_.source_width), static_cast<std::uint32_t>(config_.source_height), 0};
+    context_->UpdateSubresource(pattern_cb_.Get(), 0, nullptr, params, 0, 0);
+
+    D3D11_VIEWPORT viewport = {0.0f, 0.0f, static_cast<float>(config_.source_width), static_cast<float>(config_.source_height), 0.0f, 1.0f};
+    ID3D11RenderTargetView *rtv = shared_rtv_.Get();
+    ID3D11Buffer *cb = pattern_cb_.Get();
+    context_->OMSetRenderTargets(1, &rtv, nullptr);
+    context_->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+    context_->RSSetViewports(1, &viewport);
+    context_->RSSetState(nullptr);
+    context_->IASetInputLayout(nullptr);
+    context_->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    context_->VSSetShader(pattern_vs_.Get(), nullptr, 0);
+    context_->PSSetShader(pattern_ps_.Get(), nullptr, 0);
+    context_->PSSetConstantBuffers(0, 1, &cb);
+    context_->Draw(3, 0);
+    // Leave no binding behind for the other users of the immediate context
+    ID3D11RenderTargetView *none = nullptr;
+    context_->OMSetRenderTargets(1, &none, nullptr);
+    // Submit now: encode() waits on the fence signal queued after this draw, and the immediate context would
+    // otherwise hold the work until it flushes on its own (about 1 ms of host latency per frame)
+    context_->Flush();
+    return true;
   }
 
   bool session_t::encode(ID3D11Texture2D *source, std::size_t frame_budget, std::size_t packet_size) {

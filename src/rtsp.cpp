@@ -1053,6 +1053,7 @@ namespace rtsp_stream {
       }
 
       config.monitor.input_only = session.input_only;
+      config.monitor.testPattern = session.test_pattern;
 
       configuredBitrateKbps = util::from_view(args.at("x-ml-video.configuredBitrateKbps"sv));
 

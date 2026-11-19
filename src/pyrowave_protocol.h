@@ -15,6 +15,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string_view>
 
 namespace pyrowave {
   // Helios extension bits of ServerCodecModeSupport. Limelight.h (moonlight-common-c) defines the same values
@@ -30,6 +31,20 @@ namespace pyrowave {
 
   // Dynamic RTP payload type used in the SDP (97 is audio, 98 is AV1).
   constexpr int RTP_PAYLOAD_TYPE = 99;
+
+  // Helios extension of /launch: `testPattern=1` starts a test session. No application is started, no virtual
+  // display is created, and a PyroWave stream shows a synthetic picture rendered on the GPU instead of the
+  // captured screen, so a client can measure the device and the network without depending on what runs on the
+  // host. Other hosts ignore the argument. Only paired clients can launch.
+  constexpr std::string_view TEST_PATTERN_LAUNCH_ARG = "testPattern";
+
+  /**
+   * @brief True when the value of the testPattern /launch argument asks for a test session (exactly "1").
+   */
+  constexpr bool
+    is_test_pattern_request(std::string_view value) {
+    return value == "1";
+  }
 
   /**
    * @brief Returns the ServerCodecModeSupport bits to advertise.

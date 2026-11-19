@@ -121,6 +121,11 @@ namespace proc {
 
     void launch_input_only();
 
+    /**
+     * @brief Marks a test session as running without starting anything (see pyrowave::TEST_PATTERN_LAUNCH_ARG).
+     */
+    void launch_test_pattern();
+
     int execute(const ctx_t& _app, std::shared_ptr<rtsp_stream::launch_session_t> launch_session);
 
     /**
@@ -195,6 +200,8 @@ namespace proc {
   extern proc_t proc;
 
   extern int input_only_app_id;
+  // App id reported while a test session runs (no real application behind it)
+  constexpr int test_pattern_app_id = 0x7E5700;
   extern std::string input_only_app_id_str;
   extern int terminate_app_id;
   extern std::string terminate_app_id_str;

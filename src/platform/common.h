@@ -468,6 +468,14 @@ namespace platf {
      */
     virtual bool encode(std::size_t frame_budget, std::size_t packet_size) = 0;
 
+    /**
+     * @brief Test sessions: render the synthetic picture of this frame into the encoder input (no capture).
+     * @return false when the device cannot render it.
+     */
+    virtual bool render_test_pattern(std::uint32_t frame_index) {
+      return false;
+    }
+
     std::vector<std::uint8_t> bitstream;
     std::vector<std::pair<std::size_t, std::size_t>> packets;
   };

@@ -64,6 +64,14 @@ namespace pyrowave_enc {
     void clear();
 
     /**
+     * @brief Render the test picture of this frame into the session texture with a pixel shader (no CPU copy).
+     * Deterministic from the frame index: moving coloured blocks on a gradient, scrolling text-like lines and a
+     * noise square, the mix of the animated page used for the network measurements.
+     * @return false when the shader could not be created.
+     */
+    bool render_test_pattern(std::uint32_t frame_index);
+
+    /**
      * @brief Encode the last texture given to copy_from() or clear(). It can be called again to repeat a frame.
      * @param frame_budget Maximum size of the frame bitstream in bytes.
      * @param packet_size Largest packet the encoder may emit in bytes. Each packet is independently decodable.
@@ -92,6 +100,9 @@ namespace pyrowave_enc {
     Microsoft::WRL::ComPtr<ID3D11DeviceContext4> context_;
     Microsoft::WRL::ComPtr<ID3D11Texture2D> shared_texture_;
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> shared_rtv_;
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> pattern_vs_;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> pattern_ps_;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> pattern_cb_;
     Microsoft::WRL::ComPtr<ID3D11Fence> fence_;
     std::uint64_t timeline_ = 0;
 
