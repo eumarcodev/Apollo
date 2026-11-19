@@ -55,6 +55,7 @@ extern "C" {
 #define IDX_SET_CLIPBOARD 16
 #define IDX_FILE_TRANSFER_NONCE_REQUEST 17
 #define IDX_SET_ADAPTIVE_TRIGGERS 18
+#define IDX_SET_FRAME_BUDGET 19
 
 static const short packetTypes[] = {
   0x0305,  // Start A
@@ -76,6 +77,7 @@ static const short packetTypes[] = {
   0x3001,  // Set Clipboard (Apollo protocol extension)
   0x3002,  // File transfer nonce request (Apollo protocol extension)
   0x5503,  // Set Adaptive triggers (Sunshine protocol extension)
+  pyrowave::FRAME_BUDGET_PACKET_TYPE,  // Set PyroWave frame budget (Helios protocol extension)
 };
 
 namespace asio = boost::asio;
@@ -376,6 +378,7 @@ namespace stream {
 
       safe::mail_raw_t::event_t<bool> idr_events;
       safe::mail_raw_t::event_t<std::pair<int64_t, int64_t>> invalidate_ref_frames_events;
+      safe::mail_raw_t::event_t<std::uint32_t> frame_budget_events;
 
       std::unique_ptr<platf::deinit_t> qos;
     } video;
@@ -1052,6 +1055,16 @@ namespace stream {
         BOOST_LOG(debug) << "Permission File Upload deined for [" << session->device_name << "]";
         return;
       }
+    });
+
+    server->map(packetTypes[IDX_SET_FRAME_BUDGET], [](session_t *session, const std::string_view &payload) {
+      const auto budget = pyrowave::parse_frame_budget(payload);
+      if (budget == 0) {
+        BOOST_LOG(warning) << "type [IDX_SET_FRAME_BUDGET]: invalid payload, size "sv << payload.size();
+        return;
+      }
+      // The encode loop clamps it and ignores it when the stream is not PyroWave
+      session->video.frame_budget_events->raise(budget);
     });
 
     server->map(packetTypes[IDX_ENCRYPTED], [server](session_t *session, const std::string_view &payload) {
@@ -2343,6 +2356,7 @@ namespace stream {
 
       session->video.idr_events = mail->event<bool>(mail::idr);
       session->video.invalidate_ref_frames_events = mail->event<std::pair<int64_t, int64_t>>(mail::invalidate_ref_frames);
+      session->video.frame_budget_events = mail->event<std::uint32_t>(mail::pyrowave_frame_budget);
       session->video.lowseq = 0;
       session->video.ping_payload = launch_session.av_ping_payload;
       if (config.encryptionFlagsEnabled & SS_ENC_VIDEO) {

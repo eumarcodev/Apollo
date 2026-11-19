@@ -425,6 +425,26 @@ namespace video {
       }
       BOOST_LOG(info) << "PyroWave: packet size "sv << packet_size << " bytes, frame budget "sv << frame_budget / 1024 << " KB"sv
                       << ", still screen "sv << static_frame_budget / 1024 << " KB"sv;
+      start_frame_budget = frame_budget;
+      start_static_frame_budget = static_frame_budget;
+      framerate = config.framerate;
+    }
+
+    /**
+     * @brief Applies a frame budget asked by the client during the session (control message 0x3003), from the
+     * next frame. It is clamped between the 20 Mbit/s equivalent and the budget of the session start, and the
+     * still screen budget keeps its ratio to the frame budget. The bitstream buffer is sized per frame from the
+     * budget, so lowering it is always safe.
+     */
+    void set_runtime_frame_budget(std::uint32_t asked) {
+      const std::size_t budget = pyrowave::clamp_runtime_frame_budget(asked, start_frame_budget, framerate);
+      if (budget == frame_budget) {
+        return;
+      }
+      BOOST_LOG(info) << "PyroWave: client set the frame budget to "sv << budget / 1024 << " KB (asked "sv << asked / 1024
+                      << " KB, session start "sv << start_frame_budget / 1024 << " KB)"sv;
+      frame_budget = budget;
+      static_frame_budget = start_frame_budget > 0 ? start_static_frame_budget * budget / start_frame_budget : budget;
     }
 
     int convert(platf::img_t &img) override {
@@ -442,6 +462,9 @@ namespace video {
     std::size_t static_frame_budget;  // budget of a frame repeated because the screen did not change
     static constexpr std::size_t static_boost_factor = 4;
     std::size_t packet_size;
+    std::size_t start_frame_budget;
+    std::size_t start_static_frame_budget;
+    int framerate;
   };
 
   class nvenc_encode_session_t: public encode_session_t {
@@ -2049,6 +2072,16 @@ namespace video {
     auto packets = mail::man->queue<packet_t>(mail::video_packets);
     auto idr_events = mail->event<bool>(mail::idr);
     auto invalidate_ref_frames_events = mail->event<std::pair<int64_t, int64_t>>(mail::invalidate_ref_frames);
+    auto frame_budget_events = mail->event<std::uint32_t>(mail::pyrowave_frame_budget);
+    auto *budget_session = dynamic_cast<pyrowave_encode_session_t *>(session.get());
+    // Applies the frame budgets the client asked for since the last frame (only the last one matters)
+    const auto apply_frame_budget = [&]() {
+      while (frame_budget_events->peek()) {
+        if (auto budget = frame_budget_events->pop(0ms); budget && budget_session) {
+          budget_session->set_runtime_frame_budget(*budget);
+        }
+      }
+    };
 
     {
       // Load a dummy image into the AVFrame to ensure we have something to encode
@@ -2107,6 +2140,7 @@ namespace video {
         if (now > next_frame + period) {
           next_frame = now;  // fell behind (for example after a stall): do not burst to catch up
         }
+        apply_frame_budget();
         if (!pyrowave_session->device->render_test_pattern(static_cast<std::uint32_t>(frame_nr))) {
           BOOST_LOG(error) << "Could not render the test pattern"sv;
           return;
@@ -2150,6 +2184,8 @@ namespace video {
       if (requested_idr_frame) {
         session->request_idr_frame();
       }
+
+      apply_frame_budget();
 
       std::optional<std::chrono::steady_clock::time_point> frame_timestamp;
 
