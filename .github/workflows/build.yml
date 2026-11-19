@@ -71,14 +71,12 @@ jobs:
           done
           git submodule status --recursive | cut -c1-60
 
-      # path-type: inherit keeps the runner's official Node.js/npm on PATH, as required by docs/building.md.
-      # update: false skips the full system upgrade (pacman -Syuu, most of this step's time); the packages below still
-      # come from the current repositories and are cached by the action.
+      # path-type: inherit keeps the runner's official Node.js/npm on PATH, as required by docs/building.md
       - name: Set up MSYS2
         uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
-          update: false
+          update: true
           path-type: inherit
           install: >-
             git
