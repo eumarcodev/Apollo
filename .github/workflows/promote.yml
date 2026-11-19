@@ -1,7 +1,9 @@
 name: Promote to stable
 
 # Manual (Actions > Promote to stable > Run workflow): turns a tested release candidate into the stable release.
-#   1. builds the RC's commit again with the stable version (the version is baked into the binaries)
+#   1. takes the stable build (vX.Y.Z) that the RC's run made in parallel with the RC (rc.yml, artifact
+#      helios-windows-x64-stable); only when that artifact is gone (expired after 90 days, or the job failed) it builds
+#      the RC's commit again with the stable version (the version is baked into the binaries)
 #   2. fast-forwards master to that commit and publishes vX.Y.Z as the latest release
 #   3. bumps version.txt on develop to the next minor version, so the next merge starts the next RC series
 on:
@@ -24,10 +26,14 @@ jobs:
   prepare:
     name: Plan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     outputs:
       sha: ${{ steps.plan.outputs.sha }}
       version: ${{ steps.plan.outputs.version }}
       previous: ${{ steps.plan.outputs.previous }}
+      rc-run: ${{ steps.reuse.outputs.run }}
     steps:
       - name: Checkout develop (full history and tags)
         uses: actions/checkout@v7
@@ -66,20 +72,49 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           echo "Promote ${rc} (${sha}) to v${version}" | tee -a "$GITHUB_STEP_SUMMARY"
 
+      # The RC run of this commit built vX.Y.Z next to the RC; reuse it when its artifact is still there
+      - name: Find the stable build of the RC
+        id: reuse
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.plan.outputs.sha }}
+        run: |
+          set -euo pipefail
+          run=""
+          for id in $(gh run list --repo "${GITHUB_REPOSITORY}" --workflow rc.yml --commit "${SHA}" --status success \
+              --json databaseId --jq '.[].databaseId'); do
+            found=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/artifacts" \
+              --jq '[.artifacts[] | select(.name == "helios-windows-x64-stable" and (.expired | not))] | length')
+            if [[ "${found}" != "0" ]]; then run="${id}"; break; fi
+          done
+          echo "run=${run}" >> "$GITHUB_OUTPUT"
+          if [[ -n "${run}" ]]; then
+            echo "Reusing the stable build of RC run ${run}: no new build" | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No stable build of the RC is available: building it now" | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+
   build:
     name: Build
     needs: prepare
+    if: needs.prepare.outputs.rc-run == ''
     uses: ./.github/workflows/build.yml
     with:
       version: ${{ needs.prepare.outputs.version }}
       ref: ${{ needs.prepare.outputs.sha }}
+      artifact-name: helios-windows-x64-stable
 
   publish:
     name: Publish release
     needs: [prepare, build]
+    # Runs after the build, or without it when the RC's stable build is reused
+    if: >-
+      !cancelled() && needs.prepare.result == 'success' &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped')
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: read
     env:
       GH_TOKEN: ${{ github.token }}
       TAG: v${{ needs.prepare.outputs.version }}
@@ -99,8 +134,21 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v8
         with:
-          name: helios-windows-x64
+          name: helios-windows-x64-stable
+          run-id: ${{ needs.prepare.outputs.rc-run || github.run_id }}
+          github-token: ${{ github.token }}
           path: dist
+
+      # The files must carry the stable version, never an RC one
+      - name: Check the files
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          ls -la dist
+          test -f "dist/Helios-${VERSION}-windows-x64-installer.exe"
+          test -f "dist/Helios-${VERSION}-windows-x64-portable.zip"
+          [[ $(ls dist | wc -l) -eq 2 ]]
 
       # Release notes start at the previous stable release, not at the last RC
       - name: Create release
@@ -119,6 +167,8 @@ jobs:
   bump:
     name: Bump version.txt on develop
     needs: [prepare, publish]
+    # Explicit, because a skipped build upstream would otherwise skip this job too
+    if: ${{ !cancelled() && needs.publish.result == 'success' }}
     runs-on: ubuntu-latest
     # The release is already out; a failure here only means version.txt has to be bumped by hand
     continue-on-error: true
