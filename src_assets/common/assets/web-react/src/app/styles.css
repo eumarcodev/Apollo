@@ -502,6 +502,20 @@ a:hover .helios-logo-tile img {
   animation: helios-float 6s ease-in-out infinite;
 }
 
+/* ---------- Reorderable lists ---------- */
+
+/* Drop target line while dragging a row: a gold hairline with a glow. */
+.helios-drop-indicator {
+  display: block;
+  height: 2px;
+  background: var(--helios-gold-hi);
+  box-shadow: 0 0 10px var(--helios-gold-hi);
+}
+
+.helios-drop-indicator:not([data-drop-target]) {
+  visibility: hidden;
+}
+
 /* ---------- Motion ---------- */
 
 @keyframes helios-spin {
