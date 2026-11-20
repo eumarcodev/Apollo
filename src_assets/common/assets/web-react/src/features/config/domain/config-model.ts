@@ -2,18 +2,18 @@ import { AppError, type Platform } from '@/shared/kernel';
 import type { ConfigTab, OptionValue } from './config-tabs';
 
 /** A row of `global_prep_cmd` / `global_state_cmd` (`elevated` exists only on Windows). */
-export interface PrepCommand {
+export type PrepCommand = {
   do?: string;
   undo?: string;
   elevated?: boolean;
-}
+};
 
 /** A row of `server_cmd` (`elevated` exists only on Windows). */
-export interface ServerCommand {
+export type ServerCommand = {
   name?: string;
   cmd?: string;
   elevated?: boolean;
-}
+};
 
 /** `dd_mode_remapping`: display mode remapping lists of the display device options. */
 export interface DisplayModeRemapping {
