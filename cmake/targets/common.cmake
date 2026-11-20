@@ -56,19 +56,21 @@ else()
     set(NPM_BUILD_HOMEBREW "")
 endif()
 
-#WebUI build
+#WebUI build (React app, output in ${CMAKE_BINARY_DIR}/assets/web)
 find_program(NPM npm REQUIRED)
 
+set(WEB_UI_SOURCE_DIR "${CMAKE_SOURCE_DIR}/src_assets/common/assets/web-react")
 if (NPM_OFFLINE)
-    set(NPM_INSTALL_FLAGS "--offline")
+    set(NPM_INSTALL_ARGS install --offline)
 else()
-    set(NPM_INSTALL_FLAGS "")
+    set(NPM_INSTALL_ARGS ci)
 endif()
 
+# CYPRESS_INSTALL_BINARY=0: the e2e test runner is a dev dependency, the build never needs its binary.
 add_custom_target(web-ui ALL
-        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        WORKING_DIRECTORY "${WEB_UI_SOURCE_DIR}"
         COMMENT "Installing NPM Dependencies and Building the Web UI"
-        COMMAND "$<$<BOOL:${WIN32}>:cmd;/C>" "${NPM}" install ${NPM_INSTALL_FLAGS}
+        COMMAND "${CMAKE_COMMAND}" -E env "CYPRESS_INSTALL_BINARY=0" "$<$<BOOL:${WIN32}>:cmd;/C>" "${NPM}" ${NPM_INSTALL_ARGS}
         COMMAND "${CMAKE_COMMAND}" -E env "SUNSHINE_BUILD_HOMEBREW=${NPM_BUILD_HOMEBREW}" "SUNSHINE_SOURCE_ASSETS_DIR=${NPM_SOURCE_ASSETS_DIR}" "SUNSHINE_ASSETS_DIR=${NPM_ASSETS_DIR}" "$<$<BOOL:${WIN32}>:cmd;/C>" "${NPM}" run build  # cmake-lint: disable=C0301
         COMMAND_EXPAND_LISTS
         VERBATIM)
