@@ -115,10 +115,30 @@ describe('shell: theme', () => {
     cy.get('html').should('have.attr', 'data-theme', 'dark');
   });
 
-  it('follows the system theme while nothing is stored', () => {
+  it('is dark by default, whatever the system theme is', () => {
     stubServerApi();
     cy.visit('/', {
       onBeforeLoad(win) {
+        cy.stub(win, 'matchMedia').callsFake(
+          (query: string) =>
+            ({
+              matches: false,
+              media: query,
+              addEventListener: () => undefined,
+              removeEventListener: () => undefined,
+            }) as unknown as MediaQueryList,
+        );
+      },
+    });
+    cy.get('html').should('have.attr', 'data-theme', 'dark');
+    cy.get('[data-testid="sidebar"] [data-testid="theme-dark"]').should('have.attr', 'aria-pressed', 'true');
+  });
+
+  it('follows the system theme in auto', () => {
+    stubServerApi();
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem('theme', 'auto');
         cy.stub(win, 'matchMedia').callsFake(
           (query: string) =>
             ({
@@ -131,7 +151,37 @@ describe('shell: theme', () => {
       },
     });
     cy.get('html').should('have.attr', 'data-theme', 'dark');
-    cy.get('[data-testid="sidebar"] [data-testid="theme-dark"]').should('have.attr', 'aria-pressed', 'true');
+    cy.get('[data-testid="sidebar"] [data-testid="theme-auto"]').should('have.attr', 'aria-pressed', 'true');
+  });
+});
+
+describe('shell: sidebar collapse', () => {
+  beforeEach(() => {
+    cy.viewport(1920, 1080);
+  });
+
+  it('collapses to icons, keeps the choice after a reload and expands again', () => {
+    stubServerApi();
+    cy.visit('/apps');
+    cy.get('[data-testid="sidebar"]').invoke('outerWidth').should('be.greaterThan', 200);
+    cy.get('[data-testid="sidebar-toggle"]').click();
+    cy.get('[data-testid="sidebar"]').should('have.attr', 'data-collapsed', 'true');
+    cy.get('[data-testid="sidebar"]').invoke('outerWidth').should('be.lessThan', 100);
+    cy.get('[data-testid="sidebar"] [data-testid="nav-applications"]').should('have.attr', 'aria-current', 'page');
+    cy.reload();
+    cy.get('[data-testid="sidebar"]').should('have.attr', 'data-collapsed', 'true');
+    cy.get('[data-testid="sidebar-toggle"]').click();
+    cy.get('[data-testid="sidebar"]').should('have.attr', 'data-collapsed', 'false');
+  });
+
+  it('keeps a gap between the sidebar and the window edges', () => {
+    stubServerApi();
+    cy.visit('/');
+    cy.get('[data-testid="sidebar"]').then(($el) => {
+      const rect = $el[0].getBoundingClientRect();
+      expect(rect.left).to.be.at.least(8);
+      expect(rect.top).to.be.at.least(8);
+    });
   });
 });
 

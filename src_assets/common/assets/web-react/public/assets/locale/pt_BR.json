@@ -516,6 +516,8 @@
   "navbar": {
     "applications": "Aplicativos",
     "close_navigation": "Fechar navegação",
+    "collapse_sidebar": "Recolher barra lateral",
+    "expand_sidebar": "Expandir barra lateral",
     "configuration": "Configuração",
     "home": "Início",
     "main_navigation": "Navegação principal",

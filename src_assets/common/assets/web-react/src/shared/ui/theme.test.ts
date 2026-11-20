@@ -37,9 +37,9 @@ describe('theme', () => {
     expect(getStoredTheme(broken)).toBeNull();
   });
 
-  it('prefers the stored theme, then the system theme', () => {
+  it('prefers the stored theme and defaults to dark', () => {
     expect(getPreferredTheme(environment('light', true).env)).toBe('light');
-    expect(getPreferredTheme(environment(null, true).env)).toBe('dark');
+    expect(getPreferredTheme(environment(null, false).env)).toBe('dark');
     expect(resolveTheme('auto', environment(null, false).env)).toBe('light');
   });
 
@@ -68,7 +68,6 @@ describe('theme', () => {
     const stop = initTheme(auto.env);
     expect(auto.root.getAttribute('data-theme')).toBe('dark');
     auto.media.matches = false;
-    auto.values.delete('theme');
     auto.listeners.forEach((listener) => listener());
     expect(auto.root.getAttribute('data-theme')).toBe('light');
     stop();

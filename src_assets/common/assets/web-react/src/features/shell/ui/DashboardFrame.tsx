@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Brand } from './Brand';
 import { SidebarContent } from './SidebarContent';
+import { useSidebarCollapsed } from './use-sidebar-collapsed';
 
 export interface DashboardFrameProps {
   /** Defaults to `window.location.pathname`; tests pass it explicitly. */
@@ -20,14 +21,26 @@ export interface DashboardFrameProps {
 export function DashboardFrame({ pathname = window.location.pathname, topBar, children }: DashboardFrameProps) {
   const { t } = useTranslation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [collapsed, toggleCollapsed] = useSidebarCollapsed();
   return (
-    <div className="flex h-screen bg-background text-foreground" data-testid="dashboard-frame">
-      <aside className="hidden w-64 shrink-0 border-r border-separator bg-surface lg:block" data-testid="sidebar">
-        <SidebarContent pathname={pathname} />
+    <div className="flex h-screen gap-4 bg-background p-3 text-foreground lg:p-4" data-testid="dashboard-frame">
+      <aside
+        className={[
+          'hidden shrink-0 overflow-hidden rounded-2xl border border-separator bg-surface shadow-sm',
+          'transition-[width] duration-200 lg:block',
+          collapsed ? 'w-[76px]' : 'w-64',
+        ].join(' ')}
+        data-testid="sidebar"
+        data-collapsed={collapsed}
+      >
+        <SidebarContent pathname={pathname} collapsed={collapsed} onToggleCollapsed={toggleCollapsed} />
       </aside>
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col gap-4">
         <header
-          className="flex h-14 shrink-0 items-center gap-3 border-b border-separator bg-surface px-4"
+          className={[
+            'flex h-14 shrink-0 items-center gap-3 rounded-2xl border border-separator bg-surface px-3 shadow-sm',
+            topBar ? '' : 'lg:hidden',
+          ].join(' ')}
           data-testid="top-bar"
         >
           <Button
@@ -47,7 +60,7 @@ export function DashboardFrame({ pathname = window.location.pathname, topBar, ch
           </div>
           <div className="ml-auto flex items-center gap-2">{topBar}</div>
         </header>
-        <main className="flex-1 overflow-y-auto" data-layout="shell">
+        <main className="min-h-0 flex-1 overflow-y-auto rounded-2xl" data-layout="shell">
           {children}
         </main>
       </div>

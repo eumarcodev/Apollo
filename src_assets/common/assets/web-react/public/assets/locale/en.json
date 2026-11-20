@@ -516,6 +516,8 @@
   "navbar": {
     "applications": "Applications",
     "close_navigation": "Close navigation",
+    "collapse_sidebar": "Collapse sidebar",
+    "expand_sidebar": "Expand sidebar",
     "configuration": "Configuration",
     "home": "Home",
     "main_navigation": "Main navigation",

@@ -110,9 +110,56 @@ describe('DashboardFrame', () => {
   });
 });
 
+describe('sidebar collapse', () => {
+  it('collapses to icons, keeps the links reachable and remembers the choice', async () => {
+    const user = userEvent.setup();
+    await renderWithProviders(<DashboardFrame pathname="/pin">x</DashboardFrame>);
+    const sidebar = screen.getByTestId('sidebar');
+    expect(sidebar).toHaveAttribute('data-collapsed', 'false');
+    const toggle = within(sidebar).getByTestId('sidebar-toggle');
+    expect(toggle).toHaveAccessibleName('Collapse sidebar');
+    await user.click(toggle);
+    expect(sidebar).toHaveAttribute('data-collapsed', 'true');
+    expect(localStorage.getItem('sidebarCollapsed')).toBe('true');
+    expect(within(sidebar).getByTestId('nav-pin')).toHaveAccessibleName('PIN');
+    expect(within(sidebar).getByTestId('nav-pin')).toHaveAttribute('aria-current', 'page');
+    expect(toggle).toHaveAccessibleName('Expand sidebar');
+    await user.click(toggle);
+    expect(sidebar).toHaveAttribute('data-collapsed', 'false');
+    expect(localStorage.getItem('sidebarCollapsed')).toBe('false');
+  });
+
+  it('starts collapsed when it was collapsed before', async () => {
+    localStorage.setItem('sidebarCollapsed', 'true');
+    await renderWithProviders(<DashboardFrame pathname="/">x</DashboardFrame>);
+    expect(screen.getByTestId('sidebar')).toHaveAttribute('data-collapsed', 'true');
+  });
+
+  it('works when localStorage is blocked', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    await renderWithProviders(<DashboardFrame pathname="/">x</DashboardFrame>);
+    await user.click(screen.getByTestId('sidebar-toggle'));
+    expect(screen.getByTestId('sidebar')).toHaveAttribute('data-collapsed', 'true');
+  });
+
+  it('does not show the collapse button in the drawer', async () => {
+    const user = userEvent.setup();
+    await renderWithProviders(<DashboardFrame pathname="/">x</DashboardFrame>);
+    await user.click(screen.getByTestId('menu-button'));
+    const drawer = await screen.findByTestId('drawer');
+    expect(within(drawer).queryByTestId('sidebar-toggle')).toBeNull();
+  });
+});
+
 describe('theme switcher', () => {
-  it('shows the system theme as selected when nothing is stored', async () => {
-    mockSystemTheme(true);
+  it('defaults to dark when nothing is stored, whatever the system theme is', async () => {
+    mockSystemTheme(false);
     await renderWithProviders(<DashboardFrame pathname="/">x</DashboardFrame>);
     const sidebar = screen.getByTestId('sidebar');
     expect(within(sidebar).getByTestId('theme-dark')).toHaveAttribute('aria-pressed', 'true');

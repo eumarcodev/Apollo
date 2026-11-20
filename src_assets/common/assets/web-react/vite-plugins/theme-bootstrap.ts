@@ -2,8 +2,8 @@ import type { Plugin } from 'vite';
 
 /**
  * Blocking script that applies the theme before the first paint (no flash of the wrong theme). It mirrors
- * `src/shared/ui/theme.ts` (stored `light` | `dark` | `auto` under `localStorage.theme`, system theme when nothing
- * valid is stored, `class` + `data-theme` on `<html>`); `theme-bootstrap.test.ts` checks both agree.
+ * `src/shared/ui/theme.ts` (stored `light` | `dark` | `auto` under `localStorage.theme`, dark when nothing
+ * valid is stored, system theme for `auto`, `class` + `data-theme` on `<html>`); `theme-bootstrap.test.ts` checks both agree.
  */
 export const THEME_BOOTSTRAP_SCRIPT = `(function () {
   try {
@@ -12,7 +12,7 @@ export const THEME_BOOTSTRAP_SCRIPT = `(function () {
       stored = window.localStorage.getItem('theme');
     } catch (e) {}
     var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var theme = stored === 'light' || stored === 'dark' ? stored : dark ? 'dark' : 'light';
+    var theme = stored === 'light' || stored === 'dark' ? stored : stored === 'auto' ? (dark ? 'dark' : 'light') : 'dark';
     var root = document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
