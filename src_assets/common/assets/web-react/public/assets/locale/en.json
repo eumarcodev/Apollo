@@ -685,6 +685,8 @@
     "unexpected_error": "An unexpected error occurred while rendering this page.",
     "reload": "Reload",
     "remove_row": "Remove row",
-    "insert_row": "Insert row"
+    "insert_row": "Insert row",
+    "locale_en": "English",
+    "locale_pt_BR": "Português (Brasil)"
   }
 }

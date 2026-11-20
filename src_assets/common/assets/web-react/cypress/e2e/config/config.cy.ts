@@ -30,7 +30,7 @@ describe('config: page core', () => {
       tabIds().should('deep.equal', TABS[platform]);
       cy.get('[data-testid="config-tab-general"]').should('have.attr', 'aria-selected', 'true');
       cy.get('[data-testid="config-panel-general"] h2').should('have.text', 'General');
-      cy.get('[data-testid="config-tab-placeholder"]').should('have.attr', 'data-tab', 'general');
+      cy.get('[data-testid="config-panel-general"] [data-testid="config-general"]').should('be.visible');
     });
   }
 

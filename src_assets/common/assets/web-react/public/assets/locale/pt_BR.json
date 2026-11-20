@@ -685,6 +685,8 @@
     "unexpected_error": "Ocorreu um erro inesperado ao exibir esta página.",
     "reload": "Recarregar",
     "remove_row": "Remover linha",
-    "insert_row": "Inserir linha"
+    "insert_row": "Inserir linha",
+    "locale_en": "English",
+    "locale_pt_BR": "Português (Brasil)"
   }
 }

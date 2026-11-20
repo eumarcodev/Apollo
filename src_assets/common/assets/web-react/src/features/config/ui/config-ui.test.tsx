@@ -90,7 +90,7 @@ describe('ConfigPage', () => {
     expect(screen.getByRole('tab', { name: 'General' })).toHaveAttribute('aria-selected', 'true');
     const panel = screen.getByRole('tabpanel');
     expect(within(panel).getByRole('heading', { level: 2, name: 'General' })).toBeInTheDocument();
-    expect(within(panel).getByTestId('config-tab-placeholder')).toHaveAttribute('data-tab', 'general');
+    expect(within(panel).getByTestId('config-general')).toBeInTheDocument();
   });
 
   it('shows the Linux and macOS tabs', async () => {
