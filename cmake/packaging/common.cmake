@@ -19,11 +19,12 @@ set(CPACK_STRIP_FILES YES)
 # install common assets
 install(DIRECTORY "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/"
         DESTINATION "${SUNSHINE_ASSETS_DIR}"
-        PATTERN "web" EXCLUDE)
+        PATTERN "web" EXCLUDE
+        PATTERN "web-react" EXCLUDE)  # web UI sources: only the built app below is installed
 # copy assets to build directory, for running without install
 file(GLOB_RECURSE ALL_ASSETS
         RELATIVE "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/" "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/*")
-list(FILTER ALL_ASSETS EXCLUDE REGEX "^web/.*$")  # Filter out the web directory
+list(FILTER ALL_ASSETS EXCLUDE REGEX "^web(-react)?/.*$")  # Filter out the web UI source directories
 foreach(asset ${ALL_ASSETS})  # Copy assets to build directory, excluding the web directory
     file(COPY "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/${asset}"
             DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/assets")
