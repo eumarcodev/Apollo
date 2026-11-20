@@ -1,7 +1,4 @@
-import { createPage, PagePlaceholder } from '@/app';
+import { createPage } from '@/app';
+import { TroubleshootingPage } from '@/features/troubleshooting';
 
-function Page() {
-  return <PagePlaceholder page="troubleshooting" titleKey="navbar.troubleshoot" />;
-}
-
-void createPage(Page);
+void createPage(TroubleshootingPage);

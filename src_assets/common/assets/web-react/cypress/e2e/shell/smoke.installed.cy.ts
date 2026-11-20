@@ -22,6 +22,8 @@ describe('installed smoke: the host serves the React UI', () => {
         cy.get('[data-testid="login-page"]').should('have.attr', 'data-page', 'login');
       } else if (page === 'password') {
         cy.get('[data-testid="password-form"]').should('be.visible');
+      } else if (page === 'troubleshooting') {
+        cy.get('[data-testid="card-logs"]').should('be.visible');
       } else {
         cy.get('[data-testid="page-placeholder"]').should('have.attr', 'data-page').and('eq', page);
       }

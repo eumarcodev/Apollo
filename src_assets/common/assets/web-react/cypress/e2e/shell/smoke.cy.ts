@@ -22,6 +22,8 @@ describe('smoke: every page renders inside the shared providers', () => {
           cy.get(`[data-testid="${page}-page"]`).should('have.attr', 'data-page', page);
         } else if (page === 'password') {
           cy.get('[data-testid="password-form"]').should('be.visible');
+        } else if (page === 'troubleshooting') {
+          cy.get('[data-testid="card-logs"]').should('be.visible');
         } else {
           cy.get('[data-testid="page-placeholder"]').should('have.attr', 'data-page', page);
         }
@@ -52,7 +54,7 @@ describe('smoke: every page renders inside the shared providers', () => {
     it(`serves the same pages for a ${platform} host`, () => {
       stubServerApi({ platform });
       cy.visit('/troubleshooting');
-      cy.get('[data-testid="page-placeholder"]').should('be.visible');
+      cy.get('[data-testid="card-logs"]').should('be.visible');
     });
   }
 
