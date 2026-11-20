@@ -32,6 +32,9 @@ export function stubServerApi({ platform = 'windows', locale = 'en', overrides =
       },
     ).as('config');
   });
+  // The home page reads the host log and checks GitHub for updates: nothing leaves the machine in e2e.
+  cy.intercept({ method: 'GET', pathname: '/api/logs' }, { statusCode: 200, body: '' }).as('logs');
+  cy.intercept({ method: 'GET', url: 'https://api.github.com/repos/**' }, { statusCode: 200, body: [] }).as('releases');
   for (const [route, response] of Object.entries(overrides)) {
     const [method, pathname] = route.split(' ');
     cy.intercept({ method, pathname }, response);
