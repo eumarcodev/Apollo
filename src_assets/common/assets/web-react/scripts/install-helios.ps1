@@ -6,8 +6,8 @@
   -Installer <path>  installs a build of the React web UI and checks that the installed index.html is the React UI.
   -Restore   <path>  reinstalls an official release the same way (no React check).
   Runs the NSIS installer with /S elevated (Start-Process -Verb RunAs -Wait), waits up to 120 s for the
-  HeliosService service and for https://localhost:47990/login, writes a log next to the installer
-  (install-helios-<time>.log) and prints "OK <version>" or "ABORT <reason>" as its last line.
+  HeliosService service and for https://localhost:47990/login, writes a log under %TEMP%\helios-install-logs
+  and prints "OK <version>" or "ABORT <reason>" as its last line.
 #>
 [CmdletBinding(DefaultParameterSetName = 'Install')]
 param(
@@ -30,7 +30,9 @@ if (-not (Test-Path -LiteralPath $exe)) {
   exit 1
 }
 $exe = (Resolve-Path -LiteralPath $exe).Path
-$logFile = Join-Path (Split-Path -Parent $exe) ("install-helios-{0}.log" -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
+$logDir = Join-Path $env:TEMP "helios-install-logs"
+New-Item -ItemType Directory -Force $logDir | Out-Null
+$logFile = Join-Path $logDir ("install-helios-{0}.log" -f (Get-Date -Format "yyyyMMdd-HHmmss"))
 
 function Write-Log([string]$message) {
   $line = '{0} {1}' -f (Get-Date -Format 'HH:mm:ss'), $message
