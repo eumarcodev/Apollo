@@ -19,9 +19,11 @@
     "enabled_def": "Ativado (padrão)",
     "enabled_def_cbox": "Padrão: marcado",
     "error": "Erro!",
+    "internal_server_error": "Erro interno do servidor",
     "learn_more": "Aprender Mais",
     "note": "Observação:",
     "password": "Senha",
+    "password_mismatch": "As senhas não coincidem",
     "run_as": "Executar como Administrador",
     "save": "Salvar",
     "see_more": "Ver Mais",
@@ -503,6 +505,9 @@
     "wan_encryption_mode_desc": "Isso determina quando a criptografia será usada durante a transmissão pela Internet. A criptografia pode reduzir o desempenho da transmissão, principalmente em servidores e clientes menos potentes."
   },
   "login": {
+    "failed_credentials": "Falha no login: verifique o nome de usuário e a senha",
+    "failed_reason": "Falha no login: {{reason}}",
+    "failed_status": "Falha no login: o servidor respondeu {{status}}",
     "save_password": "Lembrar senha"
   },
   "index": {
