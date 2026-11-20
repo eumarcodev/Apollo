@@ -1,0 +1,32 @@
+import { loginInstalled } from '../../support/installed';
+import { PAGES } from '../../support/pages';
+
+// Read-only: visits pages and reads files; nothing on the host is changed.
+describe('installed smoke: the host serves the React UI', () => {
+  beforeEach(() => {
+    loginInstalled();
+  });
+
+  for (const { page, route } of PAGES) {
+    it(`${route} is the React UI`, () => {
+      cy.visit(route);
+      cy.get('meta[name="helios-web-ui"]').should('have.attr', 'content', 'react');
+      // With credentials set the server sends /welcome to /, so check the page that actually answered.
+      cy.get('[data-testid="page-placeholder"]')
+        .should('have.attr', 'data-page')
+        .and('eq', page === 'welcome' ? 'index' : page);
+    });
+  }
+
+  it('serves the locales, the favicon and the logo route', () => {
+    cy.request('/assets/locale/en.json').its('body').should('have.property', 'navbar');
+    cy.request('/assets/locale/pt_BR.json').its('body').should('have.property', 'navbar');
+    cy.request('/images/helios.ico').its('headers').its('content-type').should('eq', 'image/x-icon');
+    cy.request('/images/logo-helios-45.png').its('headers').its('content-type').should('eq', 'image/png');
+  });
+
+  it('answers the shared API calls the base uses', () => {
+    cy.request('/api/configLocale').its('body').should('have.property', 'locale');
+    cy.request('/api/config').its('body').should('have.property', 'platform');
+  });
+});

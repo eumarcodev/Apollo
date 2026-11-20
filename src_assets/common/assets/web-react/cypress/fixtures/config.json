@@ -1,0 +1,10 @@
+{
+  "status": true,
+  "platform": "windows",
+  "version": "1.0.0-e2e",
+  "update_repo": "eumarcodev/Helios-Server",
+  "vdisplayStatus": 0,
+  "locale": "en",
+  "sunshine_name": "E2E Host",
+  "min_log_level": "2"
+}
