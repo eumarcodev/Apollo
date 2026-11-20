@@ -14,6 +14,10 @@ describe('smoke: every page renders inside the shared providers', () => {
         cy.get('meta[name="helios-web-ui"]').should('have.attr', 'content', 'react');
         if (page === 'index') {
           cy.get('[data-testid="version-card"]').should('be.visible');
+        } else if (page === 'config') {
+          cy.get('[data-testid="config-tabs"]').should('be.visible');
+        } else if (page === 'pin') {
+          cy.get('[data-testid="pairing-card"]').should('be.visible');
         } else if (page === 'welcome' || page === 'login') {
           cy.get(`[data-testid="${page}-page"]`).should('have.attr', 'data-page', page);
         } else {

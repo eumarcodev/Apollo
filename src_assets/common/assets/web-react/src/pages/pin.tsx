@@ -1,7 +1,4 @@
-import { createPage, PagePlaceholder } from '@/app';
+import { createPage } from '@/app';
+import { PairingPage } from '@/features/pairing';
 
-function Page() {
-  return <PagePlaceholder page="pin" titleKey="navbar.pin" />;
-}
-
-void createPage(Page);
+void createPage(PairingPage);
