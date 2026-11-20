@@ -20,6 +20,8 @@ describe('smoke: every page renders inside the shared providers', () => {
           cy.get('[data-testid="pairing-card"]').should('be.visible');
         } else if (page === 'welcome' || page === 'login') {
           cy.get(`[data-testid="${page}-page"]`).should('have.attr', 'data-page', page);
+        } else if (page === 'password') {
+          cy.get('[data-testid="password-form"]').should('be.visible');
         } else {
           cy.get('[data-testid="page-placeholder"]').should('have.attr', 'data-page', page);
         }
