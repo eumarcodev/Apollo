@@ -700,6 +700,7 @@
     "av_section_audio": "Áudio",
     "av_section_capture": "Captura",
     "av_section_display": "Modos de exibição",
+    "av_section_display_device": "Dispositivo de exibição",
     "locale_en": "English",
     "locale_pt_BR": "Português (Brasil)",
     "vdisplay_hint": "Verifique se o driver SudoVDA está instalado na versão mais recente e habilitado corretamente.",
