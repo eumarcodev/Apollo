@@ -1,7 +1,4 @@
-import { createPage, PagePlaceholder } from '@/app';
+import { createPage } from '@/app';
+import { PasswordPage } from '@/features/password';
 
-function Page() {
-  return <PagePlaceholder page="password" titleKey="navbar.password" />;
-}
-
-void createPage(Page);
+void createPage(PasswordPage);
