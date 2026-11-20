@@ -272,7 +272,7 @@ describe('apps: export and editor', () => {
     cy.get('[data-testid="add-app"]').click();
     cy.get('h1').should('have.text', 'New App');
     cy.get('[data-testid="editor-export"]').should('be.disabled');
-    cy.get('[data-testid="editor-pending"]').should('be.visible');
+    cy.get('[data-testid="app-editor"]').should('be.visible');
     cy.get('[data-testid="editor-cancel"]').click();
     cy.get('[data-testid="apps-table"]').should('be.visible');
   });

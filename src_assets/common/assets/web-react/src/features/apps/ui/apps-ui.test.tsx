@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ActionResult, AppsBrowser, AppsPort } from '@/features/apps/application/ports';
 import type { AppsListing } from '@/features/apps/domain/app-list';
-import { createTestI18n, renderWithProviders } from '@/shared/testing';
+import { buildServerConfigDto, createTestI18n, jsonResponse, renderWithProviders } from '@/shared/testing';
 import { notify } from '@/shared/ui';
 import { AppsPage } from './AppsPage';
 
@@ -36,6 +36,7 @@ function fakes(first: AppsListing = LISTING, hostname = 'localhost'): Fakes {
     launch: vi.fn(() => Promise.resolve(OK)),
     close: vi.fn(() => Promise.resolve(OK)),
     remove: vi.fn(() => Promise.resolve(OK)),
+    save: vi.fn(() => Promise.resolve(OK)),
   };
   const browser: AppsBrowser = { hostname, openLink: vi.fn(), download: vi.fn() };
   return { port, browser, listings };
@@ -58,6 +59,7 @@ async function accept(user: ReturnType<typeof userEvent.setup>) {
 }
 
 beforeEach(() => {
+  vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(jsonResponse(buildServerConfigDto())));
   vi.spyOn(notify, 'error').mockReturnValue('t');
   vi.spyOn(notify, 'info').mockReturnValue('t');
 });
@@ -289,7 +291,7 @@ describe('AppsPage: export and editor', () => {
     await user.click(screen.getByTestId('add-app'));
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('New App');
     expect(screen.getByTestId('editor-export')).toBeDisabled();
-    expect(screen.getByTestId('editor-pending')).toBeInTheDocument();
+    expect(screen.getByTestId('app-editor')).toBeInTheDocument();
     await user.click(screen.getByTestId('editor-cancel'));
     expect(await screen.findByTestId('apps-table')).toBeInTheDocument();
   });
