@@ -48,7 +48,7 @@ Where a new config option belongs (all of them, or it is incomplete): field in `
 - **IMPORTANT: the version file is `version.txt`, NEVER `VERSION`.** The repo root is on the include path and `VERSION` shadows the C++ `<version>` header on Windows.
 - **Do NOT reintroduce the FFmpeg flush for `*_amf` codecs** in `~avcodec_encode_session_t` (`src/video.cpp`): AMD AMF hangs forever there at session teardown (`amfrtdrv64.dll`).
 - Keep `BOOST_VERSION` in `cmake/dependencies/Boost_Sunshine.cmake` equal to the MSYS2 Boost package (`find_package(... EXACT)`). A mismatch falls back to FetchContent, which is slow and with CMake 4.x fails in Boost.Locale unless `cmake/dependencies/patch_boost_locale.cmake` applies.
-- Branches: `feature/*` from `develop`, PR to `develop`. **No `release/*`, `hotfix/*` or nightly.** Never commit directly to `develop` or `master`.
+- Branches: `feature/*` from `develop` (the default branch), PR to `develop`. **No `release/*`, `hotfix/*` or nightly.** Never commit directly to `develop` or `master`: the `master-develop` ruleset rejects direct pushes, force-pushes and deletion of both (no bypass, not even for GitHub Actions).
 - Commits and PRs are authored as `eumarcodev` (noreply `3676046+eumarcodev@users.noreply.github.com`, set via `includeIf`); do not let the "Azure Pipeline" default identity through.
 - Call the product Helios and its protocol additions "Helios extensions"; do not use Apollo upstream as a reference. Do not use Nintendo/Zelda names.
 - Local test instances: use the default ports (some Windows ranges such as 51000/51021 fail with "forbidden by access permissions").
@@ -61,7 +61,7 @@ Where a new config option belongs (all of them, or it is incomplete): field in `
 - PRs follow `.github/PULL_REQUEST_TEMPLATE.md` (Problem / Changes / Testing / Notes / AI usage) and say honestly what was not tested; performance PRs carry the measured before/after numbers.
 - Conventional Commits (`feat(web):`, `fix(video):`, `ci:`, `docs(github):`), one commit per logical phase. Keep temporary debug code out of commits.
 - C/C++ style follows `.clang-format`.
-- Releases: each merge to `develop` that changes more than Markdown/`docs/`/`.github/` (except `build.yml`)/`version.txt` publishes `vX.Y.Z-rc.N`. Stable = PR `develop` → `master`; its merge runs `stable-queue.yml` → `promote.yml`, which publishes the RC's stable artifact and bumps `version.txt` on `develop`. Patch release = PR that sets `version.txt` to `X.Y.Z+1`. After any merge, follow the run it starts to the end before calling the work done.
+- Releases: each merge to `develop` that changes more than Markdown/`docs/`/`.github/` (except `build.yml`)/`version.txt` publishes `vX.Y.Z-rc.N`. Stable = PR `develop` → `master`; its merge runs `stable-queue.yml` → `promote.yml`, which publishes the RC's stable artifact and opens a PR `chore: start X.Y+1.0 ...` that bumps `version.txt` on `develop`: merge it before the next merge into `develop`, or `rc-queue.yml` refuses the RC. Patch release = PR that sets `version.txt` to `X.Y.Z+1`. After any merge, follow the run it starts to the end before calling the work done.
 - Linux/macOS code paths exist but are not built or tested in this fork; it is developed and tested on Windows.
 
 ## 5. Out of scope
@@ -71,6 +71,6 @@ Do not change without being asked:
 - **README credits and lineage section** (ClassicOldSong, LizardByte/Sunshine, Moonlight): keep it when renaming.
 - **`src_assets/windows/misc/migration/migrate-from-apollo.bat`**: run by the NSIS installer and verified by hand on a real upgrade (2026-11-16).
 - **`third-party/` submodules**: never edit them in place; library changes go through the fork's own PR, then a submodule bump here.
-- **Release workflows and `master`**: `master` only moves through the `develop` → `master` PR or `promote.yml`; do not release, promote or edit `.github/workflows` unless asked.
+- **Release workflows and `master`**: `master` only moves through the `develop` → `master` PR (the manual `promote.yml` fast-forward is rejected by the ruleset); do not release, promote or edit `.github/workflows` unless asked.
 - **The user's uncommitted drafts** in this checkout (e.g. `branding/logo-drafts/`): do not commit, discard or stash them. `test_sunshine.log` and `write_file_test_*.txt` are outputs of `test_sunshine` when run from the repo root; never commit them either.
 - **The installed Helios** in `C:\Program Files\Helios` and `HeliosService`: changes need elevation; restore the official exe/DLL/config after any test.
