@@ -700,6 +700,7 @@
     "av_section_audio": "Audio",
     "av_section_capture": "Capture",
     "av_section_display": "Display modes",
+    "capture_wgc": "Windows.Graphics.Capture (beta)",
     "locale_en": "English",
     "locale_pt_BR": "Português (Brasil)",
     "vdisplay_hint": "Please ensure SudoVDA driver is installed to the latest version and enabled properly.",
