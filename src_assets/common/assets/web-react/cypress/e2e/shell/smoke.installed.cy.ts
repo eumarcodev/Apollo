@@ -14,6 +14,14 @@ describe('installed smoke: the host serves the React UI', () => {
       // With credentials set the server sends /welcome to /, so check the page that actually answered.
       if (page === 'index' || page === 'welcome') {
         cy.get('[data-testid="version-card"]').should('be.visible');
+      } else if (page === 'config') {
+        cy.get('[data-testid="config-tabs"]').should('be.visible');
+      } else if (page === 'pin') {
+        cy.get('[data-testid="pairing-card"]').should('be.visible');
+      } else if (page === 'login') {
+        cy.get('[data-testid="login-page"]').should('have.attr', 'data-page', 'login');
+      } else if (page === 'password') {
+        cy.get('[data-testid="password-form"]').should('be.visible');
       } else if (page === 'troubleshooting') {
         cy.get('[data-testid="card-logs"]').should('be.visible');
       } else {
