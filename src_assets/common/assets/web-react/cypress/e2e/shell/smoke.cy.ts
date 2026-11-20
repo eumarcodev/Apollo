@@ -16,6 +16,8 @@ describe('smoke: every page renders inside the shared providers', () => {
           cy.get('[data-testid="version-card"]').should('be.visible');
         } else if (page === 'config') {
           cy.get('[data-testid="config-tabs"]').should('be.visible');
+        } else if (page === 'pin') {
+          cy.get('[data-testid="pairing-card"]').should('be.visible');
         } else {
           cy.get('[data-testid="page-placeholder"]').should('have.attr', 'data-page', page);
         }
