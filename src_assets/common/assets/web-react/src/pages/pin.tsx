@@ -1,4 +1,4 @@
 import { createPage } from '@/app';
-import { PairingPage } from '@/features/pairing';
+import { PinPage } from '@/features/clients';
 
-void createPage(PairingPage);
+void createPage(PinPage);

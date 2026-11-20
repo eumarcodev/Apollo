@@ -32,6 +32,8 @@ export interface CommandListEditorProps<Row extends CommandRow> {
   /** New empty row; receives the platform so Windows rows can carry `elevated: false`. */
   createRow: (platform: Platform) => Row;
   addLabelKey?: string;
+  /** Where the insert button puts the new row: before (default, the config tables) or after the clicked row. */
+  insertPosition?: 'before' | 'after';
 }
 
 function isVisible<Row extends CommandRow>(column: CommandColumn<Row>, platform: Platform): boolean {
@@ -50,6 +52,7 @@ export function CommandListEditor<Row extends CommandRow>({
   platform,
   createRow,
   addLabelKey = 'config.add',
+  insertPosition = 'before',
 }: CommandListEditorProps<Row>) {
   const { t } = useTranslation();
   const visible = columns.filter((column) => isVisible(column, platform));
@@ -123,7 +126,9 @@ export function CommandListEditor<Row extends CommandRow>({
                   size="sm"
                   aria-label={t('react_ui.insert_row')}
                   data-testid={`${idPrefix}-insert-${index}`}
-                  onPress={() => onChange(insertAt(rows, index, createRow(platform)))}
+                  onPress={() =>
+                    onChange(insertAt(rows, insertPosition === 'after' ? index + 1 : index, createRow(platform)))
+                  }
                 >
                   <Plus className="size-4" aria-hidden="true" />
                 </Button>
