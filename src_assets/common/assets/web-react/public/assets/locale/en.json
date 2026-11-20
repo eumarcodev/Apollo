@@ -628,7 +628,16 @@
     "unpair_all_error": "Error while unpairing",
     "unpair_single_no_devices": "There are no paired devices.",
     "unpair_single_success": "However, the device(s) may still be in an active session. Use the 'Force Close' button above to end any open sessions.",
-    "unpair_single_unknown": "Unknown Client"
+    "unpair_single_unknown": "Unknown Client",
+    "connected": "Connected",
+    "disconnect_client": "Disconnect device",
+    "edit_client": "Edit device",
+    "perm_group_action": "Actions",
+    "perm_group_input": "Input",
+    "perm_group_operation": "Operations",
+    "unpair_all_confirm_body": "Every paired device will be unpaired and must be paired again. This cannot be undone.",
+    "unpair_all_confirm_title": "Unpair all devices?",
+    "unpair_client": "Unpair device"
   },
   "resource_card": {
     "documentation": "Documentation",
