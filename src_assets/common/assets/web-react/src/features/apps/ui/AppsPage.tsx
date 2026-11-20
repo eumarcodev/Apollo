@@ -1,25 +1,31 @@
 import { Alert, Button } from '@heroui/react';
-import { ArrowDownAZ, ArrowLeft, FileDown, Plus, Save } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowDownAZ, Plus, Save } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AppsBrowser, AppsPort } from '@/features/apps/application/ports';
 import { useApps } from '@/features/apps/application/use-apps';
+import { useHostPlatform } from '@/features/apps/application/use-platform';
+import { buildSavePayload } from '@/features/apps/domain/app-editor';
 import { editDraft, newAppDraft, type AppEntry } from '@/features/apps/domain/app-entry';
 import { isLocalHostname } from '@/features/apps/domain/app-list';
 import { buildLaunchLink, launcherDownload } from '@/features/apps/domain/launcher';
 import { notify, PageLayout, useConfirm } from '@/shared/ui';
+import { AppEditor } from './AppEditor';
 import { AppsTable } from './AppsTable';
 
 export interface AppsPageProps {
   port: AppsPort;
   browser: AppsBrowser;
+  /** Rendered next to the name field of the editor (slot of the online cover finder). */
+  nameAddon?: ReactNode;
 }
 
 /** Applications page: the list with reorder, launch, close, delete and export; the editor opens in place. */
-export function AppsPage({ port, browser }: AppsPageProps) {
+export function AppsPage({ port, browser, nameAddon }: AppsPageProps) {
   const { t } = useTranslation();
   const confirm = useConfirm();
   const apps = useApps(port);
+  const platform = useHostPlatform();
   const [editing, setEditing] = useState<AppEntry | null>(null);
   const host = { hostUuid: apps.hostUuid, hostName: apps.hostName };
 
@@ -85,32 +91,30 @@ export function AppsPage({ port, browser }: AppsPageProps) {
     }
   }
 
+  async function save(app: AppEntry) {
+    const payload = buildSavePayload(app);
+    if (!payload) {
+      return;
+    }
+    const result = await apps.save(payload);
+    if (!result.status) {
+      notify.error(`${t('apps.save_failed')}${result.error ?? ''}`);
+      return;
+    }
+    setEditing(null);
+  }
+
   if (editing) {
     return (
-      <PageLayout
-        title={editing.name || t('apps.no_name')}
-        actions={
-          <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" data-testid="editor-cancel" onPress={() => setEditing(null)}>
-              <ArrowLeft aria-hidden="true" className="size-4" />
-              {t('_common.cancel')}
-            </Button>
-            <Button
-              variant="outline"
-              data-testid="editor-export"
-              isDisabled={!editing.uuid}
-              onPress={() => exportApp(editing)}
-            >
-              <FileDown aria-hidden="true" className="size-4" />
-              {t('apps.export_launcher_file')}
-            </Button>
-          </div>
-        }
-      >
-        <section className="helios-panel rounded-2xl p-6 text-muted" data-testid="editor-pending">
-          {t('apps.editor_pending')}
-        </section>
-      </PageLayout>
+      <AppEditor
+        initial={editing}
+        platform={platform}
+        busy={apps.busy}
+        onCancel={() => setEditing(null)}
+        onSave={(app) => void save(app)}
+        onExport={exportApp}
+        nameAddon={nameAddon}
+      />
     );
   }
 

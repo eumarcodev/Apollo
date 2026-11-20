@@ -26,6 +26,8 @@ export interface AppsController {
   launch(uuid: string): Promise<ActionResult>;
   close(): Promise<ActionResult>;
   remove(uuid: string): Promise<ActionResult>;
+  /** Save an app (payload already normalised); the list reloads only when the host accepted it. */
+  save(app: Record<string, unknown>): Promise<ActionResult>;
   reload(): Promise<unknown>;
 }
 
@@ -94,6 +96,18 @@ export function useApps(port: AppsPort): AppsController {
     launch: (uuid) => run(() => port.launch(uuid)),
     close: () => run(() => port.close()),
     remove: (uuid) => run(() => port.remove(uuid)),
+    async save(app) {
+      setBusy(true);
+      try {
+        const result = await port.save(app).catch(failure);
+        if (result.status) {
+          await reload();
+        }
+        return result;
+      } finally {
+        setBusy(false);
+      }
+    },
     reload,
   };
 }

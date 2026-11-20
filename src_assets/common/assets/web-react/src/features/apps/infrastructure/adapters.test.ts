@@ -43,6 +43,17 @@ describe('createAppsPort', () => {
     ]);
   });
 
+  it('saves an app with POST ./api/apps and the form as body', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ status: true }));
+    const app = { name: 'Game', cmd: 'game.exe', 'prep-cmd': [{ do: 'a', undo: 'b' }] };
+    await expect(portWith(fetchMock).save(app)).resolves.toEqual({ status: true });
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('./api/apps');
+    expect(init.method).toBe('POST');
+    expect(init.body).toBe(JSON.stringify(app));
+    expect(new Headers(init.headers).get('Content-Type')).toBe('application/json');
+  });
+
   it('turns the host error body (HTTP 400) into a failed result with the message', async () => {
     const fetchMock = vi
       .fn()
