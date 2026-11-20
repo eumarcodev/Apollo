@@ -14,6 +14,12 @@ describe('smoke: every page renders inside the shared providers', () => {
         cy.get('meta[name="helios-web-ui"]').should('have.attr', 'content', 'react');
         if (page === 'index') {
           cy.get('[data-testid="version-card"]').should('be.visible');
+        } else if (page === 'config') {
+          cy.get('[data-testid="config-tabs"]').should('be.visible');
+        } else if (page === 'pin') {
+          cy.get('[data-testid="pairing-card"]').should('be.visible');
+        } else if (page === 'welcome' || page === 'login') {
+          cy.get(`[data-testid="${page}-page"]`).should('have.attr', 'data-page', page);
         } else if (page === 'password') {
           cy.get('[data-testid="password-form"]').should('be.visible');
         } else {
@@ -30,7 +36,7 @@ describe('smoke: every page renders inside the shared providers', () => {
   it('keeps query and hash on the routes (helios-page-routes)', () => {
     stubServerApi();
     cy.visit('/login?redir=./config#general');
-    cy.get('[data-testid="page-placeholder"]').should('have.attr', 'data-page', 'login');
+    cy.get('[data-testid="login-page"]').should('be.visible');
     cy.location('search').should('eq', '?redir=./config');
     cy.location('hash').should('eq', '#general');
   });
