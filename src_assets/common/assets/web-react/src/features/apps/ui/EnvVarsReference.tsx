@@ -56,14 +56,12 @@ export function EnvVarsReference({ platform }: EnvVarsReferenceProps) {
         {t('_common.see_more')}
         <ExternalLink aria-hidden="true" className="ms-1 size-4" />
       </Link>
-      {(['apps.env_sunshine_compatibility', 'apps.env_legacy_alias_compatibility'] as const).map((key) => (
-        <Alert key={key} status="accent" data-testid={key.replace('apps.', '')}>
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{t(key)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-      ))}
+      <Alert status="accent" data-testid="env_client_fps_float">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Description>{t('apps.env_client_fps_float')}</Alert.Description>
+        </Alert.Content>
+      </Alert>
     </div>
   );
 }

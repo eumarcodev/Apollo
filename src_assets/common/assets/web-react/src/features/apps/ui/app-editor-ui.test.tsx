@@ -115,8 +115,7 @@ describe('AppEditor: fields', () => {
       'https://github.com/eumarcodev/Helios-Server/blob/master/docs/app_examples.md',
     );
     expect(within(screen.getByTestId('env-vars-table')).getAllByRole('row')).toHaveLength(15);
-    expect(screen.getByTestId('env_sunshine_compatibility')).toBeInTheDocument();
-    expect(screen.getByTestId('env_legacy_alias_compatibility')).toBeInTheDocument();
+    expect(screen.getByTestId('env_client_fps_float')).toHaveTextContent('HELIOS_CLIENT_FPS is a FLOAT value');
   });
 
   it('hides the Windows-only fields on Linux and offers the Linux example', async () => {
@@ -159,7 +158,7 @@ describe('AppEditor: fields', () => {
     await showEditor({ locale: 'pt_BR' });
     expect(screen.getByTestId('editor-general')).toHaveTextContent('Geral');
     expect(screen.getByTestId('editor-save')).toHaveTextContent('Salvar');
-    expect(screen.getByTestId('env_legacy_alias_compatibility')).toHaveTextContent('aliases antigos');
+    expect(screen.getByTestId('env_client_fps_float')).toHaveTextContent('taxas de atualização fracionárias');
   });
 });
 

@@ -93,8 +93,7 @@ describe('apps editor: fields per platform', () => {
     cy.get('[data-testid="env-see-more"]')
       .should('have.attr', 'href', 'https://github.com/eumarcodev/Helios-Server/blob/master/docs/app_examples.md')
       .and('have.attr', 'target', '_blank');
-    cy.get('[data-testid="env_sunshine_compatibility"]').should('be.visible');
-    cy.get('[data-testid="env_legacy_alias_compatibility"]').should('be.visible');
+    cy.get('[data-testid="env_client_fps_float"]').should('be.visible');
   });
 
   it('offers the Linux gamepads and hides the Windows-only fields', () => {
