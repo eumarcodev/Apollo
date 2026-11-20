@@ -630,7 +630,16 @@
     "unpair_all_error": "Erro ao desparear",
     "unpair_single_no_devices": "Não há dispositivos pareados.",
     "unpair_single_success": "Despareamento bem-sucedido. Entretanto, o(s) dispositivo(s) ainda pode(m) estar em uma sessão ativa. Use o botão \"Forçar fechamento\" acima para encerrar todas as sessões abertas.",
-    "unpair_single_unknown": "Cliente desconhecido"
+    "unpair_single_unknown": "Cliente desconhecido",
+    "connected": "Conectado",
+    "disconnect_client": "Desconectar dispositivo",
+    "edit_client": "Editar dispositivo",
+    "perm_group_action": "Ações",
+    "perm_group_input": "Entrada",
+    "perm_group_operation": "Operações",
+    "unpair_all_confirm_body": "Todos os dispositivos pareados serão despareados e precisarão ser pareados de novo. Esta ação não pode ser desfeita.",
+    "unpair_all_confirm_title": "Desparear todos os dispositivos?",
+    "unpair_client": "Desparear dispositivo"
   },
   "resource_card": {
     "documentation": "Documentação",
@@ -687,6 +696,18 @@
     "unexpected_error": "Ocorreu um erro inesperado ao exibir esta página.",
     "reload": "Recarregar",
     "remove_row": "Remover linha",
-    "insert_row": "Inserir linha"
+    "insert_row": "Inserir linha",
+    "av_section_audio": "Áudio",
+    "av_section_capture": "Captura",
+    "av_section_display": "Modos de exibição",
+    "locale_en": "English",
+    "locale_pt_BR": "Português (Brasil)",
+    "vdisplay_hint": "Verifique se o driver SudoVDA está instalado na versão mais recente e habilitado corretamente.",
+    "vdisplay_status": "Status do driver SudoVDA: {{status}}",
+    "vdisplay_status_ready": "Pronto",
+    "vdisplay_status_uninitialized": "Não inicializado",
+    "vdisplay_status_unknown": "Desconhecido",
+    "vdisplay_status_version_incompatible": "Versão incompatível",
+    "vdisplay_status_watchdog_failed": "Watchdog falhou"
   }
 }

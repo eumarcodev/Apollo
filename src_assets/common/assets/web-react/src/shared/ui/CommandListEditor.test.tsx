@@ -28,10 +28,12 @@ function Harness({
   platform,
   initial,
   spy,
+  insertPosition,
 }: {
   platform: Platform;
   initial: PrepCmd[];
   spy?: (rows: PrepCmd[]) => void;
+  insertPosition?: 'before' | 'after';
 }) {
   const [rows, setRows] = useState(initial);
   return (
@@ -45,6 +47,7 @@ function Harness({
       columns={columns}
       platform={platform}
       createRow={createRow}
+      {...(insertPosition ? { insertPosition } : {})}
     />
   );
 }
@@ -104,6 +107,34 @@ describe('CommandListEditor', () => {
     expect(spy).toHaveBeenLastCalledWith([
       { do: '', undo: '' },
       { do: '2', undo: '' },
+    ]);
+  });
+
+  it('inserts after the clicked row when insertPosition is "after"', async () => {
+    const spy = vi.fn();
+    await renderWithProviders(
+      <Harness
+        platform="macos"
+        insertPosition="after"
+        initial={[
+          { do: '1', undo: '' },
+          { do: '2', undo: '' },
+        ]}
+        spy={spy}
+      />,
+    );
+    await userEvent.click(screen.getByTestId('prep-insert-0'));
+    expect(spy).toHaveBeenLastCalledWith([
+      { do: '1', undo: '' },
+      { do: '', undo: '' },
+      { do: '2', undo: '' },
+    ]);
+    await userEvent.click(screen.getByTestId('prep-insert-2'));
+    expect(spy).toHaveBeenLastCalledWith([
+      { do: '1', undo: '' },
+      { do: '', undo: '' },
+      { do: '2', undo: '' },
+      { do: '', undo: '' },
     ]);
   });
 
