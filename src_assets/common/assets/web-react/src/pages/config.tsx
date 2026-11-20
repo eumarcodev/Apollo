@@ -1,7 +1,4 @@
-import { createPage, PagePlaceholder } from '@/app';
+import { createPage } from '@/app';
+import { ConfigPage } from '@/features/config';
 
-function Page() {
-  return <PagePlaceholder page="config" titleKey="navbar.configuration" />;
-}
-
-void createPage(Page);
+void createPage(ConfigPage);
