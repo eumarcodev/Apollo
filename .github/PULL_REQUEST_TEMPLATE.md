@@ -5,7 +5,7 @@ Delete any section or hint that does not apply.
 
 ## Problem
 
-<!-- What is broken or missing, and when does it happen? Include platform, hardware, driver or client details if relevant. Reference issues with "Fixes #123". -->
+<!-- What is broken or missing, and when does it happen? Include platform, hardware, driver or client details if relevant. Reference issues as "Refs #123"; do not use closing keywords (Fixes/Closes/Resolves), because merging into develop would close the issue before the stable release. -->
 
 ## Changes
 
