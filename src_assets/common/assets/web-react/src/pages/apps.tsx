@@ -1,7 +1,4 @@
-import { createPage, PagePlaceholder } from '@/app';
+import { createPage } from '@/app';
+import { AppsPage } from '@/features/apps';
 
-function Page() {
-  return <PagePlaceholder page="apps" titleKey="navbar.applications" />;
-}
-
-void createPage(Page);
+void createPage(AppsPage);
