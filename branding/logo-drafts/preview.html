@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Icon size check</title>
+<style>
+  body { margin: 0; padding: 24px; background: #1b1d22; color: #cfd3dc; font: 14px system-ui, sans-serif; }
+  .row { display: flex; align-items: flex-end; gap: 28px; margin-bottom: 28px; }
+  .cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .light { background: #eef0f4; color: #333; padding: 16px; border-radius: 12px; }
+  .circle img { border-radius: 50%; }
+  .squircle img { border-radius: 22%; }
+  .mono img { filter: grayscale(1) contrast(1.6); }
+  h2 { font-size: 15px; margin: 0 0 10px; font-weight: 600; }
+</style></head><body>
+<script>
+  const sizes = [192, 96, 48, 24];
+  for (const name of ['helios-icon', 'selene-icon']) {
+    for (const [label, cls] of [['Android (circle mask)', 'circle'], ['Rounded square', 'squircle'], ['Light background', 'squircle light'], ['Grayscale', 'circle mono']]) {
+      const h = document.createElement('h2'); h.textContent = `${name} · ${label}`; document.body.append(h);
+      const row = document.createElement('div'); row.className = 'row ' + cls;
+      for (const s of sizes) {
+        row.insertAdjacentHTML('beforeend', `<div class="cell"><img src="${name}.png" width="${s}" height="${s}"><span>${s}px</span></div>`);
+      }
+      document.body.append(row);
+    }
+  }
+</script>
+</body></html>
