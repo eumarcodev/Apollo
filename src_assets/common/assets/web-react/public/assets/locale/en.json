@@ -129,7 +129,11 @@
   "client_card": {
     "clients": "Clients",
     "clients_desc": "Clients that are specifically tuned to work the best with Helios",
-    "generic_moonlight_clients_desc": "Generic Moonlight clients are still usable with Helios."
+    "coming_soon": "Coming soon...",
+    "generic_moonlight_clients_desc": "Generic Moonlight clients are still usable with Helios.",
+    "platform_android": "Android",
+    "platform_desktop": "Desktop",
+    "platform_ios": "iOS"
   },
   "config": {
     "adapter_name": "Adapter Name",
@@ -509,8 +513,10 @@
     "new_pre_release": "A new Pre-Release Version is Available!",
     "new_stable": "A new Stable Version is Available!",
     "startup_errors": "<b>Attention!</b> Helios detected these errors during startup. We <b>STRONGLY RECOMMEND</b> fixing them before streaming.",
+    "version": "Version {{version}}",
     "version_dirty": "Thank you for helping to make Helios a better software!",
     "version_latest": "You are running the latest version of Helios",
+    "view_logs": "View Logs",
     "welcome": "Hello, Helios!"
   },
   "navbar": {

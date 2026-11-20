@@ -129,7 +129,11 @@
   "client_card": {
     "clients": "Clientes",
     "clients_desc": "Clientes que foram especificamente aprimorados para funcionar bem com o Helios.",
-    "generic_moonlight_clients_desc": "Clientes genéricos Moonlight ainda funcionam com o Helios."
+    "coming_soon": "Em breve...",
+    "generic_moonlight_clients_desc": "Clientes genéricos Moonlight ainda funcionam com o Helios.",
+    "platform_android": "Android",
+    "platform_desktop": "Desktop",
+    "platform_ios": "iOS"
   },
   "config": {
     "adapter_name": "Nome da GPU",
@@ -509,8 +513,10 @@
     "new_pre_release": "Uma nova versão de pré-lançamento está disponível!",
     "new_stable": "Uma nova versão estável está disponível!",
     "startup_errors": "<b>Atenção!</b> A Helios detectou esses erros durante a inicialização. <b>RECOMENDAMOS FORTEMENTE</b> corrigi-los antes da transmissão.",
+    "version": "Versão {{version}}",
     "version_dirty": "Obrigado por ajudar a tornar o Helios um software melhor!",
     "version_latest": "Você está executando a versão mais recente do Helios",
+    "view_logs": "Ver logs",
     "welcome": "Olá, Helios!"
   },
   "navbar": {
