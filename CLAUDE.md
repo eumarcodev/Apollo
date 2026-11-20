@@ -1,67 +1,76 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code in this repository. Workspace-wide rules (language, bench, issue tracking) live in `../CLAUDE.md`.
 
-## What this is
+Helios is the game-stream host of `eumarcodev/Helios-Server`, an independent fork in the Sunshine lineage (Sunshine → Apollo → Helios),
+adding virtual display (SudoVDA), per-client permissions, clipboard sync and the PyroWave codec. Its Android client is
+Selene (`../Selene-Game-Streaming`). Much of the code, docs and CMake still use the `sunshine` name (`config::sunshine`,
+`test_sunshine`, `sunshine.exe`).
 
-Helios (formerly Apollo) is a fork of LizardByte Sunshine (a self-hosted game-stream host for Moonlight/Artemis clients), adding virtual display (SudoVDA), per-client permissions and clipboard sync. This checkout is the fork `eumarcodev/Helios-Server` (renamed on GitHub from `eumarcodev/Apollo`, which still redirects; upstream: `ClassicOldSong/Apollo`). Much of the code, docs and CMake still use the `sunshine` name (`config::sunshine`, `test_sunshine`, `sunshine.exe`).
-
-## Naming decision (independent fork)
-
-The fork is now independent of upstream (the original maintainer stopped updating). Decided names, continuing the sun/moon lineage Sunshine/Moonlight → Apollo/Artemis → Helios/Selene:
-- Server (this repo, `eumarcodev/Helios-Server`): **Helios**. The product, installer (`Helios.exe`), `HeliosService`, firewall rule and web UI are renamed.
-- Android client: **Selene Game Streaming**, repo `eumarcodev/Selene-Game-Streaming` (default branch `master`, integration branch `develop`, local clone `../Selene-Game-Streaming`; same release workflows as this repo, signed APKs, see its `.github/RELEASING.md`). Both repos were detached from their upstream forks on GitHub. First releases: Helios `v1.3.0` and Selene `v1.0.0`.
-- README keeps the credits and lineage section (ClassicOldSong, LizardByte/Sunshine, Moonlight); keep it when renaming. Don't use Nintendo/Zelda names.
-- Still named after upstream on purpose: `sunshine.exe`/`sunshinesvc.exe`, `test_sunshine`, the `apollo.*` icon and logo files, the `APOLLO_UPDATE_REPO` CMake option, and `APOLLO_*` env vars (kept as deprecated aliases of `HELIOS_*`).
-- `src_assets/windows/misc/migration/migrate-from-apollo.bat` (run by the NSIS installer) migrates an existing Apollo install (config, service, firewall rule). Verified manually (2026-11-16) on a real Apollo 1.2.0 -> Helios upgrade with the normal installer: service, firewall, config, credentials and client pairings carried over. Silent install (`/S`) and uninstalling Helios were also verified by the maintainer.
-- Before opening a PR, run the local MSYS2 build and the local tests; the CI build takes about 10 minutes.
-
-## Build (Windows, MSYS2 UCRT64)
+## 1. Critical commands
 
 All C++ builds run inside MSYS2 UCRT64 (GCC, Ninja). From PowerShell/Bash prefix commands with
-`C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c "<cmd>"`. Use `cmake-build-*` or `build` as the build dir.
+`C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c "<cmd>"`. Build dir: `build` or `cmake-build-*`.
 
 ```bash
-cmake -B build -G Ninja -S .          # add -DBUILD_TESTS=ON for tests
+cmake -B build -G Ninja -S . -DBUILD_TESTS=ON
 ninja -C build
-cpack -G NSIS --config build/CPackConfig.cmake   # installer (Helios.exe); -G ZIP for portable
+build/tests/test_sunshine                              # full suite, required before a PR (baseline: 242 tests, 0 failures)
+build/tests/test_sunshine --gtest_filter=Suite.Name    # single test
+npm run test:web                                       # web helpers (node:test, tests/web/*.test.mjs)
+npm run build                                          # web UI (Vite)
+cpack -G NSIS --config build/CPackConfig.cmake         # installer Helios.exe; -G ZIP for portable
 ```
 
-Gotchas learned the hard way:
-- Set `PROCESSOR_ARCHITECTURE=AMD64` in the environment, otherwise the prebuilt FFmpeg path resolves to `third-party/build-deps/dist/Windows-` and fails.
-- `node.exe` (Windows Node, not the MSYS2 package) must be on `PATH` for the `web-ui` target.
-- Boost: `cmake/dependencies/Boost_Sunshine.cmake` pins an EXACT version (`find_package(Boost CONFIG ... EXACT)`). If the MSYS2 system Boost doesn't match, it falls back to FetchContent, which builds Boost from source and (with CMake 4.x) fails in Boost.Locale on `source_group` unless the patch `cmake/dependencies/patch_boost_locale.cmake` applies. Keep `BOOST_VERSION` aligned with the MSYS2 package version to avoid the fallback (slow, and CI runners rebuild it every time).
-- `BUILD_VERSION` and `BRANCH` environment variables make `cmake/prep/build_version.cmake` set `PROJECT_VERSION`. The value may carry a suffix (`1.10.0-rc.2`); CMake extracts `X.Y.Z` for resource files while the full string is embedded as ProductVersion.
-- `APOLLO_UPDATE_REPO` (CMake cache var, default `eumarcodev/Helios-Server`) is compiled in and exposed by `/api/config` as `update_repo`; CI passes the fork's repository.
+Environment the build needs:
+- `PROCESSOR_ARCHITECTURE=AMD64`, otherwise the prebuilt FFmpeg path resolves to `third-party/build-deps/dist/Windows-` and fails.
+- Windows `node.exe` (not the MSYS2 package) on `PATH` for the `web-ui` target.
+- `HELIOS_ENABLE_PYROWAVE` is ON by default on Windows and needs `third-party/pyrowave` with its nested submodules. Before trusting a PyroWave test, check the host log for `PyroWave: packet size`: without it the stream is HEVC and the measurement means nothing.
+- `BUILD_VERSION` and `BRANCH` env vars make `cmake/prep/build_version.cmake` set `PROJECT_VERSION` (suffix like `1.10.0-rc.2` allowed; resources get `X.Y.Z`).
+- `gh` is at `C:\Program Files\GitHub CLI\gh.exe` and is not on `PATH`.
 
-## Tests
+## 2. Architecture map
 
-- C++ (gtest, `-DBUILD_TESTS=ON`): executable `test_sunshine` in `build/tests/`. Single test: `build/tests/test_sunshine --gtest_filter=Suite.Name`. Sources in `tests/unit`.
-- Web helpers (Node `node:test`): `npm run test:web` (files in `tests/web/*.test.mjs`).
-- Web UI build: `npm run build` (Vite); Vue sources in `src_assets/common/assets/web`.
+- `src/main.cpp` boots subsystems. `src/nvhttp.cpp`: GameStream-compatible pairing/launch over HTTPS. `src/rtsp.cpp` + `src/stream.cpp`: RTSP and RTP/UDP streaming, including the Helios control-message extensions (0x3000–0x3002, shared with `eumarcodev/moonlight-common-c`). `src/process.cpp`: apps and commands. `src/input.cpp`: input.
+- `src/confighttp.cpp`: web UI backend and `/api/*` (cookie auth via `POST /api/login`).
+- Capture/encode: `src/video.cpp` plus per-platform code in `src/platform/{windows,linux,macos}`. Encoders are FFmpeg-based (`avcodec_encode_session_t`) or NVENC (`src/nvenc`). Virtual display: `src/display_device.cpp` and the Windows platform code.
+- Options: `src/config.h` / `src/config.cpp`, read in `config::parse`.
+- Web UI: Vue 3 + Vite in `src_assets/common/assets/web` (`index.html` hosts the update banner; `apollo_version.js` orders versions).
+- Tests: `tests/unit` (gtest, incl. `test_pyrowave_*`), `tests/web` (node:test), `tests/integration`.
+- Dependencies are submodules in `third-party/`; `third-party/pyrowave` and `third-party/moonlight-common-c` are the user's forks (changed by PR in their own repos, then bumped here).
+- Release automation: `.github/workflows` (`rc-queue.yml`, `rc.yml`, `stable-queue.yml`, `promote.yml`, reusable `build.yml`), documented in `.github/RELEASING.md`.
+
+Where a new config option belongs (all of them, or it is incomplete): field in `config.h` AND in the same position in `config.cpp`, parsing in `config::parse`, default in `src_assets/common/assets/web/config.html`, control in `configs/tabs/*.vue`, locale key in `public/assets/locale/en.json`, section in `docs/configuration.md`.
+
+## 3. Hard rules
+
+- **IMPORTANT: `config::sunshine` is initialised positionally** in `config.cpp`: a new field MUST be added in the same order in `config.h` and `config.cpp`.
+- **IMPORTANT: the version file is `version.txt`, NEVER `VERSION`.** The repo root is on the include path and `VERSION` shadows the C++ `<version>` header on Windows.
+- **Do NOT reintroduce the FFmpeg flush for `*_amf` codecs** in `~avcodec_encode_session_t` (`src/video.cpp`): AMD AMF hangs forever there at session teardown (`amfrtdrv64.dll`).
+- Keep `BOOST_VERSION` in `cmake/dependencies/Boost_Sunshine.cmake` equal to the MSYS2 Boost package (`find_package(... EXACT)`). A mismatch falls back to FetchContent, which is slow and with CMake 4.x fails in Boost.Locale unless `cmake/dependencies/patch_boost_locale.cmake` applies.
+- Branches: `feature/*` from `develop`, PR to `develop`. **No `release/*`, `hotfix/*` or nightly.** Never commit directly to `develop` or `master`.
+- Commits and PRs are authored as `eumarcodev` (noreply `3676046+eumarcodev@users.noreply.github.com`, set via `includeIf`); do not let the "Azure Pipeline" default identity through.
+- Call the product Helios and its protocol additions "Helios extensions"; do not use Apollo upstream as a reference. Do not use Nintendo/Zelda names.
+- Local test instances: use the default ports (some Windows ranges such as 51000/51021 fail with "forbidden by access permissions").
+- `sunshine.log` is recreated on every service restart: delete it or check timestamps before reading it.
+
+## 4. Workflow preferences
+
+- Change only what the task needs; unrelated findings become a new issue in this repo (English, labels), not extra changes in the PR.
+- Pull requests are not built in CI: run the local MSYS2 build and the full `test_sunshine` before opening one (the CI build takes about 10 minutes).
+- PRs follow `.github/PULL_REQUEST_TEMPLATE.md` (Problem / Changes / Testing / Notes / AI usage) and say honestly what was not tested; performance PRs carry the measured before/after numbers.
+- Conventional Commits (`feat(web):`, `fix(video):`, `ci:`, `docs(github):`), one commit per logical phase. Keep temporary debug code out of commits.
 - C/C++ style follows `.clang-format`.
+- Releases: each merge to `develop` that changes more than Markdown/`docs/`/`.github/` (except `build.yml`)/`version.txt` publishes `vX.Y.Z-rc.N`. Stable = PR `develop` → `master`; its merge runs `stable-queue.yml` → `promote.yml`, which publishes the RC's stable artifact and bumps `version.txt` on `develop`. Patch release = PR that sets `version.txt` to `X.Y.Z+1`. After any merge, follow the run it starts to the end before calling the work done.
+- Linux/macOS code paths exist but are not built or tested in this fork; it is developed and tested on Windows.
 
-## Architecture (big picture)
+## 5. Out of scope
 
-- `src/main.cpp` boots subsystems; `src/nvhttp.cpp` (GameStream-compatible pairing/launch HTTPS), `src/rtsp.cpp` and `src/stream.cpp` (RTSP + RTP/UDP streaming), `src/confighttp.cpp` (web UI backend and `/api/*`; auth is cookie-based via `POST /api/login`), `src/process.cpp` (apps, commands), `src/input.cpp`.
-- Capture/encode lives in `src/video.cpp` plus per-platform code in `src/platform/{windows,linux,macos}`. Encoders are FFmpeg-based (`avcodec_encode_session_t`) or NVENC (`src/nvenc`). Virtual display and display-device handling: `src/display_device.cpp` and the Windows platform code.
-- `src/config.h` / `src/config.cpp` define every option. `config::sunshine` is initialised **positionally** in `config.cpp`, so a new field must be added in the same order in both files. Options are read in `config::parse`, and each needs a default in the web UI (`src_assets/common/assets/web/config.html`), a control in `configs/tabs/*.vue`, a locale key in `public/assets/locale/en.json`, and a section in `docs/configuration.md`.
-- Web UI: Vue 3 + Vite under `src_assets/common/assets/web`, built into the installed assets. `index.html` hosts the update banner; `apollo_version.js` parses and orders versions.
-- AMD AMF encoders can hang forever in the FFmpeg flush at session teardown (`amfrtdrv64.dll`); `~avcodec_encode_session_t` in `src/video.cpp` therefore skips the flush for `*_amf` codecs. Don't reintroduce it.
-- Local test instances can't use some port ranges on Windows (e.g. 51000/51021 hit "forbidden by access permissions", reserved ranges); use default ports.
-
-## Releases and update channels
-
-Documented in full in `.github/RELEASING.md`. Summary:
-- Channels: **RC** (every push to `develop` that changes more than docs: `rc-queue.yml` computes the version and dispatches `rc.yml`, run titled `Release candidate vX.Y.Z-rc.N`, tags `vX.Y.Z-rc.N`; the same run also builds the commit as stable `vX.Y.Z` into the `helios-windows-x64-stable` artifact) and **stable** (manual `promote.yml` with input `version` X.Y.Z and optional RC number, run titled `Stable release vX.Y.Z`: publishes that artifact without building, rebuilding only if it expired, fast-forwards `master` to it, publishes `vX.Y.Z` and bumps `version.txt` on `develop` to the next minor). No nightly, no `release/*` or `hotfix/*` branches (the old ones are history). Reusable build is `build.yml`; pull requests are not built in CI (test locally).
-- The version comes from the `version.txt` file on `develop` (not `VERSION`: on Windows that file shadows the C++ `<version>` header, since the repo root is on the include path). A patch release is a PR that sets `version.txt` to `X.Y.Z+1`. `rc-queue.yml` refuses a `version.txt` that is already tagged or lower than the latest stable.
-- Branches: `master` = what was released (only fast-forwarded by `promote.yml`), `develop` = integration (PRs go here). `master` must stay an ancestor of `develop`, otherwise the promotion fails.
-- Pushes made with `GITHUB_TOKEN` do not trigger other workflows, so the `version.txt` bump commit from `promote.yml` does not build an RC.
-- The home page picks the newest release for the channel set in `update_channel` (`stable|rc|nightly`, empty = follow the installed version); legacy `notify_pre_releases` behaves like `rc`.
-
-## Git and PR conventions
-
-- Commits and PRs in this fork are authored as `eumarcodev` (GitHub noreply email `3676046+eumarcodev@users.noreply.github.com`, configured via `includeIf` for repos under this path); don't let the "Azure Pipeline" default identity through.
-- PRs follow `.github/PULL_REQUEST_TEMPLATE.md` (Problem / Changes / Testing / Notes / AI usage), modeled on upstream PR #1621. Be honest in Testing about what was not run. Commit messages use Conventional Commits (`feat(web):`, `ci:`, `docs(github):`); one commit per logical phase is preferred.
-- `gh` is installed at `C:\Program Files\GitHub CLI\gh.exe` and is not on `PATH`.
-- Platform-specific notes: Linux/macOS code paths exist but are only built upstream; this fork is developed and tested on Windows (streaming verified with the Artemis client on an AMD RX 9070 XT).
+Do not change without being asked:
+- **Names kept on purpose:** `sunshine.exe`/`sunshinesvc.exe`, `test_sunshine`, the `apollo.*` icon and logo files, the `APOLLO_UPDATE_REPO` CMake option (default `eumarcodev/Helios-Server`, exposed by `/api/config` as `update_repo`) and the `APOLLO_*` env vars (deprecated aliases of `HELIOS_*`).
+- **README credits and lineage section** (ClassicOldSong, LizardByte/Sunshine, Moonlight): keep it when renaming.
+- **`src_assets/windows/misc/migration/migrate-from-apollo.bat`**: run by the NSIS installer and verified by hand on a real upgrade (2026-11-16).
+- **`third-party/` submodules**: never edit them in place; library changes go through the fork's own PR, then a submodule bump here.
+- **Release workflows and `master`**: `master` only moves through the `develop` → `master` PR or `promote.yml`; do not release, promote or edit `.github/workflows` unless asked.
+- **The user's uncommitted drafts** in this checkout (e.g. `branding/logo-drafts/`): do not commit, discard or stash them. `test_sunshine.log` and `write_file_test_*.txt` are outputs of `test_sunshine` when run from the repo root; never commit them either.
+- **The installed Helios** in `C:\Program Files\Helios` and `HeliosService`: changes need elevation; restore the official exe/DLL/config after any test.
