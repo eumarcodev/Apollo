@@ -6,16 +6,18 @@ export interface NavItem {
   href: string;
   /** Translation key of the label (same keys as the legacy navbar). */
   labelKey: string;
+  /** Roman numeral of the position, shown as the eyebrow of the page ("II · PIN"). */
+  numeral: string;
 }
 
 /** The authenticated pages, in the order of the legacy navbar. */
 export const NAV_ITEMS: readonly NavItem[] = [
-  { id: 'home', href: './', labelKey: 'navbar.home' },
-  { id: 'pin', href: './pin', labelKey: 'navbar.pin' },
-  { id: 'applications', href: './apps', labelKey: 'navbar.applications' },
-  { id: 'configuration', href: './config', labelKey: 'navbar.configuration' },
-  { id: 'password', href: './password', labelKey: 'navbar.password' },
-  { id: 'troubleshooting', href: './troubleshooting', labelKey: 'navbar.troubleshoot' },
+  { id: 'home', href: './', labelKey: 'navbar.home', numeral: 'I' },
+  { id: 'pin', href: './pin', labelKey: 'navbar.pin', numeral: 'II' },
+  { id: 'applications', href: './apps', labelKey: 'navbar.applications', numeral: 'III' },
+  { id: 'configuration', href: './config', labelKey: 'navbar.configuration', numeral: 'IV' },
+  { id: 'password', href: './password', labelKey: 'navbar.password', numeral: 'V' },
+  { id: 'troubleshooting', href: './troubleshooting', labelKey: 'navbar.troubleshoot', numeral: 'VI' },
 ];
 
 function normalizePath(path: string): string {

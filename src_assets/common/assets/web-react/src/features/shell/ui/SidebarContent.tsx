@@ -76,12 +76,8 @@ export function SidebarContent({
           {toggle}
         </div>
       )}
-      <nav aria-label={t('navbar.main_navigation')} className="w-full flex-1 overflow-y-auto overflow-x-visible">
-        {!collapsed && (
-          <p className="mb-3 px-3 text-[11px] font-semibold tracking-[0.14em] text-muted uppercase">
-            {t('navbar.main_navigation')}
-          </p>
-        )}
+      <nav aria-label={t('navbar.main_navigation')} className="w-full flex-1 overflow-y-auto px-1">
+        {!collapsed && <p className="helios-eyebrow mb-4 px-2">{t('navbar.main_navigation')}</p>}
         <ul className={['flex flex-col gap-1.5', collapsed ? 'items-center' : ''].join(' ')}>
           {NAV_ITEMS.map(({ id, href, labelKey }) => {
             const Icon = NAV_ICONS[id];
@@ -97,7 +93,7 @@ export function SidebarContent({
                     data-testid={`nav-${id}`}
                     data-collapsed={collapsed}
                     className={[
-                      'helios-nav-link flex items-center gap-3 rounded-xl text-sm font-medium no-underline',
+                      'helios-nav-link flex items-center gap-3 rounded-lg text-sm font-medium tracking-wide no-underline',
                       collapsed ? 'size-11 justify-center' : 'h-11 w-full px-3',
                     ].join(' ')}
                   >

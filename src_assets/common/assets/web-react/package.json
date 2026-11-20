@@ -18,6 +18,7 @@
     "e2e:installed": "cypress run --env mode=installed"
   },
   "dependencies": {
+    "@fontsource/cormorant-garamond": "5.3.0",
     "@heroui/react": "3.2.7",
     "@heroui/styles": "3.2.7",
     "@internationalized/date": "3.12.4",

@@ -1,10 +1,10 @@
 import { Button, Drawer } from '@heroui/react';
-import { ChevronRight, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { findActiveNavItem, NAV_ITEMS } from '@/features/shell/domain/navigation';
 import { Brand } from './Brand';
-import { NAV_ICONS, SidebarContent } from './SidebarContent';
+import { SidebarContent } from './SidebarContent';
 import { useSidebarCollapsed } from './use-sidebar-collapsed';
 
 export interface DashboardFrameProps {
@@ -15,7 +15,7 @@ export interface DashboardFrameProps {
   children: ReactNode;
 }
 
-/** Breadcrumb of the top bar: the current page under the Helios root. */
+/** Eyebrow of the top bar: the numeral and name of the current page ("── IV · CONFIGURATION"). */
 function CurrentPage({ pathname }: { pathname: string }) {
   const { t } = useTranslation();
   const active = findActiveNavItem(pathname);
@@ -23,17 +23,12 @@ function CurrentPage({ pathname }: { pathname: string }) {
   if (!item) {
     return null;
   }
-  const Icon = NAV_ICONS[item.id];
   return (
-    <div className="hidden min-w-0 items-center gap-3 lg:flex" data-testid="current-page">
-      <span className="helios-icon-tile grid size-10 shrink-0 place-items-center rounded-xl">
-        <Icon aria-hidden="true" className="size-[18px]" />
-      </span>
-      <div className="flex min-w-0 items-center gap-1.5 text-sm">
-        <span className="text-muted">Helios</span>
-        <ChevronRight aria-hidden="true" className="size-4 text-muted" />
-        <span className="truncate font-semibold text-foreground">{t(item.labelKey)}</span>
-      </div>
+    // the wrapper hides it on small screens: `.helios-eyebrow` sets its own display, which beats Tailwind's `hidden`
+    <div className="hidden min-w-0 lg:block" data-testid="current-page">
+      <p className="helios-eyebrow truncate">
+        {item.numeral} · {t(item.labelKey)}
+      </p>
     </div>
   );
 }
@@ -53,7 +48,7 @@ export function DashboardFrame({ pathname = window.location.pathname, topBar, ch
     >
       <aside
         className={[
-          'helios-panel hidden shrink-0 rounded-3xl lg:block',
+          'helios-panel helios-sidebar hidden shrink-0 rounded-2xl lg:block',
           'transition-[width] duration-300 ease-out',
           collapsed ? 'w-[84px]' : 'w-[272px]',
         ].join(' ')}
@@ -85,7 +80,7 @@ export function DashboardFrame({ pathname = window.location.pathname, topBar, ch
           <CurrentPage pathname={pathname} />
           <div className="ml-auto flex items-center gap-2">{topBar}</div>
         </header>
-        <main className="min-h-0 flex-1 overflow-y-auto rounded-3xl" data-layout="shell">
+        <main className="min-h-0 flex-1 overflow-y-auto rounded-2xl" data-layout="shell">
           {children}
         </main>
       </div>

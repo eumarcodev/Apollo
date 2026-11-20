@@ -52,7 +52,7 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
         data-selected={selected}
         className={[
           'helios-segment min-w-0 rounded-lg',
-          compact ? 'size-9' : 'h-9 flex-1 gap-1.5 px-2 text-xs font-medium',
+          compact ? 'size-9' : 'h-9 flex-1 gap-1.5 px-1.5 text-[10px] font-semibold',
         ].join(' ')}
         onPress={() => select(value)}
       >
@@ -83,13 +83,13 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <div className="helios-feature-card relative w-full overflow-hidden rounded-2xl p-3">
+    <div className="helios-feature-card relative w-full overflow-hidden rounded-xl p-3">
       <div aria-hidden="true" className="helios-theme-preview mb-3" data-preview={choice} data-testid="theme-preview">
         <MiniUi variant="light" />
         <MiniUi variant="dark" />
       </div>
       <div className="mb-3 flex flex-col gap-0.5 px-1">
-        <span className="text-sm font-semibold text-foreground">{t('navbar.toggle_theme')}</span>
+        <span className="helios-display text-xl text-foreground">{t('navbar.toggle_theme')}</span>
         <span className="text-xs text-muted">{t('navbar.theme_hint')}</span>
       </div>
       <div

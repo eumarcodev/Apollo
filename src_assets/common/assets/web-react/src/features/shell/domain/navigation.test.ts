@@ -14,6 +14,10 @@ describe('navigation', () => {
     ]);
   });
 
+  it('numbers the items with roman numerals in order', () => {
+    expect(NAV_ITEMS.map((item) => item.numeral)).toEqual(['I', 'II', 'III', 'IV', 'V', 'VI']);
+  });
+
   it.each([
     ['/', 'home'],
     ['/index.html', 'home'],
