@@ -1,6 +1,6 @@
-import { Card } from '@heroui/react';
-import { Construction } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+// Bundled by Vite into /assets/: the Helios server only routes a couple of files under /images (logo-helios.svg 404s).
+import emblemUrl from './assets/helios-emblem.svg';
 import { PageLayout } from '@/shared/ui';
 
 export interface PagePlaceholderProps {
@@ -10,17 +10,33 @@ export interface PagePlaceholderProps {
   titleKey: string;
 }
 
-/** Temporary page body until the slice of the page is migrated. */
+/**
+ * Temporary page body until the slice of the page is migrated: the title in display serif with the migration note on
+ * the left, the Helios emblem on the right (stacked when the container is narrow, as in the public layout).
+ */
 export function PagePlaceholder({ page, titleKey }: PagePlaceholderProps) {
   const { t } = useTranslation();
   return (
-    <PageLayout title={t(titleKey)}>
-      <Card data-testid="page-placeholder" data-page={page}>
-        <Card.Header>
-          <Construction aria-hidden="true" className="size-6 text-warning" />
-          <Card.Description>{t('react_ui.page_placeholder')}</Card.Description>
-        </Card.Header>
-      </Card>
+    <PageLayout>
+      <div
+        className="helios-panel helios-hero @container rounded-2xl px-6 py-12 sm:px-12"
+        data-testid="page-placeholder"
+        data-page={page}
+      >
+        <div className="grid items-center gap-10 @3xl:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="flex max-w-xl flex-col gap-6">
+            <h1 className="helios-display text-5xl @3xl:text-6xl">{t(titleKey)}</h1>
+            <div aria-hidden="true" className="helios-ornament max-w-xs">
+              <span className="helios-diamond" />
+            </div>
+            <p className="text-base leading-relaxed text-muted">{t('react_ui.page_placeholder')}</p>
+          </div>
+          <div aria-hidden="true" className="helios-emblem mx-auto size-56 @3xl:size-72">
+            <span className="helios-emblem-rays" />
+            <img src={emblemUrl} alt="" className="relative size-[58%]" />
+          </div>
+        </div>
+      </div>
     </PageLayout>
   );
 }

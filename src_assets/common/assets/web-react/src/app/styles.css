@@ -1,7 +1,563 @@
 @import 'tailwindcss';
 @import '@heroui/styles';
 
+/*
+ * Helios theme: warm black and sun gold (dark), parchment and bronze (light). HeroUI v3 tokens are re-declared outside
+ * any layer, so they win over the defaults in `@layer base`; components keep using the tokens (bg-surface, text-muted,
+ * accent...). The display serif is bundled (the web UI must work offline on the LAN).
+ */
+:root,
+.light,
+[data-theme='light'] {
+  --background: oklch(0.962 0.014 88);
+  --surface: oklch(0.99 0.006 90);
+  --surface-secondary: oklch(0.955 0.014 88);
+  --surface-tertiary: oklch(0.93 0.018 86);
+  --overlay: oklch(0.99 0.006 90);
+  --default: oklch(0.925 0.018 86);
+  --default-foreground: oklch(0.22 0.02 70);
+  --foreground: oklch(0.21 0.02 70);
+  --muted: oklch(0.5 0.025 70);
+  --border: oklch(0.55 0.09 75 / 22%);
+  --separator: oklch(0.55 0.09 75 / 14%);
+  --accent: oklch(0.6 0.13 70);
+  --accent-foreground: oklch(0.99 0.01 90);
+  --focus: var(--accent);
+  --helios-gold-hi: oklch(0.76 0.13 82);
+  --helios-gold-lo: oklch(0.56 0.13 65);
+  --helios-gold-text: oklch(0.52 0.12 66);
+  --helios-glow: oklch(0.86 0.12 85 / 35%);
+  --helios-ray: oklch(0.7 0.13 75 / 5%);
+  --helios-particle: oklch(0.62 0.13 70 / 45%);
+  --helios-panel-top: oklch(0.995 0.005 90 / 88%);
+  --helios-panel-bottom: oklch(0.975 0.01 88 / 82%);
+  --helios-panel-shadow: 0 1px 2px oklch(0.4 0.05 70 / 8%), 0 24px 48px -28px oklch(0.4 0.08 70 / 35%);
+  --helios-ink: oklch(0.21 0.02 70);
+}
+
+.dark,
+[data-theme='dark'] {
+  --background: oklch(0.135 0.006 70);
+  --surface: oklch(0.175 0.008 70);
+  --surface-secondary: oklch(0.2 0.009 70);
+  --surface-tertiary: oklch(0.225 0.01 70);
+  --overlay: oklch(0.19 0.009 70);
+  --default: oklch(0.22 0.01 70);
+  --default-foreground: oklch(0.94 0.025 88);
+  --foreground: oklch(0.94 0.025 88);
+  --muted: oklch(0.7 0.02 80);
+  --border: oklch(0.82 0.1 85 / 15%);
+  --separator: oklch(0.82 0.1 85 / 10%);
+  --accent: oklch(0.8 0.13 82);
+  --accent-foreground: oklch(0.17 0.02 70);
+  --focus: var(--accent);
+  --field-background: oklch(0.2 0.009 70);
+  --field-foreground: var(--foreground);
+  --segment: oklch(0.24 0.01 70);
+  --segment-foreground: var(--foreground);
+  --helios-gold-hi: oklch(0.9 0.12 92);
+  --helios-gold-lo: oklch(0.7 0.14 72);
+  --helios-gold-text: oklch(0.82 0.13 84);
+  --helios-glow: oklch(0.72 0.14 72 / 13%);
+  --helios-ray: oklch(0.85 0.12 85 / 5%);
+  --helios-particle: oklch(0.88 0.11 88 / 75%);
+  --helios-panel-top: oklch(0.175 0.008 70 / 86%);
+  --helios-panel-bottom: oklch(0.145 0.007 70 / 86%);
+  --helios-panel-shadow: inset 0 1px 0 oklch(0.85 0.12 85 / 10%), 0 30px 60px -30px oklch(0 0 0 / 90%);
+  --helios-ink: oklch(0.17 0.02 70);
+}
+
 html,
 body {
   min-height: 100%;
+}
+
+body {
+  background-color: var(--background);
+}
+
+/* ---------- Typography ---------- */
+
+.helios-display {
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.05;
+}
+
+/* Small spaced capitals in gold, led by a hairline: "── IV · CONFIGURATION". */
+.helios-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--helios-gold-text);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.helios-eyebrow::before {
+  content: '';
+  width: 1.5rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+/* Gold gradient text (brand). */
+.helios-gold-text {
+  background: linear-gradient(180deg, var(--helios-gold-hi), var(--helios-gold-lo));
+  background-clip: text;
+  color: transparent;
+}
+
+/* Ornament: hairline · diamond · hairline. */
+.helios-ornament {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--helios-gold-text);
+}
+
+.helios-ornament::before,
+.helios-ornament::after {
+  content: '';
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, transparent, currentColor);
+  opacity: 0.55;
+}
+
+.helios-ornament::after {
+  background: linear-gradient(90deg, currentColor, transparent);
+}
+
+.helios-diamond {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  transform: rotate(45deg);
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+
+/* ---------- Backdrop: warm glow, sun rays and drifting motes of light ---------- */
+
+.helios-backdrop {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--background);
+  background-image:
+    radial-gradient(48rem 40rem at 82% 22%, var(--helios-glow), transparent 70%),
+    radial-gradient(34rem 24rem at 6% -4%, var(--helios-glow), transparent 70%);
+}
+
+.helios-backdrop::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: repeating-conic-gradient(from 8deg at 82% 22%, var(--helios-ray) 0deg 1.6deg, transparent 1.6deg 13deg);
+  mask-image: radial-gradient(circle at 82% 22%, black 0%, transparent 45%);
+}
+
+.helios-backdrop::after {
+  content: '';
+  position: fixed;
+  inset: -640px 0 0 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, var(--helios-particle), transparent),
+    radial-gradient(1px 1px at 34% 62%, var(--helios-particle), transparent),
+    radial-gradient(2px 2px at 58% 34%, var(--helios-particle), transparent),
+    radial-gradient(1px 1px at 76% 78%, var(--helios-particle), transparent),
+    radial-gradient(1.5px 1.5px at 88% 12%, var(--helios-particle), transparent),
+    radial-gradient(1px 1px at 22% 88%, var(--helios-particle), transparent),
+    radial-gradient(1.5px 1.5px at 46% 8%, var(--helios-particle), transparent),
+    radial-gradient(1px 1px at 68% 52%, var(--helios-particle), transparent),
+    radial-gradient(2px 2px at 8% 46%, var(--helios-particle), transparent),
+    radial-gradient(1px 1px at 94% 64%, var(--helios-particle), transparent);
+  background-size: 640px 640px;
+  opacity: 0.55;
+  animation: helios-drift 90s linear infinite;
+}
+
+@keyframes helios-drift {
+  to {
+    transform: translateY(640px);
+  }
+}
+
+/* ---------- Panels ---------- */
+
+.helios-panel {
+  background: linear-gradient(180deg, var(--helios-panel-top), var(--helios-panel-bottom));
+  border: 1px solid var(--border);
+  box-shadow: var(--helios-panel-shadow);
+  backdrop-filter: blur(14px) saturate(130%);
+}
+
+/* Sidebar: a gold rim of light along its right edge. */
+.helios-sidebar {
+  position: relative;
+}
+
+.helios-sidebar::after {
+  content: '';
+  position: absolute;
+  top: 12%;
+  right: -1px;
+  bottom: 12%;
+  width: 1px;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, var(--helios-gold-hi), transparent);
+  opacity: 0.6;
+}
+
+/* Top bar: a panel on small screens; on desktop it sits on the backdrop. */
+@media (width < 64rem) {
+  .helios-topbar {
+    background: linear-gradient(180deg, var(--helios-panel-top), var(--helios-panel-bottom));
+    border: 1px solid var(--border);
+    box-shadow: var(--helios-panel-shadow);
+    backdrop-filter: blur(14px) saturate(130%);
+  }
+}
+
+.helios-drawer {
+  background-color: var(--surface);
+  background-image: radial-gradient(30rem 20rem at 0% 0%, var(--helios-glow), transparent 70%);
+}
+
+/* ---------- Navigation ---------- */
+
+.helios-nav-link {
+  position: relative;
+  color: var(--muted);
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.helios-nav-link:hover {
+  color: var(--foreground);
+  background-color: color-mix(in oklab, var(--accent) 7%, transparent);
+}
+
+.helios-nav-link[aria-current='page'] {
+  color: var(--helios-gold-text);
+  background-image: linear-gradient(90deg, color-mix(in oklab, var(--accent) 16%, transparent), transparent 90%);
+}
+
+.helios-nav-link[aria-current='page'] .helios-nav-icon {
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--accent) 70%, transparent));
+}
+
+/* Current page: a glowing gold diamond on the left edge. */
+.helios-nav-link[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  left: -3px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  transform: translateY(-50%) rotate(45deg);
+  background: var(--helios-gold-hi);
+  box-shadow: 0 0 10px var(--helios-gold-hi);
+}
+
+/* ---------- Brand ---------- */
+
+.helios-logo-tile {
+  position: relative;
+  isolation: isolate;
+}
+
+.helios-logo-tile::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  z-index: -1;
+  border-radius: 9999px;
+  background: radial-gradient(circle, oklch(0.82 0.15 75 / 70%) 0%, oklch(0.7 0.16 55 / 28%) 40%, transparent 68%);
+  animation: helios-breathe 4s ease-in-out infinite;
+}
+
+.helios-logo-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    oklch(0.88 0.13 85 / 75%) 40deg,
+    transparent 90deg,
+    transparent 180deg,
+    oklch(0.75 0.15 65 / 55%) 220deg,
+    transparent 270deg
+  );
+  mask: radial-gradient(circle, transparent 58%, black 60%, black 68%, transparent 71%);
+  animation: helios-spin 7s linear infinite;
+}
+
+.helios-logo-tile img {
+  transition: transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+a:hover .helios-logo-tile img {
+  transform: rotate(45deg) scale(1.06);
+}
+
+/* ---------- Controls ---------- */
+
+/* Segmented control: hairline track, gold selected segment. */
+.helios-segmented {
+  border: 1px solid var(--border);
+  background-color: color-mix(in oklab, var(--background) 60%, transparent);
+}
+
+.helios-segment {
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.helios-segment:hover {
+  color: var(--foreground);
+}
+
+.helios-segment[data-selected='true'] {
+  color: var(--helios-ink);
+  background: linear-gradient(180deg, var(--helios-gold-hi), var(--helios-gold-lo));
+  box-shadow:
+    0 6px 18px -8px var(--helios-gold-lo),
+    inset 0 1px 0 oklch(1 0 0 / 35%);
+}
+
+/* Theme card at the bottom of the sidebar. */
+.helios-feature-card {
+  border: 1px solid var(--border);
+  background-image:
+    radial-gradient(14rem 8rem at 50% 0%, var(--helios-glow), transparent 75%),
+    linear-gradient(180deg, color-mix(in oklab, var(--accent) 5%, transparent), transparent);
+}
+
+/*
+ * Theme preview: a miniature of the interface in the chosen theme. The mock colors are fixed on purpose (it shows what
+ * light and dark look like whatever the current theme is); `auto` shows both, split on a diagonal.
+ */
+.helios-theme-preview {
+  position: relative;
+  height: 5.25rem;
+  overflow: hidden;
+  border-radius: 0.6rem;
+  box-shadow:
+    inset 0 0 0 1px var(--border),
+    0 10px 24px -14px oklch(0 0 0 / 60%);
+}
+
+.helios-mini-ui {
+  --mini-bg: oklch(0.962 0.014 88);
+  --mini-panel: oklch(0.995 0.005 90);
+  --mini-line: oklch(0.86 0.025 85);
+  --mini-gold: oklch(0.6 0.13 70);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  background: var(--mini-bg);
+  transition: clip-path 400ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.helios-mini-ui[data-variant='dark'] {
+  --mini-bg: oklch(0.135 0.006 70);
+  --mini-panel: oklch(0.195 0.009 70);
+  --mini-line: oklch(0.32 0.015 75);
+  --mini-gold: oklch(0.8 0.13 82);
+}
+
+.helios-mini-sidebar,
+.helios-mini-bar,
+.helios-mini-card {
+  border-radius: 4px;
+  background: var(--mini-panel);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--mini-gold) 18%, transparent);
+}
+
+.helios-mini-sidebar {
+  display: flex;
+  width: 28%;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px 5px;
+}
+
+.helios-mini-dot {
+  width: 9px;
+  height: 9px;
+  margin-bottom: 2px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, oklch(0.85 0.15 80), oklch(0.62 0.18 45));
+}
+
+.helios-mini-line {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--mini-line);
+}
+
+.helios-mini-active {
+  background: var(--mini-gold);
+}
+
+.helios-mini-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.helios-mini-bar {
+  height: 12px;
+}
+
+.helios-mini-cards {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+}
+
+.helios-mini-card {
+  flex: 1;
+}
+
+.helios-theme-preview[data-preview='light'] .helios-mini-ui[data-variant='dark'] {
+  clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+}
+
+.helios-theme-preview[data-preview='dark'] .helios-mini-ui[data-variant='dark'] {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.helios-theme-preview[data-preview='auto'] .helios-mini-ui[data-variant='dark'] {
+  clip-path: polygon(58% 0, 100% 0, 100% 100%, 42% 100%);
+}
+
+/* ---------- Hero (page placeholder): text on the left, the Helios emblem on the right ---------- */
+
+.helios-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.helios-hero > * {
+  position: relative;
+}
+
+/* Emblem: the sun logo inside dotted orbits; the outer orbit turns slowly, rays and glow radiate from it. */
+.helios-emblem-rays {
+  position: absolute;
+  inset: -110%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle, var(--helios-glow) 0%, transparent 45%),
+    repeating-conic-gradient(from 0deg, var(--helios-ray) 0deg 1.4deg, transparent 1.4deg 11deg);
+  mask-image: radial-gradient(circle, black 0%, transparent 62%);
+}
+
+.helios-emblem {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.helios-emblem::before,
+.helios-emblem::after {
+  content: '';
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+.helios-emblem::before {
+  inset: 0;
+  border: 1px dashed color-mix(in oklab, var(--helios-gold-text) 45%, transparent);
+  animation: helios-spin 80s linear infinite;
+}
+
+.helios-emblem::after {
+  inset: 14%;
+  border: 1px solid color-mix(in oklab, var(--helios-gold-text) 22%, transparent);
+  box-shadow: 0 0 60px -10px var(--helios-glow);
+}
+
+.helios-emblem img {
+  filter: drop-shadow(0 0 28px oklch(0.75 0.16 65 / 45%));
+  animation: helios-float 6s ease-in-out infinite;
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes helios-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes helios-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes helios-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .helios-backdrop::after,
+  .helios-logo-tile::before,
+  .helios-logo-tile::after,
+  .helios-emblem::before,
+  .helios-emblem img {
+    animation: none;
+  }
+
+  .helios-logo-tile img,
+  .helios-mini-ui {
+    transition: none;
+  }
+}
+
+/* ---------- Short screens (720p, scaled displays) ---------- */
+
+/* The sidebar navigation scrolls with a thin gold thumb instead of the native grey bar. */
+.helios-nav-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--helios-gold-text) 45%, transparent) transparent;
+}
+
+/* Below 860px of height the theme card drops its miniature and keeps the switcher. */
+@media (height < 860px) {
+  .helios-theme-preview {
+    display: none;
+  }
 }

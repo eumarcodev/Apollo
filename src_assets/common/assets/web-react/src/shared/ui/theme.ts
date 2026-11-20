@@ -39,9 +39,9 @@ function systemTheme(env: ThemeEnvironment): ResolvedTheme {
   return env.matchMedia(DARK_QUERY).matches ? 'dark' : 'light';
 }
 
-/** Stored preference, or the system theme when nothing is stored (legacy getPreferredTheme). */
+/** Stored preference; dark when nothing is stored (the default of the new UI). */
 export function getPreferredTheme(env: ThemeEnvironment = defaultEnvironment()): ThemePreference {
-  return getStoredTheme(env) ?? systemTheme(env);
+  return getStoredTheme(env) ?? 'dark';
 }
 
 export function resolveTheme(theme: ThemePreference, env: ThemeEnvironment = defaultEnvironment()): ResolvedTheme {
@@ -57,16 +57,14 @@ export function applyTheme(theme: ThemePreference, env: ThemeEnvironment = defau
 }
 
 /**
- * Apply the preferred theme and follow system changes while the stored preference is not an explicit
- * light/dark (legacy loadAutoTheme). Returns a function that stops listening.
+ * Apply the preferred theme and follow system changes while the stored preference is `auto`. Returns a function that stops listening.
  */
 export function initTheme(env: ThemeEnvironment = defaultEnvironment()): () => void {
   applyTheme(getPreferredTheme(env), env);
   const media = env.matchMedia(DARK_QUERY);
   const onChange = () => {
-    const stored = getStoredTheme(env);
-    if (stored !== 'light' && stored !== 'dark') {
-      applyTheme(getPreferredTheme(env), env);
+    if (getStoredTheme(env) === 'auto') {
+      applyTheme('auto', env);
     }
   };
   media.addEventListener('change', onChange);

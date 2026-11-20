@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { resolveBuildPaths } from './vite-plugins/build-paths.js';
 import { heliosPageRoutes, PAGE_NAMES } from './vite-plugins/helios-page-routes.ts';
+import { themeBootstrap } from './vite-plugins/theme-bootstrap.ts';
 
 const appDir = fileURLToPath(new URL('.', import.meta.url));
 const { root, outDir } = resolveBuildPaths(process.env, appDir);
@@ -12,7 +13,7 @@ const { root, outDir } = resolveBuildPaths(process.env, appDir);
 export default defineConfig({
   root,
   base: './',
-  plugins: [react(), tailwindcss(), heliosPageRoutes()],
+  plugins: [react(), tailwindcss(), heliosPageRoutes(), themeBootstrap()],
   resolve: {
     alias: { '@': resolve(root, 'src') },
   },
