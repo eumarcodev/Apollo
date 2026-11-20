@@ -1,7 +1,314 @@
 @import 'tailwindcss';
 @import '@heroui/styles';
 
+/*
+ * Helios theme: HeroUI v3 tokens re-declared outside any layer, so they win over the defaults in `@layer base`.
+ * Components keep using the tokens (bg-surface, text-muted, accent...); only the palette lives here.
+ */
+:root,
+.light,
+[data-theme='light'] {
+  --background: oklch(0.972 0.006 255);
+  --surface: oklch(1 0 0);
+  --surface-secondary: oklch(0.962 0.008 255);
+  --surface-tertiary: oklch(0.94 0.01 255);
+  --overlay: oklch(1 0 0);
+  --default: oklch(0.945 0.009 255);
+  --muted: oklch(0.52 0.025 260);
+  --border: oklch(0.2 0.03 260 / 9%);
+  --separator: oklch(0.2 0.03 260 / 7%);
+  --accent: oklch(0.6 0.19 258);
+  --accent-foreground: oklch(0.99 0 0);
+  --helios-glow-a: oklch(0.7 0.16 258 / 16%);
+  --helios-glow-b: oklch(0.72 0.15 300 / 12%);
+  --helios-glow-sun: oklch(0.82 0.15 70 / 22%);
+  --helios-panel: oklch(1 0 0 / 72%);
+  --helios-panel-shadow: 0 1px 2px oklch(0.2 0.03 260 / 6%), 0 18px 40px -24px oklch(0.3 0.06 260 / 35%);
+  --helios-highlight: oklch(1 0 0 / 90%);
+}
+
+.dark,
+[data-theme='dark'] {
+  --background: oklch(0.19 0.032 263);
+  --surface: oklch(0.235 0.034 263);
+  --surface-secondary: oklch(0.265 0.036 263);
+  --surface-tertiary: oklch(0.29 0.036 263);
+  --overlay: oklch(0.25 0.035 263);
+  --default: oklch(0.285 0.035 263);
+  --default-foreground: oklch(0.96 0.005 264);
+  --foreground: oklch(0.965 0.006 264);
+  --muted: oklch(0.7 0.03 264);
+  --border: oklch(0.85 0.04 260 / 11%);
+  --separator: oklch(1 0 0 / 6%);
+  --accent: oklch(0.67 0.18 256);
+  --accent-foreground: oklch(0.99 0 0);
+  --field-background: oklch(0.235 0.032 264);
+  --field-foreground: var(--foreground);
+  --segment: oklch(0.3 0.036 264);
+  --segment-foreground: var(--foreground);
+  --helios-glow-a: oklch(0.6 0.19 258 / 30%);
+  --helios-glow-b: oklch(0.55 0.2 295 / 22%);
+  --helios-glow-sun: oklch(0.75 0.17 60 / 14%);
+  --helios-panel: oklch(0.245 0.036 263 / 78%);
+  --helios-panel-shadow: 0 1px 0 oklch(1 0 0 / 5%) inset, 0 24px 48px -28px oklch(0 0 0 / 80%);
+  --helios-highlight: oklch(1 0 0 / 6%);
+}
+
 html,
 body {
   min-height: 100%;
+}
+
+body {
+  background-color: var(--background);
+}
+
+/* Page backdrop: soft colored glows over the background, fixed while the content scrolls. */
+.helios-backdrop {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(42rem 28rem at 8% -6%, var(--helios-glow-sun), transparent 70%),
+    radial-gradient(60rem 40rem at 32% -18%, var(--helios-glow-a), transparent 65%),
+    radial-gradient(50rem 36rem at 105% 110%, var(--helios-glow-b), transparent 65%);
+  background-attachment: fixed;
+}
+
+/* Floating glass panel used by the sidebar, the top bar and the cards of the shell. */
+.helios-panel {
+  background-color: var(--helios-panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--helios-panel-shadow);
+  backdrop-filter: blur(18px) saturate(150%);
+}
+
+/* Top bar: a panel on small screens; on desktop it sits on the backdrop, next to the floating sidebar. */
+@media (width < 64rem) {
+  .helios-topbar {
+    background-color: var(--helios-panel);
+    border: 1px solid var(--border);
+    box-shadow: var(--helios-panel-shadow);
+    backdrop-filter: blur(18px) saturate(150%);
+  }
+}
+
+/* Drawer: same glass and palette as the sidebar. */
+.helios-drawer {
+  background-color: var(--surface);
+  background-image: radial-gradient(30rem 20rem at 0% 0%, var(--helios-glow-a), transparent 70%);
+}
+
+/* Feature card at the bottom of the sidebar (theme), with a soft accent glow. */
+.helios-feature-card {
+  background-image:
+    radial-gradient(14rem 9rem at 50% 0%, var(--helios-glow-a), transparent 75%),
+    linear-gradient(180deg, color-mix(in oklab, var(--foreground) 5%, transparent), transparent);
+  border: 1px solid var(--border);
+}
+
+/* Segmented control: recessed track, raised selected segment. */
+.helios-segmented {
+  background-color: color-mix(in oklab, var(--background) 70%, transparent);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.helios-segment {
+  color: var(--muted);
+}
+
+.helios-segment:hover {
+  color: var(--foreground);
+}
+
+.helios-segment[data-selected='true'] {
+  color: var(--accent-foreground);
+  background-color: var(--accent);
+  box-shadow:
+    0 6px 16px -6px color-mix(in oklab, var(--accent) 80%, transparent),
+    inset 0 1px 0 oklch(1 0 0 / 20%);
+}
+
+/* Glowing sun orb: the Helios mark in the theme card. */
+.helios-orb {
+  position: relative;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 35% 30%, oklch(0.98 0.05 90) 0%, transparent 32%),
+    radial-gradient(circle at 50% 50%, oklch(0.82 0.17 65) 0%, oklch(0.66 0.2 40) 45%, oklch(0.45 0.18 300) 100%);
+  box-shadow:
+    0 0 24px oklch(0.75 0.18 55 / 55%),
+    0 0 60px oklch(0.6 0.2 300 / 35%);
+}
+
+.helios-orb::after {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    oklch(0.8 0.16 70 / 45%),
+    transparent 30%,
+    oklch(0.65 0.2 280 / 40%),
+    transparent 65%
+  );
+  filter: blur(8px);
+  animation: helios-spin 9s linear infinite;
+}
+
+@keyframes helios-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .helios-orb::after {
+    animation: none;
+  }
+}
+
+/* Navigation link: quiet by default, accent pill with an edge marker on the current page. */
+.helios-nav-link {
+  position: relative;
+  color: var(--muted);
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.helios-nav-link:hover {
+  color: var(--foreground);
+  background-color: color-mix(in oklab, var(--foreground) 6%, transparent);
+}
+
+.helios-nav-link[aria-current='page'] {
+  color: var(--foreground);
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--accent) 24%, transparent),
+    color-mix(in oklab, var(--accent) 6%, transparent)
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 22%, transparent);
+}
+
+.helios-nav-link[aria-current='page'] .helios-nav-icon {
+  color: var(--accent);
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--accent) 60%, transparent));
+}
+
+.helios-nav-link[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 28%;
+  bottom: 28%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+}
+
+/* Logo tile: a breathing warm halo and a slow ring of light around the sun; the sun turns a little on hover. */
+.helios-logo-tile {
+  position: relative;
+  isolation: isolate;
+}
+
+.helios-logo-tile::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  z-index: -1;
+  border-radius: 9999px;
+  background: radial-gradient(circle, oklch(0.82 0.17 65 / 80%) 0%, oklch(0.7 0.19 45 / 35%) 40%, transparent 68%);
+  animation: helios-breathe 4s ease-in-out infinite;
+}
+
+.helios-logo-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    oklch(0.85 0.16 75 / 70%) 40deg,
+    transparent 90deg,
+    transparent 180deg,
+    oklch(0.7 0.19 40 / 55%) 220deg,
+    transparent 270deg
+  );
+  mask: radial-gradient(circle, transparent 58%, black 60%, black 68%, transparent 71%);
+  animation: helios-spin 7s linear infinite;
+}
+
+.helios-logo-tile img {
+  transition: transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+a:hover .helios-logo-tile img {
+  transform: rotate(45deg) scale(1.06);
+}
+
+@keyframes helios-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .helios-logo-tile::before,
+  .helios-logo-tile::after {
+    animation: none;
+  }
+
+  .helios-logo-tile img {
+    transition: none;
+  }
+}
+
+/* Hero panel: faint grid fading out from the top, with an accent glow. */
+.helios-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--foreground) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--foreground) 5%, transparent) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(ellipse 70% 80% at 50% 0%, black, transparent 75%);
+}
+
+.helios-hero::after {
+  content: '';
+  position: absolute;
+  inset: auto 15% -40% 15%;
+  height: 70%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, var(--helios-glow-a), transparent 70%);
+}
+
+.helios-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Accent tile behind an icon (empty states, page badge in the top bar). */
+.helios-icon-tile {
+  color: var(--accent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--accent) 26%, transparent),
+    color-mix(in oklab, var(--accent) 8%, transparent)
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 28%, transparent);
 }

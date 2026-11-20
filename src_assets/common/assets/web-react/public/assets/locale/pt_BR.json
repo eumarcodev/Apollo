@@ -515,6 +515,7 @@
   },
   "navbar": {
     "applications": "Aplicativos",
+    "brand_tagline": "Host de game streaming",
     "close_navigation": "Fechar navegação",
     "collapse_sidebar": "Recolher barra lateral",
     "expand_sidebar": "Expandir barra lateral",
@@ -525,6 +526,7 @@
     "pin": "PIN",
     "theme_auto": "Automático",
     "theme_dark": "Escuro",
+    "theme_hint": "Escolha a aparência do Helios",
     "theme_light": "Claro",
     "toggle_navigation": "Alternar navegação",
     "toggle_theme": "Tema",

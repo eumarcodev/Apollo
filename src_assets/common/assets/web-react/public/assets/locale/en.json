@@ -515,6 +515,7 @@
   },
   "navbar": {
     "applications": "Applications",
+    "brand_tagline": "Game streaming host",
     "close_navigation": "Close navigation",
     "collapse_sidebar": "Collapse sidebar",
     "expand_sidebar": "Expand sidebar",
@@ -525,6 +526,7 @@
     "pin": "PIN",
     "theme_auto": "Auto",
     "theme_dark": "Dark",
+    "theme_hint": "Choose how Helios looks",
     "theme_light": "Light",
     "toggle_navigation": "Toggle navigation",
     "toggle_theme": "Theme",

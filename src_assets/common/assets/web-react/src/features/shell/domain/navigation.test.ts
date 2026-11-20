@@ -19,6 +19,7 @@ describe('navigation', () => {
     ['/index.html', 'home'],
     ['', 'home'],
     ['/pin', 'pin'],
+    ['/config.html', 'configuration'],
     ['/apps/', 'applications'],
     ['/config', 'configuration'],
     ['/password', 'password'],

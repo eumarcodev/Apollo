@@ -8,39 +8,76 @@ import { useThemePreference } from './use-theme-preference';
 const ICONS: Record<ThemeChoice, LucideIcon> = { light: Sun, dark: Moon, auto: SunMoon };
 
 /**
- * Light / dark / auto as a compact icon pill. The options are plain buttons (no popover) so it also works inside the
- * drawer, where a popover would count as an outside click and close it. `vertical` stacks it for the collapsed sidebar.
+ * Light / dark / auto. Expanded: a card with the Helios orb and a segmented control with labels. `compact` (collapsed
+ * sidebar): a vertical icon pill. The options are plain buttons (no popover) so it also works inside the drawer, where
+ * a popover would count as an outside click and close it.
  */
-export function ThemeSwitcher({ vertical = false }: { vertical?: boolean }) {
+export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
   const { t } = useTranslation();
   const [choice, select] = useThemePreference();
+  const options = THEME_OPTIONS.map(({ value, labelKey }) => {
+    const Icon = ICONS[value];
+    const selected = choice === value;
+    const label = t(labelKey);
+    const button = (
+      <Button
+        key={value}
+        size="sm"
+        isIconOnly={compact}
+        variant="ghost"
+        aria-pressed={selected}
+        aria-label={label}
+        data-testid={`theme-${value}`}
+        data-selected={selected}
+        className={[
+          'helios-segment min-w-0 rounded-lg',
+          compact ? 'size-9' : 'h-9 flex-1 gap-1.5 px-2 text-xs font-medium',
+        ].join(' ')}
+        onPress={() => select(value)}
+      >
+        <Icon aria-hidden="true" className="size-4 shrink-0" />
+        {!compact && label}
+      </Button>
+    );
+    return compact ? (
+      <Hint key={value} text={label}>
+        {button}
+      </Hint>
+    ) : (
+      button
+    );
+  });
+
+  if (compact) {
+    return (
+      <div
+        role="group"
+        aria-label={t('navbar.toggle_theme')}
+        data-testid="theme-switcher"
+        className="helios-segmented flex flex-col gap-1 rounded-xl p-1"
+      >
+        {options}
+      </div>
+    );
+  }
+
   return (
-    <div
-      role="group"
-      aria-label={t('navbar.toggle_theme')}
-      data-testid="theme-switcher"
-      className={['inline-flex gap-1 rounded-full bg-default p-1', vertical ? 'flex-col' : 'flex-row'].join(' ')}
-    >
-      {THEME_OPTIONS.map(({ value, labelKey }) => {
-        const Icon = ICONS[value];
-        const selected = choice === value;
-        return (
-          <Hint key={value} text={t(labelKey)}>
-            <Button
-              isIconOnly
-              size="sm"
-              variant={selected ? 'primary' : 'ghost'}
-              aria-pressed={selected}
-              aria-label={t(labelKey)}
-              data-testid={`theme-${value}`}
-              className="size-8 min-w-0 rounded-full"
-              onPress={() => select(value)}
-            >
-              <Icon aria-hidden="true" className="size-4" />
-            </Button>
-          </Hint>
-        );
-      })}
+    <div className="helios-feature-card relative w-full overflow-hidden rounded-2xl p-4">
+      <div className="mb-4 flex flex-col items-center gap-3 pt-1 text-center">
+        <div aria-hidden="true" className="helios-orb size-16" />
+        <div className="flex flex-col gap-0.5">
+          <span className="text-sm font-semibold text-foreground">{t('navbar.toggle_theme')}</span>
+          <span className="text-xs text-muted">{t('navbar.theme_hint')}</span>
+        </div>
+      </div>
+      <div
+        role="group"
+        aria-label={t('navbar.toggle_theme')}
+        data-testid="theme-switcher"
+        className="helios-segmented flex gap-1 rounded-xl p-1"
+      >
+        {options}
+      </div>
     </div>
   );
 }

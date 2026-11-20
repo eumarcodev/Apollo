@@ -20,7 +20,11 @@ export const NAV_ITEMS: readonly NavItem[] = [
 
 function normalizePath(path: string): string {
   const trimmed = path.length > 1 ? path.replace(/\/+$/, '') : path;
-  return trimmed === '' || trimmed === '/index.html' ? '/' : trimmed;
+  if (trimmed === '' || trimmed === '/index.html') {
+    return '/';
+  }
+  // the static build serves `/config.html`; the Helios server serves the same page at `/config`
+  return trimmed.replace(/\.html$/, '');
 }
 
 /**

@@ -15,7 +15,8 @@ describe('PageLayout', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Title' })).toBeInTheDocument();
     expect(screen.getByText('Desc')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'act' })).toBeInTheDocument();
-    expect(screen.getByText('body').closest('section')).toHaveClass('extra');
+    // fills the dashboard content area up to a wide cap instead of a narrow centered column
+    expect(screen.getByText('body').closest('section')).toHaveClass('extra', 'w-full', 'max-w-[1920px]');
   });
 
   it('omits the header when there is no title nor actions', () => {

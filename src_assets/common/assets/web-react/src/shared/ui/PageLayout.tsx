@@ -13,12 +13,14 @@ export interface PageLayoutProps {
 export function PageLayout({ title, description, actions, className, children }: PageLayoutProps) {
   return (
     <section
-      className={['mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6', className].filter(Boolean).join(' ')}
+      className={['flex w-full max-w-[1920px] flex-col gap-6 px-1 pt-1 pb-8 sm:px-2', className]
+        .filter(Boolean)
+        .join(' ')}
     >
       {(title !== undefined || actions !== undefined) && (
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex flex-col gap-1">
-            {title !== undefined && <h1 className="text-2xl font-semibold">{title}</h1>}
+            {title !== undefined && <h1 className="text-3xl font-bold tracking-tight">{title}</h1>}
             {description !== undefined && <p className="text-muted">{description}</p>}
           </div>
           {actions}
