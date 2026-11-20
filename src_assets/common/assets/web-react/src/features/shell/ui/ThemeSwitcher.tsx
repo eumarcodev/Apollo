@@ -7,6 +7,27 @@ import { useThemePreference } from './use-theme-preference';
 
 const ICONS: Record<ThemeChoice, LucideIcon> = { light: Sun, dark: Moon, auto: SunMoon };
 
+/** Miniature of the interface (sidebar, top bar, cards) painted in one theme: the live preview of the choice. */
+function MiniUi({ variant }: { variant: 'light' | 'dark' }) {
+  return (
+    <div className="helios-mini-ui" data-variant={variant}>
+      <div className="helios-mini-sidebar">
+        <span className="helios-mini-dot" />
+        <span className="helios-mini-line helios-mini-active" />
+        <span className="helios-mini-line" />
+        <span className="helios-mini-line" />
+      </div>
+      <div className="helios-mini-main">
+        <span className="helios-mini-bar" />
+        <div className="helios-mini-cards">
+          <span className="helios-mini-card" />
+          <span className="helios-mini-card" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Light / dark / auto. Expanded: a card with the Helios orb and a segmented control with labels. `compact` (collapsed
  * sidebar): a vertical icon pill. The options are plain buttons (no popover) so it also works inside the drawer, where
@@ -62,13 +83,14 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <div className="helios-feature-card relative w-full overflow-hidden rounded-2xl p-4">
-      <div className="mb-4 flex flex-col items-center gap-3 pt-1 text-center">
-        <div aria-hidden="true" className="helios-orb size-16" />
-        <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-semibold text-foreground">{t('navbar.toggle_theme')}</span>
-          <span className="text-xs text-muted">{t('navbar.theme_hint')}</span>
-        </div>
+    <div className="helios-feature-card relative w-full overflow-hidden rounded-2xl p-3">
+      <div aria-hidden="true" className="helios-theme-preview mb-3" data-preview={choice} data-testid="theme-preview">
+        <MiniUi variant="light" />
+        <MiniUi variant="dark" />
+      </div>
+      <div className="mb-3 flex flex-col gap-0.5 px-1">
+        <span className="text-sm font-semibold text-foreground">{t('navbar.toggle_theme')}</span>
+        <span className="text-xs text-muted">{t('navbar.theme_hint')}</span>
       </div>
       <div
         role="group"

@@ -176,6 +176,7 @@ describe('theme switcher', () => {
     expect(document.documentElement).toHaveAttribute('data-theme', resolved);
     expect(document.documentElement).toHaveClass(resolved);
     expect(within(sidebar).getByTestId(`theme-${value}`)).toHaveAttribute('aria-pressed', 'true');
+    expect(within(sidebar).getByTestId('theme-preview')).toHaveAttribute('data-preview', value);
   });
 
   it('still applies the theme when localStorage throws', async () => {
