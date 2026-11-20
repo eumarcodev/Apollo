@@ -1,6 +1,6 @@
-/** The 8 pages served by Helios, with the route and the title key each placeholder shows. */
+/** The 8 pages served by Helios, with the route and the h1 each one shows. */
 export const PAGES = [
-  { page: 'index', route: '/', title: { en: 'Home', pt_BR: 'Início' } },
+  { page: 'index', route: '/', title: { en: 'Hello, Helios!', pt_BR: 'Olá, Helios!' } },
   { page: 'pin', route: '/pin', title: { en: 'PIN', pt_BR: 'PIN' } },
   { page: 'apps', route: '/apps', title: { en: 'Applications', pt_BR: 'Aplicativos' } },
   { page: 'config', route: '/config', title: { en: 'Configuration', pt_BR: 'Configuração' } },

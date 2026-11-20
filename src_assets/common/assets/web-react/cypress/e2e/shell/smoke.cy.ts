@@ -12,7 +12,11 @@ describe('smoke: every page renders inside the shared providers', () => {
         cy.visit(route);
         cy.wait('@configLocale');
         cy.get('meta[name="helios-web-ui"]').should('have.attr', 'content', 'react');
-        cy.get('[data-testid="page-placeholder"]').should('have.attr', 'data-page', page);
+        if (page === 'index') {
+          cy.get('[data-testid="version-card"]').should('be.visible');
+        } else {
+          cy.get('[data-testid="page-placeholder"]').should('have.attr', 'data-page', page);
+        }
         cy.get('h1').should('have.text', title[locale]);
         cy.get('html').should('have.attr', 'lang', locale === 'pt_BR' ? 'pt-BR' : 'en');
         cy.get('html').should('have.attr', 'data-theme');

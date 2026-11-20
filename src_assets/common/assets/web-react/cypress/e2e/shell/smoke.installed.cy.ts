@@ -12,9 +12,11 @@ describe('installed smoke: the host serves the React UI', () => {
       cy.visit(route);
       cy.get('meta[name="helios-web-ui"]').should('have.attr', 'content', 'react');
       // With credentials set the server sends /welcome to /, so check the page that actually answered.
-      cy.get('[data-testid="page-placeholder"]')
-        .should('have.attr', 'data-page')
-        .and('eq', page === 'welcome' ? 'index' : page);
+      if (page === 'index' || page === 'welcome') {
+        cy.get('[data-testid="version-card"]').should('be.visible');
+      } else {
+        cy.get('[data-testid="page-placeholder"]').should('have.attr', 'data-page').and('eq', page);
+      }
       // The server only routes a few files under /images; every image the page shows must really load.
       cy.get('img').each(($img) => {
         cy.wrap($img).should(($el) => {
