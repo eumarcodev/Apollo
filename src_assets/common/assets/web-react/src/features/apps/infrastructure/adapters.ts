@@ -29,5 +29,6 @@ export function createAppsPort(http: HttpClient = httpClient): AppsPort {
     launch: (uuid) => action(http, './api/apps/launch', { uuid }),
     close: () => action(http, './api/apps/close', undefined),
     remove: (uuid) => action(http, './api/apps/delete', { uuid }),
+    save: (app) => action(http, './api/apps', app),
   };
 }

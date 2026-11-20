@@ -14,6 +14,8 @@ export interface AppsPort {
   launch(uuid: string): Promise<ActionResult>;
   close(): Promise<ActionResult>;
   remove(uuid: string): Promise<ActionResult>;
+  /** Create (no uuid) or replace (same uuid) an app with `POST ./api/apps`. */
+  save(app: Record<string, unknown>): Promise<ActionResult>;
 }
 
 /** What the page needs from the browser; a port so tests and the UI never touch `window`. */
