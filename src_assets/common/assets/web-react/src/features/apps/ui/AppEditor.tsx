@@ -29,9 +29,19 @@ export interface AppEditorProps {
   /** Receives the edited app; the caller normalises and posts it. */
   onSave: (app: AppEntry) => void;
   onExport: (app: AppEntry) => void;
-  /** Slot next to the name field (the online cover finder plugs in here). */
-  nameAddon?: ReactNode;
+  /**
+   * Slot next to the name field (the online cover finder plugs in here). A function receives the name being typed
+   * and a setter of the image path.
+   */
+  nameAddon?: NameAddon;
 }
+
+export interface NameAddonContext {
+  name: string;
+  setImagePath: (path: string) => void;
+}
+
+export type NameAddon = ReactNode | ((context: NameAddonContext) => ReactNode);
 
 /** Sentinel id of the "Default (Global)" option: a list box item cannot have the empty string as id. */
 const GLOBAL_GAMEPAD = '__global__';
@@ -144,7 +154,9 @@ export function AppEditor({ initial, platform, busy, onCancel, onSave, onExport,
               />
             </div>
             <div className="sm:pt-6" data-testid="cover-finder-slot">
-              {nameAddon}
+              {typeof nameAddon === 'function'
+                ? nameAddon({ name: draft.name, setImagePath: (path) => set('image-path', path) })
+                : nameAddon}
             </div>
           </div>
           <TextInput
