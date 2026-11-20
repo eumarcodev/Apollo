@@ -1,7 +1,4 @@
-import { createPage, PagePlaceholder } from '@/app';
+import { createPage } from '@/app';
+import { WelcomePage } from '@/features/auth';
 
-function Page() {
-  return <PagePlaceholder page="welcome" titleKey="welcome.greeting" />;
-}
-
-void createPage(Page, { layout: 'bare' });
+void createPage(WelcomePage, { layout: 'bare' });

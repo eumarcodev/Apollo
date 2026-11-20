@@ -18,6 +18,8 @@ describe('installed smoke: the host serves the React UI', () => {
         cy.get('[data-testid="config-tabs"]').should('be.visible');
       } else if (page === 'pin') {
         cy.get('[data-testid="pairing-card"]').should('be.visible');
+      } else if (page === 'login') {
+        cy.get('[data-testid="login-page"]').should('have.attr', 'data-page', 'login');
       } else {
         cy.get('[data-testid="page-placeholder"]').should('have.attr', 'data-page').and('eq', page);
       }

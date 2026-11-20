@@ -19,9 +19,11 @@
     "enabled_def": "Enabled (default)",
     "enabled_def_cbox": "Default: checked",
     "error": "Error!",
+    "internal_server_error": "Internal Server Error",
     "learn_more": "Learn More",
     "note": "Note:",
     "password": "Password",
+    "password_mismatch": "Password mismatch",
     "run_as": "Run as Admin",
     "save": "Save",
     "see_more": "See More",
@@ -516,6 +518,9 @@
     "wan_encryption_mode_desc": "This determines when encryption will be used when streaming over the Internet. Encryption can reduce streaming performance, particularly on less powerful hosts and clients."
   },
   "login": {
+    "failed_credentials": "Login failed: Please check your username and password",
+    "failed_reason": "Login failed: {{reason}}",
+    "failed_status": "Login failed: Server returned {{status}}",
     "save_password": "Remember Password"
   },
   "index": {
