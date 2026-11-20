@@ -192,9 +192,9 @@ describe('dashboard: clients, resources and legal', () => {
 
   it('keeps the exact resource and legal URLs, each opening in a new tab', () => {
     const links: Record<string, string> = {
-      'resource-discussions': 'https://github.com/eumarcodev/Helios-Server/discussions',
-      'resource-wiki': 'https://github.com/ClassicOldSong/Apollo/wiki',
-      'resource-stuttering-clinic': 'https://github.com/ClassicOldSong/Apollo/wiki/Stuttering-Clinic',
+      'resource-issues': 'https://github.com/eumarcodev/Helios-Server/issues',
+      'resource-docs': 'https://github.com/eumarcodev/Helios-Server/tree/master/docs',
+      'resource-troubleshooting': 'https://github.com/eumarcodev/Helios-Server/blob/master/docs/troubleshooting.md',
       'legal-license': 'https://github.com/eumarcodev/Helios-Server/blob/master/LICENSE',
       'legal-notice': 'https://github.com/eumarcodev/Helios-Server/blob/master/NOTICE',
     };

@@ -28,10 +28,10 @@ describe('installed dashboard: the home page of the installed host', () => {
       'href',
       'https://github.com/eumarcodev/Selene-Game-Streaming',
     );
-    cy.get('[data-testid="resource-discussions"]').should(
+    cy.get('[data-testid="resource-issues"]').should(
       'have.attr',
       'href',
-      'https://github.com/eumarcodev/Helios-Server/discussions',
+      'https://github.com/eumarcodev/Helios-Server/issues',
     );
     cy.get('[data-testid="legal-license"]').should(
       'have.attr',

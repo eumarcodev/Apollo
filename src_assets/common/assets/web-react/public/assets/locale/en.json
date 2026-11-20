@@ -602,15 +602,18 @@
     "unpair_single_unknown": "Unknown Client"
   },
   "resource_card": {
+    "documentation": "Documentation",
     "github_discussions": "GitHub Discussions",
-    "github_wiki": "GitHub WiKi",
     "github_stuttering_clinic": "Stuttering Clinic",
+    "github_wiki": "GitHub WiKi",
+    "issues": "Issues",
     "legal": "Legal",
     "legal_desc": "By continuing to use this software you agree to the terms and conditions in the following documents.",
     "license": "License",
     "resources": "Resources",
     "resources_desc": "Resources for Helios!",
-    "third_party_notice": "Third Party Notice"
+    "third_party_notice": "Third Party Notice",
+    "troubleshooting": "Troubleshooting"
   },
   "troubleshooting": {
     "dd_reset": "Reset Persistent Display Device Settings",

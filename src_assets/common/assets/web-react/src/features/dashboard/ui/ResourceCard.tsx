@@ -1,4 +1,4 @@
-import { FileText, MessageCircle, Scale, ScrollText, Wrench } from 'lucide-react';
+import { BookOpen, CircleDot, FileText, Scale, Wrench } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink } from './ExternalLink';
@@ -15,21 +15,21 @@ const ICON = 'size-4';
 
 const RESOURCES: readonly LinkEntry[] = [
   {
-    id: 'discussions',
-    labelKey: 'resource_card.github_discussions',
-    href: 'https://github.com/eumarcodev/Helios-Server/discussions',
-    icon: <MessageCircle aria-hidden="true" className={ICON} />,
+    id: 'issues',
+    labelKey: 'resource_card.issues',
+    href: 'https://github.com/eumarcodev/Helios-Server/issues',
+    icon: <CircleDot aria-hidden="true" className={ICON} />,
   },
   {
-    id: 'wiki',
-    labelKey: 'resource_card.github_wiki',
-    href: 'https://github.com/ClassicOldSong/Apollo/wiki',
-    icon: <ScrollText aria-hidden="true" className={ICON} />,
+    id: 'docs',
+    labelKey: 'resource_card.documentation',
+    href: 'https://github.com/eumarcodev/Helios-Server/tree/master/docs',
+    icon: <BookOpen aria-hidden="true" className={ICON} />,
   },
   {
-    id: 'stuttering-clinic',
-    labelKey: 'resource_card.github_stuttering_clinic',
-    href: 'https://github.com/ClassicOldSong/Apollo/wiki/Stuttering-Clinic',
+    id: 'troubleshooting',
+    labelKey: 'resource_card.troubleshooting',
+    href: 'https://github.com/eumarcodev/Helios-Server/blob/master/docs/troubleshooting.md',
     icon: <Wrench aria-hidden="true" className={ICON} />,
   },
 ];

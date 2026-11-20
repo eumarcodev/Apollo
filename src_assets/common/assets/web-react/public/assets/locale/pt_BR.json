@@ -602,15 +602,18 @@
     "unpair_single_unknown": "Cliente desconhecido"
   },
   "resource_card": {
+    "documentation": "Documentação",
     "github_discussions": "Discussões no GitHub",
-    "github_wiki": "Wiki do GitHub",
     "github_stuttering_clinic": "Clínica de travamentos (Stuttering Clinic)",
+    "github_wiki": "Wiki do GitHub",
+    "issues": "Issues",
     "legal": "Legal",
     "legal_desc": "Ao continuar a usar este software, você concorda com os termos e condições dos documentos a seguir.",
     "license": "Licença",
     "resources": "Recursos",
     "resources_desc": "Recursos para o Helios!",
-    "third_party_notice": "Aviso de terceiros"
+    "third_party_notice": "Aviso de terceiros",
+    "troubleshooting": "Solução de problemas"
   },
   "troubleshooting": {
     "dd_reset": "Redefinir Configurações do Monitor Persistente",

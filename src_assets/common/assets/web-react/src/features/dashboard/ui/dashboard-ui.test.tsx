@@ -177,9 +177,9 @@ describe('DashboardPage: clients, resources and legal', () => {
   it('links the resources and the legal documents with the exact URLs, in a new tab', async () => {
     await renderWithProviders(<ResourceCard />);
     const expected: Record<string, string> = {
-      'resource-discussions': 'https://github.com/eumarcodev/Helios-Server/discussions',
-      'resource-wiki': 'https://github.com/ClassicOldSong/Apollo/wiki',
-      'resource-stuttering-clinic': 'https://github.com/ClassicOldSong/Apollo/wiki/Stuttering-Clinic',
+      'resource-issues': 'https://github.com/eumarcodev/Helios-Server/issues',
+      'resource-docs': 'https://github.com/eumarcodev/Helios-Server/tree/master/docs',
+      'resource-troubleshooting': 'https://github.com/eumarcodev/Helios-Server/blob/master/docs/troubleshooting.md',
       'legal-license': 'https://github.com/eumarcodev/Helios-Server/blob/master/LICENSE',
       'legal-notice': 'https://github.com/eumarcodev/Helios-Server/blob/master/NOTICE',
     };
@@ -189,7 +189,7 @@ describe('DashboardPage: clients, resources and legal', () => {
       expect(link).toHaveAttribute('target', '_blank');
       expect(link).toHaveAttribute('rel', 'noopener noreferrer');
     }
-    expect(screen.getByTestId('resources')).toHaveTextContent('GitHub Discussions');
+    expect(screen.getByTestId('resources')).toHaveTextContent('Documentation');
     expect(screen.getByTestId('legal')).toHaveTextContent('Third Party Notice');
   });
 });
