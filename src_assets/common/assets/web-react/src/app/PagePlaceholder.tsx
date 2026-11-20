@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+// Bundled by Vite into /assets/: the Helios server only routes a couple of files under /images (logo-helios.svg 404s).
+import emblemUrl from './assets/helios-emblem.svg';
 import { PageLayout } from '@/shared/ui';
 
 export interface PagePlaceholderProps {
@@ -31,7 +33,7 @@ export function PagePlaceholder({ page, titleKey }: PagePlaceholderProps) {
           </div>
           <div aria-hidden="true" className="helios-emblem mx-auto size-56 @3xl:size-72">
             <span className="helios-emblem-rays" />
-            <img src="/images/logo-helios.svg" alt="" className="relative size-[58%]" />
+            <img src={emblemUrl} alt="" className="relative size-[58%]" />
           </div>
         </div>
       </div>

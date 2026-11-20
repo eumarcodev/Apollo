@@ -15,6 +15,12 @@ describe('installed smoke: the host serves the React UI', () => {
       cy.get('[data-testid="page-placeholder"]')
         .should('have.attr', 'data-page')
         .and('eq', page === 'welcome' ? 'index' : page);
+      // The server only routes a few files under /images; every image the page shows must really load.
+      cy.get('img').each(($img) => {
+        cy.wrap($img).should(($el) => {
+          expect(($el[0] as HTMLImageElement).naturalWidth, $el.attr('src')).to.be.greaterThan(0);
+        });
+      });
     });
   }
 
