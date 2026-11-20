@@ -515,13 +515,16 @@
   },
   "navbar": {
     "applications": "Aplicativos",
+    "close_navigation": "Fechar navegação",
     "configuration": "Configuração",
     "home": "Início",
+    "main_navigation": "Navegação principal",
     "password": "Alterar senha",
     "pin": "PIN",
     "theme_auto": "Automático",
     "theme_dark": "Escuro",
     "theme_light": "Claro",
+    "toggle_navigation": "Alternar navegação",
     "toggle_theme": "Tema",
     "troubleshoot": "Solução de Problemas"
   },
