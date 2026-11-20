@@ -1,4 +1,5 @@
-import { Description, Input, Label, TextField as HeroTextField } from '@heroui/react';
+import { Description, FieldError, Input, Label, TextField as HeroTextField } from '@heroui/react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export interface ConfigTextFieldProps {
@@ -15,6 +16,14 @@ export interface ConfigTextFieldProps {
   /** Monospace text (commands, paths). */
   monospace?: boolean;
   className?: string;
+  /** `number` renders a number input (the caller parses the text). */
+  type?: 'text' | 'number';
+  min?: number;
+  max?: number;
+  /** Translation key of a validation message; marks the field invalid while set. */
+  error?: string;
+  /** Extra help (commands, examples) rendered inside the field, under the description. */
+  children?: ReactNode;
 }
 
 /** Labelled text input of a config option (legacy `<input type="text" class="form-control" v-model>` + `form-text`). */
@@ -27,6 +36,11 @@ export function TextField({
   placeholder,
   monospace,
   className,
+  type = 'text',
+  min,
+  max,
+  error,
+  children,
 }: ConfigTextFieldProps) {
   const { t } = useTranslation();
   return (
@@ -36,10 +50,14 @@ export function TextField({
       fullWidth
       value={typeof value === 'string' ? value : ''}
       onChange={onChange}
+      type={type}
+      isInvalid={error !== undefined}
     >
       <Label>{t(label)}</Label>
-      <Input placeholder={placeholder} className={monospace ? 'font-mono' : undefined} />
+      <Input placeholder={placeholder} min={min} max={max} className={monospace ? 'font-mono' : undefined} />
       {desc ? <Description className="whitespace-pre-line">{t(desc)}</Description> : null}
+      {error !== undefined && <FieldError>{t(error)}</FieldError>}
+      {children}
     </HeroTextField>
   );
 }

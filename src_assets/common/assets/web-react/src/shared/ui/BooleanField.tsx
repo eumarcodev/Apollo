@@ -23,6 +23,10 @@ export interface BooleanFieldProps {
   children?: ReactNode;
 }
 
+/** Control on the left; label, default hint and description stacked on the right (same look in every tab). */
+const LAYOUT_CLASS =
+  'flex-row items-start gap-3 [&_[data-slot=switch-content]]:flex-col [&_[data-slot=switch-content]]:items-start [&_[data-slot=switch-content]]:gap-1';
+
 /** Boolean option switch, port of the legacy Checkbox.vue. */
 export function BooleanField({
   id,
@@ -55,7 +59,7 @@ export function BooleanField({
   return (
     <Switch
       id={id}
-      className={className}
+      className={className ? `${LAYOUT_CLASS} ${className}` : LAYOUT_CLASS}
       isSelected={codec.isOn(value)}
       isDisabled={isDisabled}
       onChange={(on) => onChange(codec.encode(on))}

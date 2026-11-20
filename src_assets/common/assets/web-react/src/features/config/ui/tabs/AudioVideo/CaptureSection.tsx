@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { optionText, outputNamePlaceholder } from '@/features/config/domain/av-options';
+import { outputNamePlaceholder } from '@/features/config/domain/av-options';
 import { usePlatformTranslation } from '@/shared/i18n';
 import type { Platform } from '@/shared/kernel';
-import { CodeBlock, Section, TextOptionField } from './fields';
+import { TextField } from '@/features/config/ui/fields';
+import { CodeBlock, Section, usePlatformKey } from './fields';
 import type { AvSectionProps } from './types';
 
 const VAINFO_COMMAND =
@@ -53,32 +54,33 @@ const OUTPUT_EXAMPLES: Record<Platform, string> = {
 export function CaptureSection({ config, platform, update }: AvSectionProps) {
   const { t } = useTranslation();
   const tp = usePlatformTranslation(platform);
+  const pk = usePlatformKey(platform);
 
   return (
     <Section id="av-capture" title={t('react_ui.av_section_capture')}>
       {platform !== 'macos' && (
-        <TextOptionField
+        <TextField
           id="adapter_name"
-          label={t('config.adapter_name')}
-          value={optionText(config['adapter_name'])}
+          label="config.adapter_name"
+          value={config['adapter_name']}
           onChange={(value) => update('adapter_name', value)}
           placeholder={tp('config.adapter_name_placeholder', '/dev/dri/renderD128')}
-          description={platform === 'windows' ? t('config.adapter_name_desc_windows') : undefined}
+          desc={platform === 'windows' ? 'config.adapter_name_desc_windows' : undefined}
         >
           <AdapterNameHelp platform={platform} />
-        </TextOptionField>
+        </TextField>
       )}
 
-      <TextOptionField
+      <TextField
         id="output_name"
-        label={tp('config.output_name')}
-        value={optionText(config['output_name'])}
+        label={pk('config.output_name')}
+        value={config['output_name']}
         onChange={(value) => update('output_name', value)}
         placeholder={outputNamePlaceholder(platform)}
-        description={tp('config.output_name_desc')}
+        desc={pk('config.output_name_desc')}
       >
         <CodeBlock>{OUTPUT_EXAMPLES[platform]}</CodeBlock>
-      </TextOptionField>
+      </TextField>
     </Section>
   );
 }

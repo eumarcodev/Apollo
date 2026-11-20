@@ -1,47 +1,22 @@
-import { Description, FieldError, Input, Label, TextField } from '@heroui/react';
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { Platform } from '@/shared/kernel';
 
-export interface TextOptionFieldProps {
-  /** Option key; it is also the DOM id of the input (hash navigation). */
-  id: string;
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  description?: ReactNode;
-  type?: 'text' | 'number';
-  min?: number;
-  max?: number;
-  /** Message shown (and the field marked invalid) when set. */
-  error?: string;
-  /** Help blocks (commands, examples) shown under the description. */
-  children?: ReactNode;
-}
-
-/** Labelled text or number input of a configuration option, with its help text below. */
-export function TextOptionField({
-  id,
-  label,
-  value,
-  onChange,
-  placeholder,
-  description,
-  type = 'text',
-  min,
-  max,
-  error,
-  children,
-}: TextOptionFieldProps) {
-  return (
-    <div className="flex flex-col gap-2" data-testid={`field-${id}`}>
-      <TextField fullWidth value={value} onChange={onChange} isInvalid={error !== undefined} className="gap-2">
-        <Label htmlFor={id}>{label}</Label>
-        <Input id={id} type={type} min={min} max={max} placeholder={placeholder} />
-        {description !== undefined && <Description className="whitespace-pre-line">{description}</Description>}
-        {error !== undefined && <FieldError>{error}</FieldError>}
-      </TextField>
-      {children}
-    </div>
+/**
+ * Key counterpart of `tp()`: `<key>_<platform>` when it exists, else `<key>_unix` on Linux and macOS.
+ * The shared `TextField` takes translation keys, so the platform text is resolved to a key here.
+ */
+export function usePlatformKey(platform: Platform): (key: string) => string {
+  const { i18n } = useTranslation();
+  return useMemo(
+    () => (key) => {
+      const platformKey = `${key}_${platform}`;
+      if (i18n.exists(platformKey) || platform === 'windows') {
+        return platformKey;
+      }
+      return `${key}_unix`;
+    },
+    [i18n, platform],
   );
 }
 
@@ -74,7 +49,3 @@ export function Section({ id, title, children }: { id: string; title: string; ch
     </section>
   );
 }
-
-/** Stacks the label, the default hint and the description of a switch, with the control on the left. */
-export const SWITCH_CLASS =
-  'flex-row items-start gap-3 [&_[data-slot=switch-content]]:flex-col [&_[data-slot=switch-content]]:items-start [&_[data-slot=switch-content]]:gap-1';

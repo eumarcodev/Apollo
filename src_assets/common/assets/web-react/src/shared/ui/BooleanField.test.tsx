@@ -26,6 +26,18 @@ function Controlled(
 }
 
 describe('BooleanField', () => {
+  it('stacks label, default hint and description next to the control, and keeps a custom class', async () => {
+    await renderWithProviders(
+      <Controlled id="stream_audio" localePrefix="config" initial="enabled" default="true" className="extra" />,
+    );
+    const root = screen.getByRole('switch', { name: /Stream Audio/ }).closest('label, div');
+    const content = document.querySelector('[data-slot="switch-content"]');
+    expect(content).not.toBeNull();
+    const rootClass = (content!.closest('[class*="flex-row"]') ?? root)!.className;
+    expect(rootClass).toContain('flex-row');
+    expect(rootClass).toContain('extra');
+  });
+
   it('shows label and description from the locale prefix and id', async () => {
     await renderWithProviders(<Controlled id="stream_audio" localePrefix="config" initial="enabled" />);
     expect(screen.getByRole('switch', { name: /Stream Audio/ })).toBeChecked();

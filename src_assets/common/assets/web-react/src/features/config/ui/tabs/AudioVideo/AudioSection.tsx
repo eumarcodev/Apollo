@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { optionText } from '@/features/config/domain/av-options';
 import { usePlatformTranslation } from '@/shared/i18n';
-import { BooleanField, PlatformOnly } from '@/shared/ui';
-import { CodeBlock, OutsideLink, Section, SWITCH_CLASS, TextOptionField } from './fields';
+import { PlatformOnly } from '@/shared/ui';
+import { BooleanField, TextField } from '@/features/config/ui/fields';
+import { CodeBlock, OutsideLink, Section, usePlatformKey } from './fields';
 import type { AvSectionProps } from './types';
 
 function AudioSinkHelp({ platform }: Pick<AvSectionProps, 'platform'>) {
@@ -31,32 +31,32 @@ function AudioSinkHelp({ platform }: Pick<AvSectionProps, 'platform'>) {
 export function AudioSection({ config, platform, update }: AvSectionProps) {
   const { t } = useTranslation();
   const tp = usePlatformTranslation(platform);
+  const pk = usePlatformKey(platform);
 
   return (
     <Section id="av-audio" title={t('react_ui.av_section_audio')}>
-      <TextOptionField
+      <TextField
         id="audio_sink"
-        label={t('config.audio_sink')}
-        value={optionText(config['audio_sink'])}
+        label="config.audio_sink"
+        value={config['audio_sink']}
         onChange={(value) => update('audio_sink', value)}
         placeholder={tp('config.audio_sink_placeholder', 'alsa_output.pci-0000_09_00.3.analog-stereo')}
-        description={tp('config.audio_sink_desc')}
+        desc={pk('config.audio_sink_desc')}
       >
         <AudioSinkHelp platform={platform} />
-      </TextOptionField>
+      </TextField>
 
       <PlatformOnly platform={platform} platforms={['windows']}>
-        <TextOptionField
+        <TextField
           id="virtual_sink"
-          label={t('config.virtual_sink')}
-          value={optionText(config['virtual_sink'])}
+          label="config.virtual_sink"
+          value={config['virtual_sink']}
           onChange={(value) => update('virtual_sink', value)}
           placeholder={t('config.virtual_sink_placeholder')}
-          description={t('config.virtual_sink_desc')}
+          desc="config.virtual_sink_desc"
         />
         <BooleanField
           id="install_steam_audio_drivers"
-          className={SWITCH_CLASS}
           localePrefix="config"
           value={config['install_steam_audio_drivers']}
           onChange={(value) => update('install_steam_audio_drivers', value)}
@@ -64,7 +64,6 @@ export function AudioSection({ config, platform, update }: AvSectionProps) {
         />
         <BooleanField
           id="keep_sink_default"
-          className={SWITCH_CLASS}
           localePrefix="config"
           value={config['keep_sink_default']}
           onChange={(value) => update('keep_sink_default', value)}
@@ -72,7 +71,6 @@ export function AudioSection({ config, platform, update }: AvSectionProps) {
         />
         <BooleanField
           id="auto_capture_sink"
-          className={SWITCH_CLASS}
           localePrefix="config"
           value={config['auto_capture_sink']}
           onChange={(value) => update('auto_capture_sink', value)}
@@ -82,7 +80,6 @@ export function AudioSection({ config, platform, update }: AvSectionProps) {
 
       <BooleanField
         id="stream_audio"
-        className={SWITCH_CLASS}
         localePrefix="config"
         value={config['stream_audio']}
         onChange={(value) => update('stream_audio', value)}
