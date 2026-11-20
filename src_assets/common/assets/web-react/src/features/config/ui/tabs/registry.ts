@@ -1,5 +1,7 @@
 import type { ComponentType } from 'react';
 import type { ConfigTabId } from '@/features/config/domain/config-tabs';
+import { GeneralTab } from './GeneralTab';
+import { AudioVideoTab } from './AudioVideo/AudioVideoTab';
 import type { ConfigTabProps } from './types';
 
 /**
@@ -7,4 +9,7 @@ import type { ConfigTabProps } from './types';
  * Each tab issue (#168-#174) adds `ui/tabs/<Name>Tab.tsx` and registers it here with one line, e.g.
  * `general: GeneralTab,`.
  */
-export const TAB_COMPONENTS: Partial<Record<ConfigTabId, ComponentType<ConfigTabProps>>> = {};
+export const TAB_COMPONENTS: Partial<Record<ConfigTabId, ComponentType<ConfigTabProps>>> = {
+  general: GeneralTab,
+  av: AudioVideoTab,
+};
