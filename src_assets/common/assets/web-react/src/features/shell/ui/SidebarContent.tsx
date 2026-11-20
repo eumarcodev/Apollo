@@ -76,7 +76,7 @@ export function SidebarContent({
           {toggle}
         </div>
       )}
-      <nav aria-label={t('navbar.main_navigation')} className="w-full flex-1 overflow-y-auto px-1">
+      <nav aria-label={t('navbar.main_navigation')} className="helios-nav-scroll w-full flex-1 overflow-y-auto px-1">
         {!collapsed && <p className="helios-eyebrow mb-4 px-2">{t('navbar.main_navigation')}</p>}
         <ul className={['flex flex-col gap-1.5', collapsed ? 'items-center' : ''].join(' ')}>
           {NAV_ITEMS.map(({ id, href, labelKey }) => {

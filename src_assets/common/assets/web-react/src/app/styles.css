@@ -546,3 +546,18 @@ a:hover .helios-logo-tile img {
     transition: none;
   }
 }
+
+/* ---------- Short screens (720p, scaled displays) ---------- */
+
+/* The sidebar navigation scrolls with a thin gold thumb instead of the native grey bar. */
+.helios-nav-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--helios-gold-text) 45%, transparent) transparent;
+}
+
+/* Below 860px of height the theme card drops its miniature and keeps the switcher. */
+@media (height < 860px) {
+  .helios-theme-preview {
+    display: none;
+  }
+}
