@@ -14,6 +14,8 @@ describe('installed smoke: the host serves the React UI', () => {
       // With credentials set the server sends /welcome to /, so check the page that actually answered.
       if (page === 'index' || page === 'welcome') {
         cy.get('[data-testid="version-card"]').should('be.visible');
+      } else if (page === 'apps') {
+        cy.get('[data-testid="apps-panel"]').should('be.visible');
       } else {
         cy.get('[data-testid="page-placeholder"]').should('have.attr', 'data-page').and('eq', page);
       }

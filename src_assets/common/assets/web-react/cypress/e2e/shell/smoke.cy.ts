@@ -14,6 +14,8 @@ describe('smoke: every page renders inside the shared providers', () => {
         cy.get('meta[name="helios-web-ui"]').should('have.attr', 'content', 'react');
         if (page === 'index') {
           cy.get('[data-testid="version-card"]').should('be.visible');
+        } else if (page === 'apps') {
+          cy.get('[data-testid="apps-panel"]').should('be.visible');
         } else {
           cy.get('[data-testid="page-placeholder"]').should('have.attr', 'data-page', page);
         }
