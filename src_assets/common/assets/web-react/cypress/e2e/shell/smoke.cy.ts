@@ -14,6 +14,8 @@ describe('smoke: every page renders inside the shared providers', () => {
         cy.get('meta[name="helios-web-ui"]').should('have.attr', 'content', 'react');
         if (page === 'index') {
           cy.get('[data-testid="version-card"]').should('be.visible');
+        } else if (page === 'troubleshooting') {
+          cy.get('[data-testid="card-logs"]').should('be.visible');
         } else {
           cy.get('[data-testid="page-placeholder"]').should('have.attr', 'data-page', page);
         }
@@ -44,7 +46,7 @@ describe('smoke: every page renders inside the shared providers', () => {
     it(`serves the same pages for a ${platform} host`, () => {
       stubServerApi({ platform });
       cy.visit('/troubleshooting');
-      cy.get('[data-testid="page-placeholder"]').should('be.visible');
+      cy.get('[data-testid="card-logs"]').should('be.visible');
     });
   }
 
