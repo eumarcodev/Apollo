@@ -53,34 +53,33 @@ const LEGAL: readonly LinkEntry[] = [
 export function ResourceCard() {
   const { t } = useTranslation();
   return (
-    <section
-      className="helios-panel @container grid gap-8 rounded-2xl p-6 @3xl:grid-cols-2 @3xl:gap-12"
-      data-testid="resource-card"
-    >
-      <div className="flex flex-col gap-6" data-testid="resources">
-        <SectionHeading title={t('resource_card.resources')} description={t('resource_card.resources_desc')} />
-        <div className="flex flex-wrap gap-3">
-          {RESOURCES.map((entry) => (
-            <ExternalLink key={entry.id} href={entry.href} icon={entry.icon} testId={`resource-${entry.id}`}>
-              {t(entry.labelKey)}
-            </ExternalLink>
-          ))}
+    <section className="helios-panel @container rounded-2xl p-6" data-testid="resource-card">
+      <div className="grid gap-8 @3xl:grid-cols-2 @3xl:gap-12">
+        <div className="flex flex-col gap-6" data-testid="resources">
+          <SectionHeading title={t('resource_card.resources')} description={t('resource_card.resources_desc')} />
+          <div className="flex flex-wrap gap-3">
+            {RESOURCES.map((entry) => (
+              <ExternalLink key={entry.id} href={entry.href} icon={entry.icon} testId={`resource-${entry.id}`}>
+                {t(entry.labelKey)}
+              </ExternalLink>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="flex flex-col gap-6" data-testid="legal">
-        <SectionHeading title={t('resource_card.legal')} description={t('resource_card.legal_desc')} />
-        <div className="flex flex-wrap gap-3">
-          {LEGAL.map((entry) => (
-            <ExternalLink
-              key={entry.id}
-              href={entry.href}
-              variant="danger-soft"
-              icon={entry.icon}
-              testId={`legal-${entry.id}`}
-            >
-              {t(entry.labelKey)}
-            </ExternalLink>
-          ))}
+        <div className="flex flex-col gap-6" data-testid="legal">
+          <SectionHeading title={t('resource_card.legal')} description={t('resource_card.legal_desc')} />
+          <div className="flex flex-wrap gap-3">
+            {LEGAL.map((entry) => (
+              <ExternalLink
+                key={entry.id}
+                href={entry.href}
+                variant="danger-soft"
+                icon={entry.icon}
+                testId={`legal-${entry.id}`}
+              >
+                {t(entry.labelKey)}
+              </ExternalLink>
+            ))}
+          </div>
         </div>
       </div>
     </section>

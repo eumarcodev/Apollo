@@ -58,11 +58,11 @@ function Notice({ notice }: { notice: VersionNotice }) {
               )}
             </div>
             <Alert.Description className="flex flex-col gap-2">
-              <h3 className="helios-display text-2xl" data-testid="release-name">
+              <h3 className="helios-display text-2xl lining-nums" data-testid="release-name">
                 {release?.name}
               </h3>
               <pre
-                className="helios-nav-scroll max-h-64 overflow-auto font-sans text-sm whitespace-pre-wrap"
+                className="helios-nav-scroll max-h-64 overflow-auto font-sans text-sm wrap-anywhere whitespace-pre-wrap"
                 data-testid="release-body"
               >
                 {release?.body}

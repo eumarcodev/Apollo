@@ -21,7 +21,7 @@ export function DashboardPage({ releases, log }: DashboardPageProps) {
   return (
     <PageLayout title={t('index.welcome')} description={t('index.description')}>
       <StartupErrorsAlert errors={startupErrors} />
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <VersionCard state={version} />
         <ClientsCard />
       </div>

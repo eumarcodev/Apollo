@@ -1,5 +1,5 @@
 import { Chip } from '@heroui/react';
-import { Monitor, Smartphone, Tablet } from 'lucide-react';
+import { Monitor, Smartphone } from 'lucide-react';
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink } from './ExternalLink';
@@ -25,7 +25,7 @@ const CLIENTS: readonly ClientEntry[] = [
   {
     id: 'ios',
     platformKey: 'client_card.platform_ios',
-    icon: <Tablet aria-hidden="true" className="size-5" />,
+    icon: <Smartphone aria-hidden="true" className="size-5" />,
     name: null,
     link: null,
   },
