@@ -685,6 +685,16 @@
     "unexpected_error": "An unexpected error occurred while rendering this page.",
     "reload": "Reload",
     "remove_row": "Remove row",
-    "insert_row": "Insert row"
+    "insert_row": "Insert row",
+    "av_section_audio": "Audio",
+    "av_section_capture": "Capture",
+    "av_section_display": "Display modes",
+    "vdisplay_hint": "Please ensure SudoVDA driver is installed to the latest version and enabled properly.",
+    "vdisplay_status": "SudoVDA Driver status: {{status}}",
+    "vdisplay_status_ready": "Ready",
+    "vdisplay_status_uninitialized": "Uninitialized",
+    "vdisplay_status_unknown": "Unknown",
+    "vdisplay_status_version_incompatible": "Version Incompatible",
+    "vdisplay_status_watchdog_failed": "Watchdog Failed"
   }
 }

@@ -685,6 +685,16 @@
     "unexpected_error": "Ocorreu um erro inesperado ao exibir esta página.",
     "reload": "Recarregar",
     "remove_row": "Remover linha",
-    "insert_row": "Inserir linha"
+    "insert_row": "Inserir linha",
+    "av_section_audio": "Áudio",
+    "av_section_capture": "Captura",
+    "av_section_display": "Modos de exibição",
+    "vdisplay_hint": "Verifique se o driver SudoVDA está instalado na versão mais recente e habilitado corretamente.",
+    "vdisplay_status": "Status do driver SudoVDA: {{status}}",
+    "vdisplay_status_ready": "Pronto",
+    "vdisplay_status_uninitialized": "Não inicializado",
+    "vdisplay_status_unknown": "Desconhecido",
+    "vdisplay_status_version_incompatible": "Versão incompatível",
+    "vdisplay_status_watchdog_failed": "Watchdog falhou"
   }
 }
