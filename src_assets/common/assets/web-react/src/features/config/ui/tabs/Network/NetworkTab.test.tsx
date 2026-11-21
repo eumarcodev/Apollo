@@ -107,7 +107,7 @@ describe('NetworkTab', () => {
     const input = portInput();
     await user.clear(input);
     await user.type(input, '47990');
-    expect(last()?.['port']).toBe('47990');
+    expect(last()?.['port']).toBe(47990);
     expect(screen.getByText('Use this port to connect with Moonlight.')).toBeInTheDocument();
     expect(screen.getByTestId('port-table')).toHaveTextContent('47991');
   });

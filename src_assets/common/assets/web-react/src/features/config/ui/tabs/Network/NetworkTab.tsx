@@ -1,5 +1,6 @@
 import { Alert } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
+import { parseNumberInput } from '@/features/config/domain/av-options';
 import type { SelectChoice } from '@/features/config/domain/general-options';
 import { DEFAULT_MOONLIGHT_PORT, effectivePort, PORT_MAX, PORT_MIN } from '@/features/config/domain/network-ports';
 import { BooleanField, SelectField, TextField } from '@/features/config/ui/fields';
@@ -67,7 +68,7 @@ export function NetworkTab({ config, update }: ConfigTabProps) {
           desc="config.port_desc"
           placeholder={String(DEFAULT_MOONLIGHT_PORT)}
           value={String(config['port'])}
-          onChange={(value) => update('port', value)}
+          onChange={(value) => update('port', parseNumberInput(value))}
         />
         <PortTable port={port} />
       </div>

@@ -69,7 +69,7 @@ describe('config: Network tab (Windows)', () => {
       update_repo: 'eumarcodev/Helios-Server',
       sunshine_name: 'E2E Host',
       min_log_level: '2',
-      port: '47990',
+      port: 47990,
       ping_timeout: '12000',
       upnp: 'enabled',
     });
