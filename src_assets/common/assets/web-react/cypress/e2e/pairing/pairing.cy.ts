@@ -158,7 +158,7 @@ describe('pairing: OTP', () => {
     cy.get('@otp.all').should('have.length', 0);
   });
 
-  it('shows the message of a refused OTP and no alert for a 400 without one', () => {
+  it('shows the message of a refused OTP and the `error` of a 400', () => {
     visitPin({ otp: { statusCode: 200, body: { status: false, message: 'OTP already pending' } } });
     cy.get('[data-testid="otp-passphrase"]').type('abcd');
     cy.get('[data-testid="otp-submit"]').click();
@@ -171,7 +171,9 @@ describe('pairing: OTP', () => {
     ).as('otp400');
     cy.get('[data-testid="otp-submit"]').click();
     cy.wait('@otp400');
-    cy.get('[data-testid="otp-message"]').should('not.exist');
+    cy.get('[data-testid="otp-message"]')
+      .should('have.attr', 'data-status', 'danger')
+      .and('have.text', 'Passphrase too short!');
     cy.get('[data-testid="otp-code"]').should('have.text', '????');
   });
 
