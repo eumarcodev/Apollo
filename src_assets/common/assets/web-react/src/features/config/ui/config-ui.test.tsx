@@ -201,11 +201,14 @@ describe('ConfigPage', () => {
     expect(port.restart).toHaveBeenCalledOnce();
   });
 
-  it('shows nothing when the save fails (legacy behaviour)', async () => {
-    const port = fakePort({}, 'failed');
+  it('shows an error with the server message when the save fails', async () => {
+    const port = fakePort({}, { status: 'failed', error: 'disk full' });
     await renderPage(port);
     await userEvent.click(screen.getByTestId('config-save'));
     await waitFor(() => expect(port.save).toHaveBeenCalledOnce());
+    expect(await screen.findByTestId('config-save-error')).toHaveTextContent(
+      'Could not save the configuration. disk full',
+    );
     expect(screen.queryByTestId('config-apply-note')).not.toBeInTheDocument();
     expect(screen.queryByTestId('config-apply')).not.toBeInTheDocument();
   });

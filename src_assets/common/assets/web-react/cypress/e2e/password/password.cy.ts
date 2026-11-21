@@ -92,8 +92,17 @@ describe('password: change the web UI credentials', () => {
     cy.get('[data-testid="success"]').should('not.exist');
   });
 
-  it('shows Internal Server Error on a non-200 answer', () => {
+  it('shows the server validation error of a 400 answer', () => {
     visitPassword('en', { statusCode: 400, body: { status: false, error: 'Invalid Current Credentials' } });
+    fillForm({ currentUsername: 'x', newPassword: 'a', confirmNewPassword: 'a' });
+    cy.get('[data-testid="save"]').click();
+    cy.get('[data-testid="error"]')
+      .should('contain.text', 'Invalid Current Credentials')
+      .and('not.contain.text', 'Internal Server Error');
+  });
+
+  it('shows Internal Server Error on a 500 answer', () => {
+    visitPassword('en', { statusCode: 500, body: '' });
     fillForm({ currentUsername: 'x', newPassword: 'a', confirmNewPassword: 'a' });
     cy.get('[data-testid="save"]').click();
     cy.get('[data-testid="error"]').should('contain.text', 'Internal Server Error');

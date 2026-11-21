@@ -68,7 +68,6 @@ describe('config: Network tab (Windows)', () => {
     cy.wait('@save').its('request.body').should('deep.equal', {
       update_repo: 'eumarcodev/Helios-Server',
       sunshine_name: 'E2E Host',
-      min_log_level: '2',
       port: 47990,
       ping_timeout: '12000',
       upnp: 'enabled',

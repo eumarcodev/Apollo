@@ -32,7 +32,8 @@ describe('installed password: the change-password page of the installed host', (
     cy.get('[data-testid="confirmNewPassword"]').type('irrelevant');
     cy.get('[data-testid="save"]').click();
     cy.wait('@password').its('response.statusCode').should('eq', 400);
-    cy.get('[data-testid="error"]').should('contain.text', 'Internal Server Error');
+    cy.get('[data-testid="error"]').should('contain.text', 'Invalid Current Credentials');
+    cy.get('[data-testid="error"]').should('not.contain.text', 'Internal Server Error');
     cy.get('[data-testid="success"]').should('not.exist');
   });
 });

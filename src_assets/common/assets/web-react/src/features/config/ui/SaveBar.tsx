@@ -1,4 +1,4 @@
-import { Button } from '@heroui/react';
+import { Alert, Button } from '@heroui/react';
 import { CircleCheck, RotateCw, Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { ConfigEditor } from '@/features/config/application/use-config-editor';
@@ -6,7 +6,7 @@ import type { ConfigEditor } from '@/features/config/application/use-config-edit
 /** Sticky footer of the configuration page: the save / apply notes and buttons. */
 export function SaveBar({ editor }: { editor: ConfigEditor }) {
   const { t } = useTranslation();
-  const { saved, restarted, saving } = editor;
+  const { saved, restarted, saving, saveError } = editor;
   const note = restarted ? t('config.restart_note') : saved ? t('config.apply_note') : null;
   return (
     <div
@@ -14,6 +14,17 @@ export function SaveBar({ editor }: { editor: ConfigEditor }) {
       data-testid="config-save-bar"
     >
       <div className="min-h-6 flex-1 basis-80" role="status" aria-live="polite">
+        {saveError && (
+          <Alert status="danger" data-testid="config-save-error">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>
+                {t('config.save_error')}
+                {saveError.error ? ` ${saveError.error}` : ''}
+              </Alert.Title>
+            </Alert.Content>
+          </Alert>
+        )}
         {note && (
           <p
             className="flex items-start gap-2 text-sm"

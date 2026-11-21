@@ -484,6 +484,7 @@
     "qsv_slow_hevc": "Allow Slow HEVC Encoding",
     "qsv_slow_hevc_desc": "This can enable HEVC encoding on older Intel GPUs, at the cost of higher GPU usage and worse performance.",
     "restart_note": "Helios is restarting to apply changes.",
+    "save_error": "Could not save the configuration.",
     "server_cmd": "Server Commands",
     "server_cmd_desc": "Configure a list of commands to be executed when called from client during streaming.",
     "stream_audio": "Stream Audio",
