@@ -1,16 +1,16 @@
 # linux specific compile definitions
 
-add_compile_definitions(SUNSHINE_PLATFORM="linux")
+add_compile_definitions(HELIOS_PLATFORM="linux")
 
 # AppImage
-if(${SUNSHINE_BUILD_APPIMAGE})
+if(${HELIOS_BUILD_APPIMAGE})
     # use relative assets path for AppImage
-    string(REPLACE "${CMAKE_INSTALL_PREFIX}" ".${CMAKE_INSTALL_PREFIX}" SUNSHINE_ASSETS_DIR_DEF ${SUNSHINE_ASSETS_DIR})
+    string(REPLACE "${CMAKE_INSTALL_PREFIX}" ".${CMAKE_INSTALL_PREFIX}" HELIOS_ASSETS_DIR_DEF ${HELIOS_ASSETS_DIR})
 endif()
 
 # cuda
 set(CUDA_FOUND OFF)
-if(${SUNSHINE_ENABLE_CUDA})
+if(${HELIOS_ENABLE_CUDA})
     include(CheckLanguage)
     check_language(CUDA)
 
@@ -26,7 +26,7 @@ if(${SUNSHINE_ENABLE_CUDA})
             list(APPEND CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90)
         else()
             message(FATAL_ERROR
-                    "Sunshine requires a minimum CUDA Compiler version of 12.0.
+                    "Helios requires a minimum CUDA Compiler version of 12.0.
                     Found version: ${CMAKE_CUDA_COMPILER_VERSION}"
             )
         endif()
@@ -57,7 +57,7 @@ if(${SUNSHINE_ENABLE_CUDA})
     elseif(${CUDA_FAIL_ON_MISSING})
         message(FATAL_ERROR
                 "CUDA not found.
-                If this is intentional, set '-DSUNSHINE_ENABLE_CUDA=OFF' or '-DCUDA_FAIL_ON_MISSING=OFF'"
+                If this is intentional, set '-DHELIOS_ENABLE_CUDA=OFF' or '-DCUDA_FAIL_ON_MISSING=OFF'"
         )
     endif()
 endif()
@@ -69,11 +69,11 @@ if(CUDA_FOUND)
             "${CMAKE_SOURCE_DIR}/src/platform/linux/cuda.cpp"
             "${CMAKE_SOURCE_DIR}/third-party/nvfbc/NvFBC.h")
 
-    add_compile_definitions(SUNSHINE_BUILD_CUDA)
+    add_compile_definitions(HELIOS_BUILD_CUDA)
 endif()
 
 # libdrm is required for both DRM (KMS) and Wayland
-if(${SUNSHINE_ENABLE_DRM} OR ${SUNSHINE_ENABLE_WAYLAND})
+if(${HELIOS_ENABLE_DRM} OR ${HELIOS_ENABLE_WAYLAND})
     find_package(LIBDRM REQUIRED)
 else()
     set(LIBDRM_FOUND OFF)
@@ -84,31 +84,31 @@ if(LIBDRM_FOUND)
 endif()
 
 # drm
-if(${SUNSHINE_ENABLE_DRM})
+if(${HELIOS_ENABLE_DRM})
     find_package(LIBCAP REQUIRED)
 else()
     set(LIBCAP_FOUND OFF)
 endif()
 if(LIBDRM_FOUND AND LIBCAP_FOUND)
-    add_compile_definitions(SUNSHINE_BUILD_DRM)
+    add_compile_definitions(HELIOS_BUILD_DRM)
     include_directories(SYSTEM ${LIBCAP_INCLUDE_DIRS})
     list(APPEND PLATFORM_LIBRARIES ${LIBCAP_LIBRARIES})
     list(APPEND PLATFORM_TARGET_FILES
             "${CMAKE_SOURCE_DIR}/src/platform/linux/kmsgrab.cpp")
-    list(APPEND SUNSHINE_DEFINITIONS EGL_NO_X11=1)
+    list(APPEND HELIOS_DEFINITIONS EGL_NO_X11=1)
 endif()
 
 # evdev
-include(dependencies/libevdev_Sunshine)
+include(dependencies/libevdev_Helios)
 
 # vaapi
-if(${SUNSHINE_ENABLE_VAAPI})
+if(${HELIOS_ENABLE_VAAPI})
     find_package(Libva REQUIRED)
 else()
     set(LIBVA_FOUND OFF)
 endif()
 if(LIBVA_FOUND)
-    add_compile_definitions(SUNSHINE_BUILD_VAAPI)
+    add_compile_definitions(HELIOS_BUILD_VAAPI)
     include_directories(SYSTEM ${LIBVA_INCLUDE_DIR})
     list(APPEND PLATFORM_LIBRARIES ${LIBVA_LIBRARIES} ${LIBVA_DRM_LIBRARIES})
     list(APPEND PLATFORM_TARGET_FILES
@@ -117,15 +117,15 @@ if(LIBVA_FOUND)
 endif()
 
 # wayland
-if(${SUNSHINE_ENABLE_WAYLAND})
+if(${HELIOS_ENABLE_WAYLAND})
     find_package(Wayland REQUIRED)
 else()
     set(WAYLAND_FOUND OFF)
 endif()
 if(WAYLAND_FOUND)
-    add_compile_definitions(SUNSHINE_BUILD_WAYLAND)
+    add_compile_definitions(HELIOS_BUILD_WAYLAND)
 
-    if(NOT SUNSHINE_SYSTEM_WAYLAND_PROTOCOLS)
+    if(NOT HELIOS_SYSTEM_WAYLAND_PROTOCOLS)
         set(WAYLAND_PROTOCOLS_DIR "${CMAKE_SOURCE_DIR}/third-party/wayland-protocols")
     else()
         pkg_get_variable(WAYLAND_PROTOCOLS_DIR wayland-protocols pkgdatadir)
@@ -150,13 +150,13 @@ if(WAYLAND_FOUND)
 endif()
 
 # x11
-if(${SUNSHINE_ENABLE_X11})
+if(${HELIOS_ENABLE_X11})
     find_package(X11 REQUIRED)
 else()
     set(X11_FOUND OFF)
 endif()
 if(X11_FOUND)
-    add_compile_definitions(SUNSHINE_BUILD_X11)
+    add_compile_definitions(HELIOS_BUILD_X11)
     include_directories(SYSTEM ${X11_INCLUDE_DIR})
     list(APPEND PLATFORM_LIBRARIES ${X11_LIBRARIES})
     list(APPEND PLATFORM_TARGET_FILES
@@ -173,14 +173,14 @@ if(NOT ${CUDA_FOUND}
 endif()
 
 # tray icon
-if(${SUNSHINE_ENABLE_TRAY})
+if(${HELIOS_ENABLE_TRAY})
     pkg_check_modules(APPINDICATOR ayatana-appindicator3-0.1)
     if(APPINDICATOR_FOUND)
-        list(APPEND SUNSHINE_DEFINITIONS TRAY_AYATANA_APPINDICATOR=1)
+        list(APPEND HELIOS_DEFINITIONS TRAY_AYATANA_APPINDICATOR=1)
     else()
         pkg_check_modules(APPINDICATOR appindicator3-0.1)
         if(APPINDICATOR_FOUND)
-            list(APPEND SUNSHINE_DEFINITIONS TRAY_LEGACY_APPINDICATOR=1)
+            list(APPEND HELIOS_DEFINITIONS TRAY_LEGACY_APPINDICATOR=1)
         endif ()
     endif()
     pkg_check_modules(LIBNOTIFY libnotify)
@@ -193,18 +193,18 @@ if(${SUNSHINE_ENABLE_TRAY})
         link_directories(${APPINDICATOR_LIBRARY_DIRS} ${LIBNOTIFY_LIBRARY_DIRS})
 
         list(APPEND PLATFORM_TARGET_FILES "${CMAKE_SOURCE_DIR}/third-party/tray/src/tray_linux.c")
-        list(APPEND SUNSHINE_EXTERNAL_LIBRARIES ${APPINDICATOR_LIBRARIES} ${LIBNOTIFY_LIBRARIES})
+        list(APPEND HELIOS_EXTERNAL_LIBRARIES ${APPINDICATOR_LIBRARIES} ${LIBNOTIFY_LIBRARIES})
     endif()
 
     # flatpak icons must be prefixed with the app id or they will not be included in the flatpak
-    if(${SUNSHINE_BUILD_FLATPAK})
-        set(SUNSHINE_TRAY_PREFIX "${PROJECT_FQDN}")
+    if(${HELIOS_BUILD_FLATPAK})
+        set(HELIOS_TRAY_PREFIX "${PROJECT_FQDN}")
     else()
-        set(SUNSHINE_TRAY_PREFIX "apollo")
+        set(HELIOS_TRAY_PREFIX "helios")
     endif()
-    list(APPEND SUNSHINE_DEFINITIONS SUNSHINE_TRAY_PREFIX="${SUNSHINE_TRAY_PREFIX}")
+    list(APPEND HELIOS_DEFINITIONS HELIOS_TRAY_PREFIX="${HELIOS_TRAY_PREFIX}")
 else()
-    set(SUNSHINE_TRAY 0)
+    set(HELIOS_TRAY 0)
     message(STATUS "Tray icon disabled")
 endif()
 
@@ -213,7 +213,7 @@ set(LIBEVDEV_CUSTOM_INCLUDE_DIR "${EVDEV_INCLUDE_DIR}")
 set(LIBEVDEV_CUSTOM_LIBRARY "${EVDEV_LIBRARY}")
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/third-party/inputtino")
-list(APPEND SUNSHINE_EXTERNAL_LIBRARIES inputtino::libinputtino)
+list(APPEND HELIOS_EXTERNAL_LIBRARIES inputtino::libinputtino)
 file(GLOB_RECURSE INPUTTINO_SOURCES
         ${CMAKE_SOURCE_DIR}/src/platform/linux/input/inputtino*.h
         ${CMAKE_SOURCE_DIR}/src/platform/linux/input/inputtino*.cpp)
@@ -225,11 +225,11 @@ if(EXTERNAL_PROJECT_LIBEVDEV_USED)
 endif()
 
 # AppImage and Flatpak
-if (${SUNSHINE_BUILD_APPIMAGE})
-    list(APPEND SUNSHINE_DEFINITIONS SUNSHINE_BUILD_APPIMAGE=1)
+if (${HELIOS_BUILD_APPIMAGE})
+    list(APPEND HELIOS_DEFINITIONS HELIOS_BUILD_APPIMAGE=1)
 endif ()
-if (${SUNSHINE_BUILD_FLATPAK})
-    list(APPEND SUNSHINE_DEFINITIONS SUNSHINE_BUILD_FLATPAK=1)
+if (${HELIOS_BUILD_FLATPAK})
+    list(APPEND HELIOS_DEFINITIONS HELIOS_BUILD_FLATPAK=1)
 endif ()
 
 list(APPEND PLATFORM_TARGET_FILES

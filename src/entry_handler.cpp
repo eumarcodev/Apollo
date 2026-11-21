@@ -40,7 +40,7 @@ namespace args {
       help(name);
     }
 
-    http::save_user_creds(config::sunshine.credentials_file, argv[0], argv[1]);
+    http::save_user_creds(config::helios.credentials_file, argv[0], argv[1]);
 
     return 0;
   }
@@ -70,8 +70,8 @@ namespace lifetime {
   char **argv;
   std::atomic_int desired_exit_code;
 
-  void exit_sunshine(int exit_code, bool async) {
-    // Store the exit code of the first exit_sunshine() call
+  void exit_helios(int exit_code, bool async) {
+    // Store the exit code of the first exit_helios() call
     int zero = 0;
     desired_exit_code.compare_exchange_strong(zero, exit_code);
 
@@ -101,9 +101,9 @@ namespace lifetime {
 }  // namespace lifetime
 
 void log_publisher_data() {
-  BOOST_LOG(info) << "Package Publisher: "sv << SUNSHINE_PUBLISHER_NAME;
-  BOOST_LOG(info) << "Publisher Website: "sv << SUNSHINE_PUBLISHER_WEBSITE;
-  BOOST_LOG(info) << "Get support: "sv << SUNSHINE_PUBLISHER_ISSUE_URL;
+  BOOST_LOG(info) << "Package Publisher: "sv << HELIOS_PUBLISHER_NAME;
+  BOOST_LOG(info) << "Publisher Website: "sv << HELIOS_PUBLISHER_WEBSITE;
+  BOOST_LOG(info) << "Get support: "sv << HELIOS_PUBLISHER_ISSUE_URL;
 }
 
 #ifdef _WIN32
@@ -156,7 +156,7 @@ namespace service_ctrl {
     }
 
     /**
-     * @brief Asynchronously starts the Sunshine service.
+     * @brief Asynchronously starts the Helios service.
      */
     bool start_service() {
       if (!service_handle) {
@@ -211,7 +211,7 @@ namespace service_ctrl {
   bool start_service() {
     service_controller sc {SERVICE_QUERY_STATUS | SERVICE_START};
 
-    std::cout << "Starting Sunshine..."sv;
+    std::cout << "Starting Helios..."sv;
 
     // This operation is asynchronous, so we must wait for it to complete
     if (!sc.start_service()) {

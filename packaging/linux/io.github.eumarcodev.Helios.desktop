@@ -2,8 +2,8 @@
 Actions=RunInTerminal;
 Categories=RemoteAccess;Network;
 Comment=@PROJECT_DESCRIPTION@
-Exec=/usr/bin/env systemctl start --u sunshine
-Icon=@SUNSHINE_DESKTOP_ICON@
+Exec=/usr/bin/env systemctl start --u helios
+Icon=@HELIOS_DESKTOP_ICON@
 Keywords=gamestream;stream;moonlight;remote play;
 Name=@PROJECT_NAME@
 Type=Application

@@ -26,15 +26,15 @@ extern "C" {
 #include "src/video.h"
 #include "wayland.h"
 
-#define SUNSHINE_STRINGVIEW_HELPER(x) x##sv
-#define SUNSHINE_STRINGVIEW(x) SUNSHINE_STRINGVIEW_HELPER(x)
+#define HELIOS_STRINGVIEW_HELPER(x) x##sv
+#define HELIOS_STRINGVIEW(x) HELIOS_STRINGVIEW_HELPER(x)
 
 #define CU_CHECK(x, y) \
-  if (check((x), SUNSHINE_STRINGVIEW(y ": "))) \
+  if (check((x), HELIOS_STRINGVIEW(y ": "))) \
   return -1
 
 #define CU_CHECK_IGNORE(x, y) \
-  check((x), SUNSHINE_STRINGVIEW(y ": "))
+  check((x), HELIOS_STRINGVIEW(y ": "))
 
 namespace fs = std::filesystem;
 

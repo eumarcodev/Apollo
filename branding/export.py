@@ -74,30 +74,30 @@ def save_ico(r, path, small_svg, large_svg, sizes, split=32):
 
 
 def export(r):
-    images = ROOT / "src_assets/common/assets/web/public/images"
+    images = ROOT / "src_assets/common/assets/web-react/public/images"
     ico_sizes = [16, 20, 24, 32, 40, 48, 64, 96, 128, 256]
 
     # Executable, installer and packaging icon.
-    shutil.copyfile(SVG / "helios-icon-rounded.svg", ROOT / "apollo.svg")
-    save_png(r.render("helios-icon-rounded.svg"), ROOT / "apollo.png")
-    save_ico(r, ROOT / "apollo.ico", "helios-mark.svg", "helios-icon-rounded.svg", ico_sizes)
-    r.render("helios-icon-rounded.svg").save(ROOT / "apollo.icns", format="ICNS")
-    print("  ", ROOT / "apollo.icns")
+    shutil.copyfile(SVG / "helios-icon-rounded.svg", ROOT / "helios.svg")
+    save_png(r.render("helios-icon-rounded.svg"), ROOT / "helios.png")
+    save_ico(r, ROOT / "helios.ico", "helios-mark.svg", "helios-icon-rounded.svg", ico_sizes)
+    r.render("helios-icon-rounded.svg").save(ROOT / "helios.icns", format="ICNS")
+    print("  ", ROOT / "helios.icns")
 
     # Web UI: favicon and navbar logo.
-    shutil.copyfile(ROOT / "apollo.ico", images / "apollo.ico")
-    shutil.copyfile(SVG / "helios-mark.svg", images / "logo-apollo.svg")
+    shutil.copyfile(ROOT / "helios.ico", images / "helios.ico")
+    shutil.copyfile(SVG / "helios-mark.svg", images / "logo-helios.svg")
     for s in (16, 45):
-        save_png(r.sized("helios-mark.svg", s), images / f"logo-apollo-{s}.png")
+        save_png(r.sized("helios-mark.svg", s), images / f"logo-helios-{s}.png")
 
     # Tray states.
     for state in ("playing", "pausing", "locked"):
         svg = f"helios-mark-{state}.svg"
-        shutil.copyfile(SVG / svg, images / f"apollo-{state}.svg")
-        save_png(r.render(svg), images / f"apollo-{state}.png")
+        shutil.copyfile(SVG / svg, images / f"helios-{state}.svg")
+        save_png(r.render(svg), images / f"helios-{state}.png")
         for s in (16, 45):
-            save_png(r.sized(svg, s), images / f"apollo-{state}-{s}.png")
-        save_ico(r, images / f"apollo-{state}.ico", svg, svg, ico_sizes)
+            save_png(r.sized(svg, s), images / f"helios-{state}-{s}.png")
+        save_ico(r, images / f"helios-{state}.ico", svg, svg, ico_sizes)
 
     # README icon.
     save_png(r.sized("helios-icon-rounded.svg", 256), ROOT / "branding/helios-icon.png")

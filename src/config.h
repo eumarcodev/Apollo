@@ -1,12 +1,13 @@
 /**
  * @file src/config.h
- * @brief Declarations for the configuration of Sunshine.
+ * @brief Declarations for the configuration of Helios.
  */
 #pragma once
 
 // standard includes
 #include <bitset>
 #include <chrono>
+#include <filesystem>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -18,6 +19,9 @@
 namespace config {
   // track modified config options
   inline std::unordered_map<std::string, std::string> modified_config_settings;
+
+  // what the one-time migration of an older install did, logged once logging is initialized
+  inline std::vector<std::string> migration_messages;
 
   struct video_t {
     bool headless_mode;
@@ -46,7 +50,7 @@ namespace config {
     nvenc::nvenc_config nv;
     bool nv_realtime_hags;
     bool nv_opengl_vulkan_on_dxgi;
-    bool nv_sunshine_high_power_mode;
+    bool nv_helios_high_power_mode;
 
     struct {
       int preset;
@@ -193,7 +197,7 @@ namespace config {
     std::string pkey;
     std::string cert;
 
-    std::string sunshine_name;
+    std::string helios_name;
 
     std::string file_state;
 
@@ -265,11 +269,10 @@ namespace config {
     bool elevated;
   };
 
-  struct sunshine_t {
+  struct helios_t {
     bool hide_tray_controls;
     bool enable_pairing;
     bool enable_discovery;
-    bool envvar_compatibility_mode;
     std::string locale;
     int min_log_level;
     std::bitset<flag::FLAG_SIZE> flags;
@@ -305,8 +308,26 @@ namespace config {
   extern stream_t stream;
   extern nvhttp_t nvhttp;
   extern input_t input;
-  extern sunshine_t sunshine;
+  extern helios_t helios;
 
   int parse(int argc, char *argv[]);
   std::unordered_map<std::string, std::string> parse_config(const std::string_view &file_content);
+
+  /**
+   * @brief Rename the file an older install left next to `path` to `path`, once.
+   * @details Older Helios versions gave their files the upstream project's name. When the file name of `path` is one
+   * of the current default names (helios.conf, helios_state.json, helios.log), `path` does not exist and the file with
+   * the old default name exists in the same directory, that file is renamed to `path`.
+   * @param path The path the file should have.
+   * @return What was done, to be logged; empty when nothing was renamed.
+   */
+  std::string migrate_legacy_file(const std::filesystem::path &path);
+
+  /**
+   * @brief Rename the option keys of an older config to their current names and drop the removed options.
+   * @details A key that already has its current name wins over the old one.
+   * @param vars The parsed config.
+   * @return The old or removed keys that were found.
+   */
+  std::vector<std::string> migrate_legacy_options(std::unordered_map<std::string, std::string> &vars);
 }  // namespace config

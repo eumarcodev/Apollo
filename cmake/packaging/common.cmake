@@ -12,27 +12,27 @@ set(CPACK_PACKAGE_CONTACT "https://github.com/eumarcodev/Helios-Server")
 set(CPACK_PACKAGE_DESCRIPTION ${CMAKE_PROJECT_DESCRIPTION})
 set(CPACK_PACKAGE_HOMEPAGE_URL ${CMAKE_PROJECT_HOMEPAGE_URL})
 set(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_SOURCE_DIR}/LICENSE)
-set(CPACK_PACKAGE_ICON ${PROJECT_SOURCE_DIR}/apollo.png)
+set(CPACK_PACKAGE_ICON ${PROJECT_SOURCE_DIR}/helios.png)
 set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}")
 set(CPACK_STRIP_FILES YES)
 
 # install common assets
-install(DIRECTORY "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/"
-        DESTINATION "${SUNSHINE_ASSETS_DIR}"
+install(DIRECTORY "${HELIOS_SOURCE_ASSETS_DIR}/common/assets/"
+        DESTINATION "${HELIOS_ASSETS_DIR}"
         PATTERN "web" EXCLUDE
         PATTERN "web-react" EXCLUDE)  # web UI sources: only the built app below is installed
 # copy assets to build directory, for running without install
 file(GLOB_RECURSE ALL_ASSETS
-        RELATIVE "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/" "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/*")
+        RELATIVE "${HELIOS_SOURCE_ASSETS_DIR}/common/assets/" "${HELIOS_SOURCE_ASSETS_DIR}/common/assets/*")
 list(FILTER ALL_ASSETS EXCLUDE REGEX "^web(-react)?/.*$")  # Filter out the web UI source directories
 foreach(asset ${ALL_ASSETS})  # Copy assets to build directory, excluding the web directory
-    file(COPY "${SUNSHINE_SOURCE_ASSETS_DIR}/common/assets/${asset}"
+    file(COPY "${HELIOS_SOURCE_ASSETS_DIR}/common/assets/${asset}"
             DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/assets")
 endforeach()
 
 # install built vite assets
 install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/assets/web"
-        DESTINATION "${SUNSHINE_ASSETS_DIR}")
+        DESTINATION "${HELIOS_ASSETS_DIR}")
 
 # platform specific packaging
 if(WIN32)
