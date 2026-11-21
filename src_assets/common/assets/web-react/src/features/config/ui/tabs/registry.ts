@@ -5,6 +5,7 @@ import { AudioVideoTab } from './AudioVideo/AudioVideoTab';
 import { AdvancedTab } from './Advanced/AdvancedTab';
 import { FilesTab } from './Files/FilesTab';
 import { InputTab } from './InputTab';
+import { NetworkTab } from './Network/NetworkTab';
 import { AmdTab } from './encoders/AmdTab';
 import { NvencTab } from './encoders/NvencTab';
 import { PyroWaveTab } from './encoders/PyroWaveTab';
@@ -20,6 +21,7 @@ export const TAB_COMPONENTS: Partial<Record<ConfigTabId, ComponentType<ConfigTab
   general: GeneralTab,
   input: InputTab,
   av: AudioVideoTab,
+  network: NetworkTab,
   files: FilesTab,
   advanced: AdvancedTab,
   nv: NvencTab,
