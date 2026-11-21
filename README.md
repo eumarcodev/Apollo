@@ -70,7 +70,7 @@ It is not affiliated with LizardByte, Moonlight, Apollo or Artemis. Compatibilit
 
 **Product and releases**
 
-- Renamed to Helios (installer, service, firewall rule, web UI); the installer migrates an existing Apollo install (config, credentials, pairings).
+- Renamed to Helios everywhere (installer, service, firewall rule, web UI, executables `helios.exe` and `heliossvc.exe`, config files `helios.conf` and `helios_state.json`); upgrading an older Helios install keeps the config, credentials and pairings.
 - Release candidates on every merge, stable releases, and a web UI update check that follows the chosen channel.
 
 The setup Helios and Selene are tuned on, with measured results and recommended settings, is in [docs/streaming-guide.md](docs/streaming-guide.md).
@@ -88,7 +88,7 @@ git -c submodule.third-party/pyrowave.update=none submodule update --init --recu
 export PROCESSOR_ARCHITECTURE=AMD64      # needed for the prebuilt FFmpeg path
 cmake -B build -G Ninja -S . -DBUILD_TESTS=ON
 ninja -C build
-build/tests/test_sunshine                # unit tests
+build/tests/test_helios                  # unit tests
 cpack -G NSIS --config build/CPackConfig.cmake   # installer; -G ZIP for the portable package
 ```
 
