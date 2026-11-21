@@ -4,6 +4,10 @@ import { GeneralTab } from './GeneralTab';
 import { AudioVideoTab } from './AudioVideo/AudioVideoTab';
 import { AdvancedTab } from './Advanced/AdvancedTab';
 import { FilesTab } from './Files/FilesTab';
+import { AmdTab } from './encoders/AmdTab';
+import { NvencTab } from './encoders/NvencTab';
+import { PyroWaveTab } from './encoders/PyroWaveTab';
+import { QsvTab, SwTab, VaapiTab, VtTab } from './encoders/SimpleEncoderTabs';
 import type { ConfigTabProps } from './types';
 
 /**
@@ -16,4 +20,11 @@ export const TAB_COMPONENTS: Partial<Record<ConfigTabId, ComponentType<ConfigTab
   av: AudioVideoTab,
   files: FilesTab,
   advanced: AdvancedTab,
+  nv: NvencTab,
+  qsv: QsvTab,
+  amd: AmdTab,
+  pyrowave: PyroWaveTab,
+  vt: VtTab,
+  vaapi: VaapiTab,
+  sw: SwTab,
 };
