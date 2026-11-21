@@ -362,13 +362,13 @@ describe('PairingPage: host of the deep link', () => {
     expect(hostStore.save).not.toHaveBeenCalled();
   });
 
-  it('keeps the legacy behaviour after a tab switch: a typed host is forgotten in memory, so no QR', async () => {
+  it('uses the host typed in this session again after a tab switch (#184)', async () => {
     const { user } = await setup({ stored: { hostAddr: 'pc.lan', hostPort: '50000' } });
     await user.click(screen.getByRole('tab', { name: 'PIN Pairing' }));
     await user.click(screen.getByRole('tab', { name: 'OTP Pairing' }));
     await requestOtp(user);
     expect(await screen.findByTestId('otp-code')).toHaveTextContent('4321');
-    expect(screen.queryByTestId('otp-qr')).toBeNull();
+    expect(screen.getByTestId('otp-qr')).toHaveAttribute('data-value', expect.stringContaining('art://pc.lan:50000'));
   });
 });
 

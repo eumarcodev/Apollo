@@ -4,7 +4,7 @@ import type { HostInfoStore } from './ports';
 /**
  * Host of the deep link for the lifetime of the page, as on the legacy page: loaded from the session store, kept in
  * memory after each OTP, and "manual" once the user saved one by hand (then it wins over the address the host reports).
- * A tab switch clears the memory copy but not the manual flag.
+ * A tab switch drops the memory copy and goes back to what the session store holds (the manual host, if any).
  */
 export class HostCache {
   private cached: HostInfo | null;
@@ -38,6 +38,7 @@ export class HostCache {
   }
 
   clear(): void {
-    this.cached = null;
+    this.cached = this.store.load();
+    this.manual = this.cached !== null;
   }
 }
