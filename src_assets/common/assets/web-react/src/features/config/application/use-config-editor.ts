@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { serializeConfig, type ConfigModel, type OptionValueOf } from '@/features/config/domain/config-model';
 import type { ConfigSession } from './load-config';
-import type { ConfigPort, PageEnvironment } from './ports';
+import type { ConfigPort, PageEnvironment, SaveFailure } from './ports';
 
 /** Time the restart message stays on screen (legacy `apply()`). */
 export const RESTART_NOTE_MS = 5000;
@@ -17,6 +17,8 @@ export interface ConfigEditor {
   saved: boolean;
   /** Apply succeeded: show the restart note (hidden again after 5 s). */
   restarted: boolean;
+  /** The last save failed (not HTTP 200): show an error, with the server message when there is one. */
+  saveError: SaveFailure | null;
   /** A save request is in flight. */
   saving: boolean;
   save(): Promise<boolean>;
@@ -32,6 +34,7 @@ export function useConfigEditor(session: ConfigSession, port: ConfigPort, env: P
   const [saved, setSaved] = useState(false);
   const [restarted, setRestarted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<SaveFailure | null>(null);
   const configRef = useRef(config);
   const fallbackCache = useRef(session.fallbackModeCache);
   const timers = useRef(new Set<unknown>());
@@ -72,6 +75,7 @@ export function useConfigEditor(session: ConfigSession, port: ConfigPort, env: P
   const save = useCallback(async () => {
     setSaved(false);
     setRestarted(false);
+    setSaveError(null);
     const result = serializeConfig(configRef.current, fallbackCache.current, session.tabs);
     fallbackCache.current = result.fallbackModeCache;
     if (result.config !== configRef.current) {
@@ -84,6 +88,7 @@ export function useConfigEditor(session: ConfigSession, port: ConfigPort, env: P
         setSaved(true);
         return true;
       }
+      setSaveError(outcome);
       return false;
     } finally {
       setSaving(false);
@@ -109,5 +114,5 @@ export function useConfigEditor(session: ConfigSession, port: ConfigPort, env: P
     }
   }, [env, port, save, schedule]);
 
-  return { config, update, saved, restarted, saving, save, apply };
+  return { config, update, saved, restarted, saving, saveError, save, apply };
 }

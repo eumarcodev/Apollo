@@ -1,5 +1,11 @@
-/** Result of `POST ./api/config`: the legacy page only treats HTTP 200 as saved. */
-export type SaveOutcome = 'saved' | 'failed';
+/** A save that did not succeed; `error` is the message of the server when it sent one. */
+export interface SaveFailure {
+  status: 'failed';
+  error?: string;
+}
+
+/** Result of `POST ./api/config`. */
+export type SaveOutcome = 'saved' | SaveFailure;
 
 /**
  * Result of `POST ./api/restart`: `ok` (200), `rejected` (any other status, the page reloads) or `unreachable` (network

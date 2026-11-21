@@ -8,6 +8,8 @@ import { loadConfig, useConfigSession, type ConfigSession } from './load-config'
 import type { ConfigPort, PageEnvironment, RestartOutcome, SaveOutcome } from './ports';
 import { RELOAD_AFTER_NETWORK_ERROR_MS, RESTART_NOTE_MS, useConfigEditor } from './use-config-editor';
 
+const FAILED = { status: 'failed' } as const;
+
 function fakePort(
   body: Record<string, unknown> = { platform: 'windows', sunshine_name: 'Host' },
   save: SaveOutcome = 'saved',
@@ -128,13 +130,29 @@ describe('useConfigEditor', () => {
   });
 
   it('stays unsaved when the save fails', async () => {
-    const { result } = await setupEditor(fakePort(undefined, 'failed'));
+    const { result } = await setupEditor(fakePort(undefined, FAILED));
     let ok = true;
     await act(async () => {
       ok = await result.current.save();
     });
     expect(ok).toBe(false);
     expect(result.current.saved).toBe(false);
+    expect(result.current.saveError).toEqual({ status: 'failed' });
+  });
+
+  it('keeps the server message of a failed save and clears it on the next save', async () => {
+    const port = fakePort();
+    port.save.mockResolvedValueOnce({ status: 'failed', error: 'disk full' } as never);
+    const { result } = await setupEditor(port);
+    await act(async () => {
+      await result.current.save();
+    });
+    expect(result.current.saveError).toEqual({ status: 'failed', error: 'disk full' });
+    await act(async () => {
+      await result.current.save();
+    });
+    expect(result.current.saveError).toBeNull();
+    expect(result.current.saved).toBe(true);
   });
 
   it('puts an invalid fallback mode back to the last valid one in the model', async () => {
@@ -163,7 +181,7 @@ describe('useConfigEditor', () => {
   });
 
   it('does not restart when the save fails', async () => {
-    const { result, port } = await setupEditor(fakePort(undefined, 'failed'));
+    const { result, port } = await setupEditor(fakePort(undefined, FAILED));
     await act(async () => {
       await result.current.apply();
     });

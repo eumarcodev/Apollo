@@ -7,7 +7,7 @@ const TABS: Record<StubPlatform, string[]> = {
 };
 
 /** What the page posts for the fixture: the defaults are stripped, the non-tab keys and strings stay. */
-const UNCHANGED_PAYLOAD = { update_repo: 'eumarcodev/Helios-Server', sunshine_name: 'E2E Host', min_log_level: '2' };
+const UNCHANGED_PAYLOAD = { update_repo: 'eumarcodev/Helios-Server', sunshine_name: 'E2E Host' };
 
 function tabIds() {
   return cy
@@ -86,12 +86,15 @@ describe('config: page core', () => {
     cy.get('[data-testid="config-apply"]').should('be.visible');
   });
 
-  it('shows nothing when the save fails', () => {
-    stubServerApi({ overrides: { 'POST /api/config': { statusCode: 500, body: { status: false } } } });
+  it('shows an error, with the server message, when the save fails', () => {
+    stubServerApi({
+      overrides: { 'POST /api/config': { statusCode: 500, body: { status: false, error: 'disk full' } } },
+    });
     cy.intercept({ method: 'POST', pathname: '/api/config' }).as('save');
     cy.visit('/config');
     cy.get('[data-testid="config-save"]').click();
     cy.wait('@save').its('response.statusCode').should('eq', 500);
+    cy.get('[data-testid="config-save-error"]').should('contain.text', 'Could not save the configuration. disk full');
     cy.get('[data-testid="config-apply-note"]').should('not.exist');
     cy.get('[data-testid="config-apply"]').should('not.exist');
   });
