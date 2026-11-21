@@ -1,6 +1,6 @@
 import { Alert, Button } from '@heroui/react';
 import { ArrowDownAZ, Plus, Save } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AppsBrowser, AppsPort } from '@/features/apps/application/ports';
 import { useApps } from '@/features/apps/application/use-apps';
@@ -10,14 +10,14 @@ import { editDraft, newAppDraft, type AppEntry } from '@/features/apps/domain/ap
 import { isLocalHostname } from '@/features/apps/domain/app-list';
 import { buildLaunchLink, launcherDownload } from '@/features/apps/domain/launcher';
 import { notify, PageLayout, useConfirm } from '@/shared/ui';
-import { AppEditor } from './AppEditor';
+import { AppEditor, type NameAddon } from './AppEditor';
 import { AppsTable } from './AppsTable';
 
 export interface AppsPageProps {
   port: AppsPort;
   browser: AppsBrowser;
   /** Rendered next to the name field of the editor (slot of the online cover finder). */
-  nameAddon?: ReactNode;
+  nameAddon?: NameAddon;
 }
 
 /** Applications page: the list with reorder, launch, close, delete and export; the editor opens in place. */
