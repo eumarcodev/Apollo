@@ -81,7 +81,7 @@ struct PairingTest: testing::TestWithParam<std::tuple<pairing_input, pairing_out
 
 TEST_P(PairingTest, Run) {
   // A successful pairing saves the client list, which the tests must not write to disk
-  config::sunshine.flags[config::flag::FRESH_STATE] = true;
+  config::helios.flags[config::flag::FRESH_STATE] = true;
   auto [input, expected] = GetParam();
 
   boost::property_tree::ptree tree;
@@ -227,7 +227,7 @@ INSTANTIATE_TEST_SUITE_P(
 );
 
 TEST(PairingTest, OutOfOrderCalls) {
-  config::sunshine.flags[config::flag::FRESH_STATE] = true;
+  config::helios.flags[config::flag::FRESH_STATE] = true;
   boost::property_tree::ptree tree;
 
   setup(PRIVATE_KEY, PUBLIC_CERT);

@@ -1,5 +1,5 @@
 # Building
-Sunshine binaries are built using [CMake](https://cmake.org) and requires `cmake` > 3.25.
+Helios binaries are built using [CMake](https://cmake.org) and requires `cmake` > 3.25.
 
 ## Building Locally
 
@@ -16,12 +16,12 @@ It is recommended to use one of the following compilers:
 
 #### Linux
 Dependencies vary depending on the distribution. You can reference our
-[linux_build.sh](https://github.com/LizardByte/Sunshine/blob/master/scripts/linux_build.sh) script for a list of
+[linux_build.sh](https://github.com/eumarcodev/Helios-Server/blob/develop/scripts/linux_build.sh) script for a list of
 dependencies we use in Debian-based and Fedora-based distributions. Please submit a PR if you would like to extend the
 script to support other distributions.
 
 ##### CUDA Toolkit
-Sunshine requires CUDA Toolkit for NVFBC capture. There are two caveats to CUDA:
+Helios requires CUDA Toolkit for NVFBC capture. There are two caveats to CUDA:
 
 1. The version installed depends on the version of GCC.
 2. The version of CUDA you use will determine compatibility with various GPU generations.
@@ -113,7 +113,8 @@ pacman -S "${dependencies[@]}"
 ```
 
 ##### Install Node.js
-Install Node.js separately from [nodejs.org](https://nodejs.org/) (LTS or current) or via
+Install Node.js separately from [nodejs.org](https://nodejs.org/) (22 LTS or newer; the web UI build needs
+Node.js `^20.19` or `>=22.12`, and its tests need 22) or via
 [nvm-windows](https://github.com/coreybutler/nvm-windows). Don't install MSYS2's
 `mingw-w64-ucrt-x86_64-nodejs` — it's compiled with the MSYS2 gcc-16 libstdc++ which has
 a `std::bad_weak_ptr` regression that crashes Node during process init (see
@@ -121,8 +122,8 @@ a `std::bad_weak_ptr` regression that crashes Node during process init (see
 toolchain trail). The official MSVC-built Node.js isn't affected.
 
 Make sure `node.exe` is on `PATH` before running `cmake` — the `web-ui` CMake target
-invokes `npm install` via `find_program(NPM npm)`, so the official Node's `npm` must be
-visible to CMake.
+runs `npm ci` and `npm run build` in `src_assets/common/assets/web-react` via `find_program(NPM npm)`, so the
+official Node's `npm` must be visible to CMake.
 
 ### Clone
 Ensure [git](https://git-scm.com) is installed on your system, then clone the repository using the following command:
@@ -142,7 +143,7 @@ ninja -C build
 
 > [!TIP]
 > Available build options can be found in
-> [options.cmake](https://github.com/LizardByte/Sunshine/blob/master/cmake/prep/options.cmake).
+> [options.cmake](https://github.com/eumarcodev/Helios-Server/blob/develop/cmake/prep/options.cmake).
 
 ### Package
 

@@ -1,13 +1,13 @@
 # windows specific compile definitions
 
-add_compile_definitions(SUNSHINE_PLATFORM="windows")
+add_compile_definitions(HELIOS_PLATFORM="windows")
 
 enable_language(RC)
 set(CMAKE_RC_COMPILER windres)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 
 # gcc complains about misleading indentation in some mingw includes
-list(APPEND SUNSHINE_COMPILE_OPTIONS -Wno-misleading-indentation)
+list(APPEND HELIOS_COMPILE_OPTIONS -Wno-misleading-indentation)
 
 # see gcc bug 98723
 add_definitions(-DUSE_BOOST_REGEX)
@@ -33,18 +33,18 @@ file(GLOB NVPREFS_FILES CONFIGURE_DEPENDS
 # vigem
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/third-party/ViGEmClient/include")
 
-# apollo icon
+# helios icon
 if(NOT DEFINED PROJECT_ICON_PATH)
-    set(PROJECT_ICON_PATH "${CMAKE_SOURCE_DIR}/apollo.ico")
+    set(PROJECT_ICON_PATH "${CMAKE_SOURCE_DIR}/helios.ico")
 endif()
 
 # Create a separate object library for the RC file with minimal includes
-add_library(sunshine_rc_object OBJECT "${CMAKE_SOURCE_DIR}/src/platform/windows/windows.rc")
+add_library(helios_rc_object OBJECT "${CMAKE_SOURCE_DIR}/src/platform/windows/windows.rc")
 
 # Set minimal properties for RC compilation - only what's needed for the resource file
 # Otherwise compilation can fail due to "line too long" errors
-set_target_properties(sunshine_rc_object PROPERTIES
-    COMPILE_DEFINITIONS "PROJECT_ICON_PATH=${PROJECT_ICON_PATH};PROJECT_NAME=${PROJECT_NAME};PROJECT_VENDOR=${SUNSHINE_PUBLISHER_NAME};PROJECT_VERSION=${PROJECT_VERSION};PROJECT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR};PROJECT_VERSION_MINOR=${PROJECT_VERSION_MINOR};PROJECT_VERSION_PATCH=${PROJECT_VERSION_PATCH}"  # cmake-lint: disable=C0301
+set_target_properties(helios_rc_object PROPERTIES
+    COMPILE_DEFINITIONS "PROJECT_ICON_PATH=${PROJECT_ICON_PATH};PROJECT_NAME=${PROJECT_NAME};PROJECT_VENDOR=${HELIOS_PUBLISHER_NAME};PROJECT_VERSION=${PROJECT_VERSION};PROJECT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR};PROJECT_VERSION_MINOR=${PROJECT_VERSION_MINOR};PROJECT_VERSION_PATCH=${PROJECT_VERSION_PATCH}"  # cmake-lint: disable=C0301
     INCLUDE_DIRECTORIES ""
 )
 
@@ -98,7 +98,7 @@ list(PREPEND PLATFORM_LIBRARIES
         wsock32
 )
 
-if(SUNSHINE_ENABLE_TRAY)
+if(HELIOS_ENABLE_TRAY)
     list(APPEND PLATFORM_TARGET_FILES
             "${CMAKE_SOURCE_DIR}/third-party/tray/src/tray_windows.c")
 endif()

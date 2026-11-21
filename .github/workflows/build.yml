@@ -71,6 +71,12 @@ jobs:
           done
           git submodule status --recursive | cut -c1-60
 
+      # The web UI (React 19, Vite 8) needs Node ^20.19 or >=22.12; pin it instead of relying on the runner image
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
       # path-type: inherit keeps the runner's official Node.js/npm on PATH, as required by docs/building.md
       - name: Set up MSYS2
         uses: msys2/setup-msys2@v2
@@ -94,9 +100,9 @@ jobs:
             mingw-w64-ucrt-x86_64-opus
             mingw-w64-ucrt-x86_64-toolchain
 
-      # APOLLO_UPDATE_REPO makes the web UI check this repository's releases for new versions
+      # HELIOS_UPDATE_REPO makes the web UI check this repository's releases for new versions
       - name: Configure
-        run: cmake -B build -G Ninja -S . -DAPOLLO_UPDATE_REPO=${{ github.repository }} -DHELIOS_ENABLE_PYROWAVE=ON
+        run: cmake -B build -G Ninja -S . -DHELIOS_UPDATE_REPO=${{ github.repository }} -DHELIOS_ENABLE_PYROWAVE=ON
 
       - name: Build
         run: ninja -C build

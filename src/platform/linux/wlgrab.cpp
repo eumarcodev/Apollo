@@ -190,7 +190,7 @@ namespace wl {
 
       gl::ctx.BindTexture(GL_TEXTURE_2D, (*rgb_opt)->tex[0]);
 
-      // Don't remove these lines, see https://github.com/LizardByte/Sunshine/issues/453
+      // Don't remove these lines: without them the capture breaks on some drivers
       int w, h;
       gl::ctx.GetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &w);
       gl::ctx.GetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &h);
@@ -224,13 +224,13 @@ namespace wl {
     }
 
     std::unique_ptr<platf::avcodec_encode_device_t> make_avcodec_encode_device(platf::pix_fmt_e pix_fmt) override {
-#ifdef SUNSHINE_BUILD_VAAPI
+#ifdef HELIOS_BUILD_VAAPI
       if (mem_type == platf::mem_type_e::vaapi) {
         return va::make_avcodec_encode_device(width, height, false);
       }
 #endif
 
-#ifdef SUNSHINE_BUILD_CUDA
+#ifdef HELIOS_BUILD_CUDA
       if (mem_type == platf::mem_type_e::cuda) {
         return cuda::make_avcodec_encode_device(width, height, false);
       }
@@ -344,13 +344,13 @@ namespace wl {
     }
 
     std::unique_ptr<platf::avcodec_encode_device_t> make_avcodec_encode_device(platf::pix_fmt_e pix_fmt) override {
-#ifdef SUNSHINE_BUILD_VAAPI
+#ifdef HELIOS_BUILD_VAAPI
       if (mem_type == platf::mem_type_e::vaapi) {
         return va::make_avcodec_encode_device(width, height, 0, 0, true);
       }
 #endif
 
-#ifdef SUNSHINE_BUILD_CUDA
+#ifdef HELIOS_BUILD_CUDA
       if (mem_type == platf::mem_type_e::cuda) {
         return cuda::make_avcodec_gl_encode_device(width, height, 0, 0);
       }

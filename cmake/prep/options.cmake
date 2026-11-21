@@ -1,12 +1,12 @@
 # Publisher Metadata
-set(SUNSHINE_PUBLISHER_NAME "eumarcodev"
+set(HELIOS_PUBLISHER_NAME "eumarcodev"
         CACHE STRING "The name of the publisher (or fork developer) of the application.")
-set(SUNSHINE_PUBLISHER_WEBSITE "https://github.com/eumarcodev/Helios-Server"
+set(HELIOS_PUBLISHER_WEBSITE "https://github.com/eumarcodev/Helios-Server"
         CACHE STRING "The URL of the publisher's website.")
-set(SUNSHINE_PUBLISHER_ISSUE_URL "https://github.com/eumarcodev/Helios-Server/issues"
+set(HELIOS_PUBLISHER_ISSUE_URL "https://github.com/eumarcodev/Helios-Server/issues"
         CACHE STRING "The URL of the publisher's support site or issue tracker.
-        If you provide a modified version of Sunshine, we kindly request that you use your own url.")
-set(APOLLO_UPDATE_REPO "eumarcodev/Helios-Server"
+        If you provide a modified version of Helios, we kindly request that you use your own url.")
+set(HELIOS_UPDATE_REPO "eumarcodev/Helios-Server"
         CACHE STRING "The GitHub repository (owner/name) whose releases the web UI checks for new versions.
         Forks that publish their own releases should set this to their own repository.")
 
@@ -25,11 +25,11 @@ endif()
 option(HELIOS_ENABLE_PYROWAVE "Build with the PyroWave codec (Windows only). Needs the third-party/pyrowave submodule with its nested submodules." ${HELIOS_ENABLE_PYROWAVE_DEFAULT})
 
 # if this option is set, the build will exit after configuring special package configuration files
-option(SUNSHINE_CONFIGURE_ONLY "Configure special files only, then exit." OFF)
+option(HELIOS_CONFIGURE_ONLY "Configure special files only, then exit." OFF)
 
-option(SUNSHINE_ENABLE_TRAY "Enable system tray icon." ON)
+option(HELIOS_ENABLE_TRAY "Enable system tray icon." ON)
 
-option(SUNSHINE_SYSTEM_WAYLAND_PROTOCOLS "Use system installation of wayland-protocols rather than the submodule." OFF)
+option(HELIOS_SYSTEM_WAYLAND_PROTOCOLS "Use system installation of wayland-protocols rather than the submodule." OFF)
 
 if(APPLE)
     option(BOOST_USE_STATIC "Use static boost libraries." OFF)
@@ -43,36 +43,36 @@ option(CUDA_INHERIT_COMPILE_OPTIONS
         your IDE throws errors about unknown flags after running cmake." ON)
 
 if(UNIX)
-    option(SUNSHINE_BUILD_HOMEBREW
+    option(HELIOS_BUILD_HOMEBREW
             "Enable a Homebrew build." OFF)
-    option(SUNSHINE_CONFIGURE_HOMEBREW
-            "Configure Homebrew formula. Recommended to use with SUNSHINE_CONFIGURE_ONLY" OFF)
+    option(HELIOS_CONFIGURE_HOMEBREW
+            "Configure Homebrew formula. Recommended to use with HELIOS_CONFIGURE_ONLY" OFF)
 endif()
 
 if(APPLE)
-    option(SUNSHINE_CONFIGURE_PORTFILE
-            "Configure macOS Portfile. Recommended to use with SUNSHINE_CONFIGURE_ONLY" OFF)
-    option(SUNSHINE_PACKAGE_MACOS
+    option(HELIOS_CONFIGURE_PORTFILE
+            "Configure macOS Portfile. Recommended to use with HELIOS_CONFIGURE_ONLY" OFF)
+    option(HELIOS_PACKAGE_MACOS
             "Should only be used when creating a macOS package/dmg." OFF)
 elseif(UNIX)  # Linux
-    option(SUNSHINE_BUILD_APPIMAGE
+    option(HELIOS_BUILD_APPIMAGE
             "Enable an AppImage build." OFF)
-    option(SUNSHINE_BUILD_FLATPAK
+    option(HELIOS_BUILD_FLATPAK
             "Enable a Flatpak build." OFF)
-    option(SUNSHINE_CONFIGURE_PKGBUILD
-            "Configure files required for AUR. Recommended to use with SUNSHINE_CONFIGURE_ONLY" OFF)
-    option(SUNSHINE_CONFIGURE_FLATPAK_MAN
-            "Configure manifest file required for Flatpak build. Recommended to use with SUNSHINE_CONFIGURE_ONLY" OFF)
+    option(HELIOS_CONFIGURE_PKGBUILD
+            "Configure files required for AUR. Recommended to use with HELIOS_CONFIGURE_ONLY" OFF)
+    option(HELIOS_CONFIGURE_FLATPAK_MAN
+            "Configure manifest file required for Flatpak build. Recommended to use with HELIOS_CONFIGURE_ONLY" OFF)
 
     # Linux capture methods
-    option(SUNSHINE_ENABLE_CUDA
+    option(HELIOS_ENABLE_CUDA
             "Enable cuda specific code." ON)
-    option(SUNSHINE_ENABLE_DRM
+    option(HELIOS_ENABLE_DRM
             "Enable KMS grab if available." ON)
-    option(SUNSHINE_ENABLE_VAAPI
+    option(HELIOS_ENABLE_VAAPI
             "Enable building vaapi specific code." ON)
-    option(SUNSHINE_ENABLE_WAYLAND
+    option(HELIOS_ENABLE_WAYLAND
             "Enable building wayland specific code." ON)
-    option(SUNSHINE_ENABLE_X11
+    option(HELIOS_ENABLE_X11
             "Enable X11 grab if available." ON)
 endif()

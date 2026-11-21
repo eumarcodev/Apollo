@@ -57,6 +57,6 @@ package-lock.json
 *.pyc
 venv/
 
-# test_sunshine outputs when run from the repository root
-test_sunshine.log*
+# test_helios outputs when run from the repository root
+test_helios.log*
 write_file_test_*.txt
