@@ -11,12 +11,13 @@ Read our contribution guide in our organization level
 ## Project Patterns
 
 ### Web UI
-* The Web UI uses [Vite](https://vitejs.dev) as its build system.
-* The HTML pages used by the Web UI are found in `./src_assets/common/assets/web`.
-* [EJS](https://www.npmjs.com/package/vite-plugin-ejs) is used as a templating system for the pages
-  (check `template_header.html` and `template_header_main.html`).
-* The Style System is provided by [Bootstrap](https://getbootstrap.com).
-* The JS framework used by the more interactive pages is [Vue.js](https://vuejs.org).
+* The Web UI is a React 19 + TypeScript app built with [Vite](https://vite.dev), found in
+  `./src_assets/common/assets/web-react` (architecture, dependency rules and commands are in its `README.md`).
+* The components come from [HeroUI](https://www.heroui.com) v3 and the icons from [Lucide](https://lucide.dev).
+* The server serves 8 fixed pages (`index`, `pin`, `apps`, `config`, `password`, `welcome`, `login`,
+  `troubleshooting`); each one is a thin HTML file in the app root that mounts a page from `src/pages`.
+* Features live in `src/features/<slice>` (domain, application, infrastructure, ui).
+* The tray icons and logos the host reads by name are in `public/images`.
 
 #### Building
 
@@ -26,9 +27,23 @@ Read our contribution guide in our organization level
     ninja -C build web-ui
     ```}
   @tab{Manual | ```bash
+    cd src_assets/common/assets/web-react
+    npm ci
     npm run dev
     ```}
 }
+
+Node.js `^20.19` or `>=22.12` is needed to build; running the unit and end-to-end tests needs Node.js 22.
+
+#### Testing
+From `./src_assets/common/assets/web-react`:
+
+```bash
+npm run lint
+npm run typecheck
+npm run test:unit
+npm run e2e
+```
 
 ### Localization
 Helios and related LizardByte projects are being localized into various languages.
@@ -61,10 +76,11 @@ next release.
 #### Extraction
 
 ##### Web UI
-Helios uses [Vue I18n](https://vue-i18n.intlify.dev) for localizing the UI.
+Helios uses [i18next](https://www.i18next.com) with [react-i18next](https://react.i18next.com) for localizing the UI.
+The web UI ships only **en** and **pt_BR**, in `./src_assets/common/assets/web-react/public/assets/locale`.
 The following is a simple example of how to use it.
 
-* Add the string to the `./src_assets/common/assets/web/public/assets/locale/en.json` file, in English.
+* Add the string to both the `en.json` and the `pt_BR.json` file, in the same place.
   ```json
   {
    "index": {
@@ -75,26 +91,21 @@ The following is a simple example of how to use it.
 
   > [!NOTE]
   > The JSON keys should be sorted alphabetically. You can use [jsonabc](https://novicelab.org/jsonabc)
-  > to sort the keys.
+  > to sort the keys. A unit test fails when the two files do not have the same keys.
 
-  > [!IMPORTANT]
-  > Due to the integration with Crowdin, it is important to only add strings to the *en.json* file,
-  > and to not modify any other language files. After the PR is merged, the translations can take place
-  > on [CrowdIn][crowdin-url]. Once the translations are complete, a PR will be made
-  > to merge the translations into Helios.
+* Use the string in the React component.
+  ```tsx
+  import { useTranslation } from 'react-i18next';
 
-* Use the string in the Vue component.
-  ```html
-  <template>
-    <div>
-      <p>{{ $t('index.welcome') }}</p>
-    </div>
-  </template>
+  export function Welcome() {
+    const { t } = useTranslation();
+    return <p>{t('index.welcome')}</p>;
+  }
   ```
 
   > [!TIP]
   > More formatting examples can be found in the
-  > [Vue I18n guide](https://kazupon.github.io/vue-i18n/guide/formatting.html).
+  > [i18next documentation](https://www.i18next.com/translation-function/interpolation).
 
 ##### C++
 

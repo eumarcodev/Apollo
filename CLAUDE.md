@@ -18,8 +18,7 @@ cmake -B build -G Ninja -S . -DBUILD_TESTS=ON
 ninja -C build
 build/tests/test_helios                                # full suite, required before a PR (baseline: 268 tests, 0 failures)
 build/tests/test_helios --gtest_filter=Suite.Name      # single test
-npm run test:web                                       # web helpers (node:test, tests/web/*.test.mjs)
-npm run build                                          # web UI (Vite)
+# web UI: run inside src_assets/common/assets/web-react (npm ci, then lint, typecheck, test:unit, e2e, build)
 cpack -G NSIS --config build/CPackConfig.cmake         # installer Helios.exe; -G ZIP for portable
 ```
 
@@ -36,12 +35,12 @@ Environment the build needs:
 - `src/confighttp.cpp`: web UI backend and `/api/*` (cookie auth via `POST /api/login`).
 - Capture/encode: `src/video.cpp` plus per-platform code in `src/platform/{windows,linux,macos}`. Encoders are FFmpeg-based (`avcodec_encode_session_t`) or NVENC (`src/nvenc`). Virtual display: `src/display_device.cpp` and the Windows platform code.
 - Options: `src/config.h` / `src/config.cpp`, read in `config::parse`.
-- Web UI: Vue 3 + Vite in `src_assets/common/assets/web` (`index.html` hosts the update banner; its `*_version.js` helper orders versions).
-- Tests: `tests/unit` (gtest, incl. `test_pyrowave_*`), `tests/web` (node:test), `tests/integration`.
+- Web UI: React 19 + TypeScript + HeroUI v3 + Vite 8 in `src_assets/common/assets/web-react` (vertical slices in `src/features`, tests next to the code, Cypress in `cypress/`; read its `README.md`). The `web-ui` CMake target builds it into `<assets>/web`; `public/images` holds the tray icons the host reads.
+- Tests: `tests/unit` (gtest, incl. `test_pyrowave_*`), `tests/integration` (config/locale consistency against the web UI sources); web UI tests run from `web-react` (`npm run test:unit`, `npm run e2e`).
 - Dependencies are submodules in `third-party/`; `third-party/pyrowave` and `third-party/moonlight-common-c` are the user's forks (changed by PR in their own repos, then bumped here).
 - Release automation: `.github/workflows` (`rc-queue.yml`, `rc.yml`, `stable-queue.yml`, `promote.yml`, reusable `build.yml`), documented in `.github/RELEASING.md`.
 
-Where a new config option belongs (all of them, or it is incomplete): field in `config.h` AND in the same position in `config.cpp`, parsing in `config::parse`, default in `src_assets/common/assets/web/config.html`, control in `configs/tabs/*.vue`, locale key in `public/assets/locale/en.json`, section in `docs/configuration.md`.
+Where a new config option belongs (all of them, or it is incomplete): field in `config.h` AND in the same position in `config.cpp`, parsing in `config::parse`, default and control in `src_assets/common/assets/web-react/src/features/config/domain/config-tabs.ts` and the config UI, locale keys in BOTH `src_assets/common/assets/web-react/public/assets/locale/en.json` and `pt_BR.json`, section in `docs/configuration.md` (`test_config_consistency` checks these).
 
 ## 3. Hard rules
 
