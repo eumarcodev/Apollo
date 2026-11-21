@@ -27,7 +27,7 @@ export function PyroWaveTab({ config, update }: ConfigTabProps) {
         localePrefix="config"
         value={config['pyrowave']}
         onChange={(value) => update('pyrowave', value)}
-        default="false"
+        default="true"
       />
       <TextField
         id="pyrowave_packet_size"

@@ -170,7 +170,7 @@ describe('PyroWave tab', () => {
     expect(byId('pyrowave_min_frame_kb')).toHaveAttribute('max', '4096');
     expect(byId('pyrowave_simulated_loss')).toHaveAttribute('step', '0.5');
     expect(byId('pyrowave_simulated_loss')).toHaveAttribute('max', '100');
-    expect(screen.getByTestId('pyrowave-default')).toHaveTextContent('Default: unchecked');
+    expect(screen.getByTestId('pyrowave-default')).toHaveTextContent('Default: checked');
     expect(screen.getByTestId('pyrowave_static_boost-default')).toHaveTextContent('Default: checked');
   });
 
