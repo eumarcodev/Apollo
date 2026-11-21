@@ -4,6 +4,9 @@
  */
 #include "../tests_common.h"
 
+#include <cstdlib>
+
+#include <src/config.h>
 #include <src/pyrowave_protocol.h>
 #include <src/video.h>
 
@@ -31,8 +34,24 @@ TEST(PyroWaveProtocol, BitstreamFormatIsDistinctFromOtherCodecs) {
   EXPECT_TRUE(pyrowave::is_pyrowave_format(3));
 }
 
-TEST(PyroWaveProtocol, HostDoesNotAdvertiseUntilItCanEncode) {
+TEST(PyroWaveProtocol, HostAdvertisesOnlyWhenTheOptionIsOn) {
+  if (const char *value = std::getenv("HELIOS_PYROWAVE"); value && *value) {
+    GTEST_SKIP() << "HELIOS_PYROWAVE is set in the environment";
+  }
+
+  const bool saved = config::video.pyrowave;
+
+  config::video.pyrowave = false;
   EXPECT_FALSE(video::pyrowave_available());
+
+  config::video.pyrowave = true;
+#ifdef HELIOS_ENABLE_PYROWAVE
+  EXPECT_TRUE(video::pyrowave_available());
+#else
+  EXPECT_FALSE(video::pyrowave_available());  // never offered without the codec built in
+#endif
+
+  config::video.pyrowave = saved;
 }
 
 TEST(PyroWaveProtocol, PacketSizePreferenceNeverExceedsTheHostLimit) {
