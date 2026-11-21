@@ -2,6 +2,8 @@ import type { ComponentType } from 'react';
 import type { ConfigTabId } from '@/features/config/domain/config-tabs';
 import { GeneralTab } from './GeneralTab';
 import { AudioVideoTab } from './AudioVideo/AudioVideoTab';
+import { AdvancedTab } from './Advanced/AdvancedTab';
+import { FilesTab } from './Files/FilesTab';
 import type { ConfigTabProps } from './types';
 
 /**
@@ -12,4 +14,6 @@ import type { ConfigTabProps } from './types';
 export const TAB_COMPONENTS: Partial<Record<ConfigTabId, ComponentType<ConfigTabProps>>> = {
   general: GeneralTab,
   av: AudioVideoTab,
+  files: FilesTab,
+  advanced: AdvancedTab,
 };
