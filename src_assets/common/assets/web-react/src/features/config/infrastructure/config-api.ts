@@ -13,9 +13,18 @@ export function createConfigApi(http: HttpClient = httpClient): ConfigPort {
         await http.postJson('./api/config', payload);
         return 'saved';
       } catch (error) {
-        // The legacy page ignores a failed save (no message, the success alert stays hidden).
         console.error(error);
-        return 'failed';
+        const appError = AppError.from(error);
+        const body = appError.body;
+        const serverError =
+          appError.kind === 'http' &&
+          body &&
+          typeof body === 'object' &&
+          'error' in body &&
+          typeof body.error === 'string'
+            ? body.error
+            : undefined;
+        return serverError ? { status: 'failed', error: serverError } : { status: 'failed' };
       }
     },
 

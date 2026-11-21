@@ -484,6 +484,7 @@
     "qsv_slow_hevc": "Permitir codificação lenta de HEVC",
     "qsv_slow_hevc_desc": "Isso pode permitir a codificação HEVC em GPUs Intel mais antigas, ao custo de maior uso da GPU e pior desempenho.",
     "restart_note": "O Helios está sendo reiniciado para aplicar as alterações.",
+    "save_error": "Não foi possível salvar a configuração.",
     "server_cmd": "Comandos de Servidor",
     "server_cmd_desc": "Configura uma lista de comandos a serem executados no servidor quando solicitados durante uma transmissão pelo cliente.",
     "stream_audio": "Transmitir áudio",

@@ -136,10 +136,25 @@ export interface SerializedConfig {
 }
 
 /**
+ * Whether an option value equals its default. The server answers every option as a string while the defaults can be
+ * numbers or booleans, so scalars are compared by their text (`"2"` equals `2`); lists and objects by their JSON.
+ * A missing value is never a default (there is nothing to strip).
+ */
+export function isDefaultValue(value: unknown, defaultValue: unknown): boolean {
+  if (value === undefined || value === null || defaultValue === undefined || defaultValue === null) {
+    return value === defaultValue;
+  }
+  if (typeof value === 'object' || typeof defaultValue === 'object') {
+    return JSON.stringify(value) === JSON.stringify(defaultValue);
+  }
+  return String(value) === String(defaultValue);
+}
+
+/**
  * Legacy `serialize()` + the default stripping of `save()`:
  * 1. an invalid `fallback_mode` (not `WxHxR`) is restored from the cache, a valid one (or empty) becomes the cache;
  * 2. deep copy; command rows without content are dropped;
- * 3. every option of the given tabs whose JSON equals its default is removed. The legacy page loops over the tabs
+ * 3. every option of the given tabs equal to its default (`isDefaultValue`, whatever the type) is removed. The legacy page loops over the tabs
  *    after the platform filter, so the options of hidden tabs are always sent.
  */
 export function serializeConfig(
@@ -166,7 +181,7 @@ export function serializeConfig(
 
   for (const tab of tabs) {
     for (const [key, value] of Object.entries(tab.options)) {
-      if (JSON.stringify(payload[key]) === JSON.stringify(value)) {
+      if (isDefaultValue(payload[key], value)) {
         delete payload[key];
       }
     }

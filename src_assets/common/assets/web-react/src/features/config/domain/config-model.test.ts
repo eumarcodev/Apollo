@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AppError } from '@/shared/kernel';
-import { parseLoadedConfig, serializeConfig, type ConfigModel } from './config-model';
+import { isDefaultValue, parseLoadedConfig, serializeConfig, type ConfigModel } from './config-model';
 import { CONFIG_TABS, visibleTabs } from './config-tabs';
 
 const windowsTabs = visibleTabs('windows');
@@ -110,9 +110,34 @@ describe('serializeConfig', () => {
     expect(payload).toEqual({
       update_repo: 'eumarcodev/Helios-Server',
       sunshine_name: 'Host',
-      // The server answers strings: "2" !== 2, so the legacy page sends it back (JSON.stringify comparison).
-      min_log_level: '2',
     });
+  });
+
+  it('never sends an option equal to its default, whatever the type (#185)', () => {
+    const { config, fallbackModeCache } = load({ min_log_level: '2', locale: 'en', system_tray: 'enabled' });
+    const { payload } = serializeConfig(config, fallbackModeCache, windowsTabs);
+    expect(payload).not.toHaveProperty('min_log_level');
+    expect(payload).not.toHaveProperty('locale');
+    expect(payload).not.toHaveProperty('system_tray');
+    const changed = serializeConfig({ ...config, min_log_level: '3' }, fallbackModeCache, windowsTabs);
+    expect(changed.payload['min_log_level']).toBe('3');
+  });
+
+  it('compares scalars by text and lists or objects by JSON (#185)', () => {
+    expect(isDefaultValue('2', 2)).toBe(true);
+    expect(isDefaultValue(2, '2')).toBe(true);
+    expect(isDefaultValue('3', 2)).toBe(false);
+    expect(isDefaultValue('en', 'en')).toBe(true);
+    expect(isDefaultValue('true', true)).toBe(true);
+    expect(isDefaultValue(false, 'false')).toBe(true);
+    expect(isDefaultValue('false', true)).toBe(false);
+    expect(isDefaultValue([], [])).toBe(true);
+    expect(isDefaultValue([{ a: 1 }], [])).toBe(false);
+    expect(isDefaultValue({ a: [1] }, { a: [1] })).toBe(true);
+    expect(isDefaultValue('', 0)).toBe(false);
+    expect(isDefaultValue(undefined, 2)).toBe(false);
+    expect(isDefaultValue(undefined, undefined)).toBe(true);
+    expect(isDefaultValue(null, '')).toBe(false);
   });
 
   it('strips by JSON equality, so a changed value is sent and a reverted one is not', () => {

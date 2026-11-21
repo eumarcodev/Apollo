@@ -33,10 +33,18 @@ describe('createConfigApi', () => {
     expect((init!.headers as Record<string, string>)['Content-Type']).toBe('application/json');
   });
 
-  it('reports failed on an error status or a network error', async () => {
+  it('reports failed, with the server error when there is one', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    await expect(setup(async () => jsonResponse({ error: 'bad' }, 400)).api.save({})).resolves.toBe('failed');
-    await expect(setup(() => Promise.reject(new TypeError('down'))).api.save({})).resolves.toBe('failed');
+    await expect(setup(async () => jsonResponse({ error: 'bad' }, 400)).api.save({})).resolves.toEqual({
+      status: 'failed',
+      error: 'bad',
+    });
+    await expect(setup(async () => jsonResponse({ status: false }, 500)).api.save({})).resolves.toEqual({
+      status: 'failed',
+    });
+    await expect(setup(() => Promise.reject(new TypeError('down'))).api.save({})).resolves.toEqual({
+      status: 'failed',
+    });
   });
 
   it('posts ./api/restart with the JSON content type and no body', async () => {
