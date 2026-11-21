@@ -1,20 +1,16 @@
 @echo off
 setlocal enabledelayedexpansion
 
-rem Get sunshine root directory
+rem Get the Helios root directory
 for %%I in ("%~dp0\..") do set "ROOT_DIR=%%~fI"
 
 set SERVICE_NAME=HeliosService
-set "SERVICE_BIN=%ROOT_DIR%\tools\sunshinesvc.exe"
+set "SERVICE_BIN=%ROOT_DIR%\tools\heliossvc.exe"
 set "SERVICE_CONFIG_DIR=%LOCALAPPDATA%\Helios"
 set "SERVICE_CONFIG_FILE=%SERVICE_CONFIG_DIR%\service_start_type.txt"
 
 rem Set service to demand start. It will be changed to auto later if the user selected that option.
 set SERVICE_START_TYPE=demand
-
-rem Remove the legacy SunshineSvc service
-net stop sunshinesvc
-sc delete sunshinesvc
 
 rem Check if HeliosService already exists
 sc qc %SERVICE_NAME% > nul 2>&1
