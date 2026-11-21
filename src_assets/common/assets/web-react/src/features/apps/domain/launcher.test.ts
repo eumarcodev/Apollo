@@ -13,8 +13,8 @@ describe('launch link', () => {
 });
 
 describe('launcher file', () => {
-  it('has the legacy content except the first line (Selene instead of Artemis)', () => {
-    const legacy = `# Artemis app entry
+  it('has the legacy launcher format with a Selene header', () => {
+    const legacy = `# Selene app entry
 # Exported by Helios
 # https://github.com/eumarcodev/Helios-Server
 
@@ -24,7 +24,7 @@ describe('launcher file', () => {
 [app_name] Game One
 `;
     const content = buildLauncherFile(HOST, APP);
-    expect(content).toBe(legacy.replace('# Artemis app entry', '# Selene app entry'));
+    expect(content).toBe(legacy);
     expect(content.split('\n').slice(1)).toEqual(legacy.split('\n').slice(1));
     expect(content).not.toContain('\r');
   });

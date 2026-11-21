@@ -21,7 +21,6 @@ describe('config: Advanced tab', () => {
     cy.get('#qp').should('have.value', '28');
     cy.get('#min_threads').should('have.value', '2').and('have.attr', 'min', '1');
     cy.get('#limit_framerate').should('be.checked');
-    cy.get('#envvar_compatibility_mode').should('not.be.checked');
     cy.get('#legacy_ordering').should('not.be.checked');
     cy.get('#ignore_encoder_probe_failure').should('not.be.checked');
     cy.get('#capture').should('contain.text', 'Autodetect');

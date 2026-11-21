@@ -42,7 +42,7 @@ export const CONFIG_TABS: readonly ConfigTab[] = [
     nameKey: 'config.tab_general',
     options: {
       locale: 'en',
-      sunshine_name: '',
+      helios_name: '',
       min_log_level: 2,
       global_prep_cmd: [],
       global_state_cmd: [],
@@ -145,7 +145,6 @@ export const CONFIG_TABS: readonly ConfigTab[] = [
       qp: 28,
       min_threads: 2,
       limit_framerate: 'enabled',
-      envvar_compatibility_mode: 'disabled',
       legacy_ordering: 'disabled',
       ignore_encoder_probe_failure: 'disabled',
       hevc_mode: 0,

@@ -63,7 +63,7 @@ describe('General defaults', () => {
   it('keeps the legacy defaults verbatim', () => {
     expect(general?.options).toEqual({
       locale: 'en',
-      sunshine_name: '',
+      helios_name: '',
       min_log_level: 2,
       global_prep_cmd: [],
       global_state_cmd: [],

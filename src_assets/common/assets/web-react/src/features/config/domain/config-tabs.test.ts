@@ -47,7 +47,7 @@ describe('tab registry', () => {
   it('keeps the option order of each tab', () => {
     expect(Object.keys(CONFIG_TABS[0]!.options)).toEqual([
       'locale',
-      'sunshine_name',
+      'helios_name',
       'min_log_level',
       'global_prep_cmd',
       'global_state_cmd',
@@ -66,15 +66,27 @@ describe('tab registry', () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
-  // The legacy page is the reference until the cut-over of epic #156 removes it.
-  it.skipIf(!existsSync(LEGACY_PAGE))('is identical to the tabs of the legacy config.html', () => {
+  // The legacy page is the reference until the cut-over of epic #156 removes it. Issue #177 renamed the host name
+  // option to helios_name and removed one option; everything else is identical.
+  it.skipIf(!existsSync(LEGACY_PAGE))('is identical to the tabs of the legacy config.html except for #177', () => {
     const legacy = readLegacyTabs();
     expect(legacy.map((tab) => tab.id)).toEqual([...CONFIG_TAB_IDS]);
+    const onlyLegacy: string[] = [];
+    const onlyPorted: string[] = [];
     for (const [index, tab] of legacy.entries()) {
       const ported = CONFIG_TABS[index]!;
       expect(tab.name).toBe(LEGACY_NAMES[tab.id]);
-      expect(JSON.stringify(ported.options)).toBe(JSON.stringify(tab.options));
+      for (const [key, value] of Object.entries(tab.options)) {
+        if (key in ported.options) {
+          expect(JSON.stringify(ported.options[key]), key).toBe(JSON.stringify(value));
+        } else {
+          onlyLegacy.push(key);
+        }
+      }
+      onlyPorted.push(...Object.keys(ported.options).filter((key) => !(key in tab.options)));
     }
+    expect(onlyPorted).toEqual(['helios_name']);
+    expect(onlyLegacy).toHaveLength(2);
   });
 });
 

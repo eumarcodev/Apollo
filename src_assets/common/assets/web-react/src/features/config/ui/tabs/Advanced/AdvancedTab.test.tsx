@@ -75,7 +75,6 @@ describe('AdvancedTab', () => {
       'qp',
       'min_threads',
       'limit_framerate',
-      'envvar_compatibility_mode',
       'legacy_ordering',
       'ignore_encoder_probe_failure',
       'hevc_mode',
@@ -94,7 +93,6 @@ describe('AdvancedTab', () => {
     expect(byId('min_threads')).toHaveValue(2);
     expect(byId('min_threads')).toHaveAttribute('min', '1');
     expect(byId('limit_framerate')).toBeChecked();
-    expect(byId('envvar_compatibility_mode')).not.toBeChecked();
     expect(byId('legacy_ordering')).not.toBeChecked();
     expect(byId('ignore_encoder_probe_failure')).not.toBeChecked();
     expect(document.getElementById('hevc_mode')).toHaveTextContent(

@@ -8,7 +8,7 @@ import {
   type GithubRelease,
 } from './helios-version';
 
-// Port of tests/web/apollo_version.test.mjs (the legacy cases), plus the edges of the TypeScript port.
+// Port of the legacy web UI version tests, plus the edges of the TypeScript port.
 const v = (version: string) => new HeliosVersion(version);
 const release = (tag: string, extra: Partial<GithubRelease> = {}): GithubRelease => ({
   tag_name: tag,

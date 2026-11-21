@@ -18,14 +18,14 @@ function fakeHttp(body: unknown): HttpClient {
 describe('toServerConfig', () => {
   it('splits metadata from options', () => {
     const config = toServerConfig(
-      buildServerConfigDto({ sunshine_name: 'Host', port: '47989', min_log_level: '2', something: 5 }),
+      buildServerConfigDto({ helios_name: 'Host', port: '47989', min_log_level: '2', something: 5 }),
     );
     expect(config).toEqual({
       platform: 'windows',
       version: '1.0.0-test',
       updateRepo: 'eumarcodev/Helios-Server',
       vdisplayStatus: 0,
-      options: { locale: 'en', sunshine_name: 'Host', port: '47989', min_log_level: '2', something: '5' },
+      options: { locale: 'en', helios_name: 'Host', port: '47989', min_log_level: '2', something: '5' },
     });
   });
 

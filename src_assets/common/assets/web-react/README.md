@@ -33,7 +33,7 @@ npm run e2e            # build, vite preview on :4173, every Cypress spec with t
 npm run e2e:installed  # Cypress against the Helios installed on this machine (see below)
 ```
 
-`npm run build` writes to `dist/`, or to `$SUNSHINE_ASSETS_DIR/assets/web` when CMake runs it (target `web-ui`).
+`npm run build` writes to `dist/`, or to `$HELIOS_ASSETS_DIR/assets/web` when CMake runs it (target `web-ui`).
 `scripts/check-dist.mjs` fails the build when one of the 8 pages, a locale or an image is missing, or when a file type
 is not one the server serves (`js css json svg png ico woff2 ttf` under `assets/`).
 
@@ -111,7 +111,7 @@ A change is done only when it works on an installed Helios:
 # from Helios-Server (MSYS2 UCRT64 build, PROCESSOR_ARCHITECTURE=AMD64)
 cmake -B build -G Ninja -S . -DBUILD_TESTS=ON
 ninja -C build                 # the web-ui target runs npm ci + npm run build here
-build/tests/test_sunshine
+build/tests/test_helios
 cpack -G NSIS --config build/CPackConfig.cmake
 
 # install the build silently (elevated), prints OK <version> or ABORT <reason>

@@ -19,7 +19,7 @@ export function FilesTab({ config, update }: ConfigTabProps) {
         id="credentials_file"
         label="config.credentials_file"
         desc="config.credentials_file_desc"
-        placeholder="sunshine_state.json"
+        placeholder="helios_state.json"
         monospace
         value={textValue(config['credentials_file'])}
         onChange={(value) => update('credentials_file', value)}
@@ -28,7 +28,7 @@ export function FilesTab({ config, update }: ConfigTabProps) {
         id="log_path"
         label="config.log_path"
         desc="config.log_path_desc"
-        placeholder="sunshine.log"
+        placeholder="helios.log"
         monospace
         value={textValue(config['log_path'])}
         onChange={(value) => update('log_path', value)}
@@ -55,7 +55,7 @@ export function FilesTab({ config, update }: ConfigTabProps) {
         id="file_state"
         label="config.file_state"
         desc="config.file_state_desc"
-        placeholder="sunshine_state.json"
+        placeholder="helios_state.json"
         monospace
         value={textValue(config['file_state'])}
         onChange={(value) => update('file_state', value)}

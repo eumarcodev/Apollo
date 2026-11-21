@@ -53,12 +53,12 @@ export function GeneralTab({ config, platform, update }: ConfigTabProps) {
         onChange={(value) => update('locale', value)}
       />
       <TextField
-        id="sunshine_name"
-        label="config.sunshine_name"
-        desc="config.sunshine_name_desc"
+        id="helios_name"
+        label="config.helios_name"
+        desc="config.helios_name_desc"
         placeholder="Helios"
-        value={config['sunshine_name']}
-        onChange={(value) => update('sunshine_name', value)}
+        value={config['helios_name']}
+        onChange={(value) => update('helios_name', value)}
       />
       <SelectField
         id="min_log_level"

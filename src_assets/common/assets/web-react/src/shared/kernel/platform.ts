@@ -1,4 +1,4 @@
-/** Values of SUNSHINE_PLATFORM reported by `GET /api/config` (cmake/compile_definitions/*.cmake). */
+/** Values of HELIOS_PLATFORM reported by `GET /api/config` (cmake/compile_definitions/*.cmake). */
 export const PLATFORMS = ['windows', 'linux', 'macos'] as const;
 
 export type Platform = (typeof PLATFORMS)[number];

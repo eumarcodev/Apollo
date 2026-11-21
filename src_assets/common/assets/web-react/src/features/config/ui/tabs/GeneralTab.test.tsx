@@ -75,7 +75,7 @@ describe('GeneralTab', () => {
     await renderTab();
     for (const id of [
       'locale',
-      'sunshine_name',
+      'helios_name',
       'min_log_level',
       'global_prep_cmd',
       'global_state_cmd',
@@ -108,13 +108,13 @@ describe('GeneralTab', () => {
   });
 
   it('edits the server name with the Helios placeholder', async () => {
-    const { user, last } = await renderTab({ sunshine_name: 'Old' });
+    const { user, last } = await renderTab({ helios_name: 'Old' });
     const input = screen.getByRole('textbox', { name: 'Server Name' });
     expect(input).toHaveAttribute('placeholder', 'Helios');
     expect(input).toHaveValue('Old');
     await user.clear(input);
     await user.type(input, 'My PC');
-    expect(last()?.['sunshine_name']).toBe('My PC');
+    expect(last()?.['helios_name']).toBe('My PC');
   });
 
   it('writes the log level as a string and updates the channel', async () => {
