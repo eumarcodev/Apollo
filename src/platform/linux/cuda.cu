@@ -17,27 +17,27 @@
 
 using namespace std::literals;
 
-#define SUNSHINE_STRINGVIEW_HELPER(x) x##sv
-#define SUNSHINE_STRINGVIEW(x) SUNSHINE_STRINGVIEW_HELPER(x)
+#define HELIOS_STRINGVIEW_HELPER(x) x##sv
+#define HELIOS_STRINGVIEW(x) HELIOS_STRINGVIEW_HELPER(x)
 
 #define CU_CHECK(x, y) \
-  if (check((x), SUNSHINE_STRINGVIEW(y ": "))) \
+  if (check((x), HELIOS_STRINGVIEW(y ": "))) \
   return -1
 
 #define CU_CHECK_VOID(x, y) \
-  if (check((x), SUNSHINE_STRINGVIEW(y ": "))) \
+  if (check((x), HELIOS_STRINGVIEW(y ": "))) \
     return;
 
 #define CU_CHECK_PTR(x, y) \
-  if (check((x), SUNSHINE_STRINGVIEW(y ": "))) \
+  if (check((x), HELIOS_STRINGVIEW(y ": "))) \
     return nullptr;
 
 #define CU_CHECK_OPT(x, y) \
-  if (check((x), SUNSHINE_STRINGVIEW(y ": "))) \
+  if (check((x), HELIOS_STRINGVIEW(y ": "))) \
     return std::nullopt;
 
 #define CU_CHECK_IGNORE(x, y) \
-  check((x), SUNSHINE_STRINGVIEW(y ": "))
+  check((x), HELIOS_STRINGVIEW(y ": "))
 
 using namespace std::literals;
 
@@ -329,7 +329,7 @@ namespace cuda {
     return CU_CHECK_IGNORE(cudaGetLastError(), "RGBA_to_NV12 failed");
   }
 
-  void sws_t::apply_colorspace(const video::sunshine_colorspace_t &colorspace) {
+  void sws_t::apply_colorspace(const video::helios_colorspace_t &colorspace) {
     auto color_p = video::color_vectors_from_colorspace(colorspace);
     CU_CHECK_IGNORE(cudaMemcpy(color_matrix.get(), color_p, sizeof(video::color_t), cudaMemcpyHostToDevice), "Couldn't copy color matrix to cuda");
   }

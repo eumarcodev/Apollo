@@ -1,15 +1,13 @@
 /**
  * @file tests/integration/test_locale_consistency.cpp
- * @brief Test locale consistency across configuration files and locale JSON files
+ * @brief Test locale consistency between config.cpp, the web UI locale choices and the web UI locale JSON files
  */
 #include "../tests_common.h"
 
 // standard includes
 #include <filesystem>
 #include <format>
-#include <fstream>
 #include <functional>
-#include <map>
 #include <regex>
 #include <set>
 #include <string>
@@ -48,35 +46,31 @@ protected:
     return locales;
   }
 
-  // Extract locale options from General.vue
-  static std::map<std::string, std::string, std::less<>> extractGeneralVueLocales() {
-    std::map<std::string, std::string, std::less<>> locales;
-    const std::string content = file_handler::read_file("src_assets/common/assets/web/configs/tabs/General.vue");
+  // Extract the locales offered by the web UI language select (LOCALE_CHOICES in general-options.ts)
+  static std::set<std::string, std::less<>> extractWebUiLocaleChoices() {
+    std::set<std::string, std::less<>> locales;
+    const std::string content = file_handler::read_file("src_assets/common/assets/web-react/src/features/config/domain/general-options.ts");
 
-    // Find the locale select section specifically
-    const std::regex localeSelectPattern("id=\"locale\"[^>]*>([^<]*(?:<option[^>]*>[^<]*</option>[^<]*)*)</select>");
+    const std::regex choicesSection(R"(LOCALE_CHOICES[^=]*=\s*\[([^\]]*)\])");
 
-    if (std::smatch selectMatch; std::regex_search(content, selectMatch, localeSelectPattern)) {
-      const std::string localeSection = selectMatch[1].str();
+    if (std::smatch match; std::regex_search(content, match, choicesSection)) {
+      const std::string choices = match[1].str();
 
-      // Extract option elements with locale codes and display names from the locale section
-      const std::regex optionPattern(R"delimiter(<option\s+value="([^"]+)">([^<]+)</option>)delimiter");
-      std::sregex_iterator iter(localeSection.begin(), localeSection.end(), optionPattern);
+      const std::regex valuePattern(R"delimiter(value:\s*'([^']+)')delimiter");
+      std::sregex_iterator iter(choices.begin(), choices.end(), valuePattern);
 
       for (const std::sregex_iterator end; iter != end; ++iter) {
-        const std::string localeCode = (*iter)[1].str();
-        const std::string displayName = (*iter)[2].str();
-        locales[localeCode] = displayName;
+        locales.insert((*iter)[1].str());
       }
     }
 
     return locales;
   }
 
-  // Get available locale JSON files
+  // Get available locale JSON files of the web UI
   static std::set<std::string, std::less<>> getAvailableLocaleFiles() {
     std::set<std::string, std::less<>> locales;
-    const std::filesystem::path localeDir = "src_assets/common/assets/web/public/assets/locale";
+    const std::filesystem::path localeDir = "src_assets/common/assets/web-react/public/assets/locale";
 
     if (!fs::exists(localeDir)) {
       return locales;
@@ -94,7 +88,7 @@ protected:
 
   // Helper function to check if a locale JSON file is valid using nlohmann/json
   static bool isValidLocaleFile(const std::string &localeCode) {
-    const std::string filePath = std::format("src_assets/common/assets/web/public/assets/locale/{}.json", localeCode);
+    const std::string filePath = std::format("src_assets/common/assets/web-react/public/assets/locale/{}.json", localeCode);
 
     if (!fs::exists(filePath)) {
       return false;
@@ -113,6 +107,14 @@ protected:
     }
   }
 };
+
+TEST_F(LocaleConsistencyTest, WebUiOffersAtLeastTheSourceLocales) {
+  const auto localeFiles = getAvailableLocaleFiles();
+
+  // The web UI ships its own translations; English is the source and the fallback.
+  EXPECT_TRUE(localeFiles.contains("en")) << "en.json is missing from the web UI locale folder";
+  EXPECT_TRUE(localeFiles.contains("pt_BR")) << "pt_BR.json is missing from the web UI locale folder";
+}
 
 TEST_F(LocaleConsistencyTest, AllLocaleFilesHaveConfigCppEntries) {
   const auto configLocales = extractConfigCppLocales();
@@ -136,110 +138,55 @@ TEST_F(LocaleConsistencyTest, AllLocaleFilesHaveConfigCppEntries) {
   }
 }
 
-TEST_F(LocaleConsistencyTest, AllLocaleFilesHaveGeneralVueEntries) {
-  const auto vueLocales = extractGeneralVueLocales();
+TEST_F(LocaleConsistencyTest, WebUiLocaleChoicesMatchLocaleFiles) {
+  const auto choices = extractWebUiLocaleChoices();
   const auto localeFiles = getAvailableLocaleFiles();
 
-  std::vector<std::string> missingFromVue;
+  ASSERT_FALSE(choices.empty()) << "Could not read LOCALE_CHOICES from general-options.ts";
 
-  // Check that every locale file has a corresponding entry in General.vue
+  std::vector<std::string> problems;
+
+  for (const auto &choice : choices) {
+    if (!localeFiles.contains(choice)) {
+      problems.push_back(std::format("the language select offers '{}' but {}.json does not exist", choice, choice));
+    }
+  }
+
   for (const auto &localeFile : localeFiles) {
-    if (!vueLocales.contains(localeFile)) {
-      missingFromVue.push_back(localeFile);
+    if (!choices.contains(localeFile)) {
+      problems.push_back(std::format("{}.json exists but the language select does not offer it", localeFile));
     }
   }
 
-  if (!missingFromVue.empty()) {
-    std::string errorMsg = "Locale files missing from General.vue:\n";
-    for (const auto &missing : missingFromVue) {
-      errorMsg += std::format("  {}.json\n", missing);
+  if (!problems.empty()) {
+    std::string errorMsg = "Web UI locale inconsistencies found:\n";
+    for (const auto &problem : problems) {
+      errorMsg += std::format("  {}\n", problem);
     }
     FAIL() << errorMsg;
   }
 }
 
-TEST_F(LocaleConsistencyTest, AllConfigCppLocalesHaveFiles) {
+TEST_F(LocaleConsistencyTest, WebUiLocaleChoicesAreAcceptedByTheServer) {
   const auto configLocales = extractConfigCppLocales();
-  const auto localeFiles = getAvailableLocaleFiles();
+  const auto choices = extractWebUiLocaleChoices();
 
-  std::vector<std::string> missingFiles;
+  ASSERT_FALSE(choices.empty()) << "Could not read LOCALE_CHOICES from general-options.ts";
 
-  // Check that every config.cpp locale has a corresponding JSON file
-  for (const auto &configLocale : configLocales) {
-    if (!localeFiles.contains(configLocale)) {
-      missingFiles.push_back(configLocale);
+  std::vector<std::string> rejected;
+
+  // A locale the language select offers but config.cpp rejects would be silently dropped on save
+  for (const auto &choice : choices) {
+    if (!configLocales.contains(choice)) {
+      rejected.push_back(choice);
     }
   }
 
-  if (!missingFiles.empty()) {
-    std::string errorMsg = "config.cpp locales missing JSON files:\n";
-    for (const auto &missing : missingFiles) {
-      errorMsg += std::format("  {}.json\n", missing);
-    }
-    FAIL() << errorMsg;
-  }
-}
-
-TEST_F(LocaleConsistencyTest, AllGeneralVueLocalesHaveFiles) {
-  const auto vueLocales = extractGeneralVueLocales();
-  const auto localeFiles = getAvailableLocaleFiles();
-
-  std::vector<std::string> missingFiles;
-
-  // Check that every General.vue locale has a corresponding JSON file
-  for (const auto &vueLocale : vueLocales | std::views::keys) {
-    if (!localeFiles.contains(vueLocale)) {
-      missingFiles.push_back(vueLocale);
-    }
-  }
-
-  if (!missingFiles.empty()) {
-    std::string errorMsg = "General.vue locales missing JSON files:\n";
-    for (const auto &missing : missingFiles) {
-      errorMsg += std::format("  {}.json\n", missing);
-    }
-    FAIL() << errorMsg;
-  }
-}
-
-TEST_F(LocaleConsistencyTest, ConfigCppAndGeneralVueLocalesMatch) {
-  const auto configLocales = extractConfigCppLocales();
-  const auto vueLocales = extractGeneralVueLocales();
-
-  std::vector<std::string> configOnlyLocales;
-  std::vector<std::string> vueOnlyLocales;
-
-  // Find locales in config.cpp but not in General.vue
-  for (const auto &configLocale : configLocales) {
-    if (!vueLocales.contains(configLocale)) {
-      configOnlyLocales.push_back(configLocale);
-    }
-  }
-
-  // Find locales in General.vue but not in config.cpp
-  for (const auto &vueLocale : vueLocales | std::views::keys) {
-    if (!configLocales.contains(vueLocale)) {
-      vueOnlyLocales.push_back(vueLocale);
-    }
-  }
-
-  std::string errorMsg;
-
-  if (!configOnlyLocales.empty()) {
-    errorMsg += "Locales in config.cpp but not in General.vue:\n";
-    for (const auto &locale : configOnlyLocales) {
+  if (!rejected.empty()) {
+    std::string errorMsg = "Web UI locales not accepted by config.cpp:\n";
+    for (const auto &locale : rejected) {
       errorMsg += std::format("  {}\n", locale);
     }
-  }
-
-  if (!vueOnlyLocales.empty()) {
-    errorMsg += "Locales in General.vue but not in config.cpp:\n";
-    for (const auto &locale : vueOnlyLocales) {
-      errorMsg += std::format("  {}\n", locale);
-    }
-  }
-
-  if (!errorMsg.empty()) {
     FAIL() << errorMsg;
   }
 }
@@ -264,82 +211,20 @@ TEST_F(LocaleConsistencyTest, AllLocaleFilesAreValid) {
   }
 }
 
-TEST_F(LocaleConsistencyTest, LocaleDisplayNamesAreConsistent) {
-  const auto vueLocales = extractGeneralVueLocales();
-  const auto localeFiles = getAvailableLocaleFiles();
-  std::vector<std::string> inconsistentDisplayNames;
-
-  // Check that all locales in General.vue have corresponding JSON files
-  for (const auto &[localeCode, displayName] : vueLocales) {
-    if (!localeFiles.contains(localeCode)) {
-      inconsistentDisplayNames.push_back(
-        std::format("{}: has display name '{}' but no corresponding JSON file exists", localeCode, displayName)
-      );
-    }
-  }
-
-  // Also check that locale files that exist have entries in General.vue
-  for (const auto &localeFile : localeFiles) {
-    if (!vueLocales.contains(localeFile)) {
-      inconsistentDisplayNames.push_back(
-        std::format("{}: has JSON file but no display name in General.vue", localeFile)
-      );
-    }
-  }
-
-  if (!inconsistentDisplayNames.empty()) {
-    std::string errorMsg = "Locale display name inconsistencies found:\n";
-    for (const auto &inconsistent : inconsistentDisplayNames) {
-      errorMsg += std::format("  {}\n", inconsistent);
-    }
-    FAIL() << errorMsg;
-  }
-}
-
-TEST_F(LocaleConsistencyTest, NoOrphanedLocaleReferences) {
-  const auto configLocales = extractConfigCppLocales();
-  const auto vueLocales = extractGeneralVueLocales();
-  const auto localeFiles = getAvailableLocaleFiles();
-
-  std::vector<std::string> orphanedReferences;
-
-  // Check for locale references that don't have corresponding files
-  for (const auto &configLocale : configLocales) {
-    if (!localeFiles.contains(configLocale)) {
-      orphanedReferences.push_back(std::format("config.cpp references missing file: {}.json", configLocale));
-    }
-  }
-
-  for (const auto &vueLocale : vueLocales | std::views::keys) {
-    if (!localeFiles.contains(vueLocale)) {
-      orphanedReferences.push_back(std::format("General.vue references missing file: {}.json", vueLocale));
-    }
-  }
-
-  if (!orphanedReferences.empty()) {
-    std::string errorMsg = "Orphaned locale references found:\n";
-    for (const auto &orphaned : orphanedReferences) {
-      errorMsg += std::format("  {}\n", orphaned);
-    }
-    FAIL() << errorMsg;
-  }
-}
-
 TEST_F(LocaleConsistencyTest, TestFrameworkDetectsLocaleInconsistencies) {
   // Test the framework by simulating a missing locale scenario
   const std::string testLocale = "test_framework_validation_locale";
 
-  auto configLocales = extractConfigCppLocales();
-  auto vueLocales = extractGeneralVueLocales();
+  auto choices = extractWebUiLocaleChoices();
   const auto localeFiles = getAvailableLocaleFiles();
 
-  // Add a fake locale to config to simulate a missing file
-  configLocales.insert(testLocale);
+  // Add a fake locale to the choices to simulate a missing file
+  choices.insert(testLocale);
 
   std::vector<std::string> missingFiles;
-  for (const auto &configLocale : configLocales) {
-    if (!localeFiles.contains(configLocale)) {
-      missingFiles.push_back(configLocale);
+  for (const auto &choice : choices) {
+    if (!localeFiles.contains(choice)) {
+      missingFiles.push_back(choice);
     }
   }
 

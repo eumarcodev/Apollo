@@ -1,9 +1,10 @@
 /**
  * @file src/config.cpp
- * @brief Definitions for the configuration of Sunshine.
+ * @brief Definitions for the configuration of Helios.
  */
 // standard includes
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <fstream>
 #include <functional>
@@ -462,7 +463,7 @@ namespace config {
     {},  // nv
     true,  // nv_realtime_hags
     true,  // nv_opengl_vulkan_on_dxgi
-    true,  // nv_sunshine_high_power_mode
+    true,  // nv_helios_high_power_mode
     {},  // nv_legacy
 
     {
@@ -552,8 +553,8 @@ namespace config {
     PRIVATE_KEY_FILE,
     CERTIFICATE_FILE,
 
-    platf::get_host_name(),  // sunshine_name,
-    "sunshine_state.json"s,  // file_state
+    platf::get_host_name(),  // helios_name,
+    "helios_state.json"s,  // file_state
     {},  // external_ip
   };
 
@@ -586,11 +587,10 @@ namespace config {
     true, // forward_rumble
   };
 
-  sunshine_t sunshine {
+  helios_t helios {
     false, // hide_tray_controls
     true, // enable_pairing
     true, // enable_discovery
-    false, // envvar_compatibility_mode
     "en",  // locale
     2,  // min_log_level
     0,  // flags
@@ -598,11 +598,11 @@ namespace config {
     {},  // Username
     {},  // Password
     {},  // Password Salt
-    platf::appdata().string() + "/sunshine.conf",  // config file
+    platf::appdata().string() + "/helios.conf",  // config file
     {},  // cmd args
     47989,  // Base port number
     "ipv4",  // Address family
-    platf::appdata().string() + "/sunshine.log",  // log file
+    platf::appdata().string() + "/helios.log",  // log file
     false,  // notify_pre_releases
     {},  // update_channel
     false,  // legacy_ordering
@@ -720,6 +720,70 @@ namespace config {
     }
 
     return vars;
+  }
+
+  namespace {
+    // Default file names of older Helios versions, which used the upstream project's name: {current, old}
+    constexpr std::array<std::pair<std::string_view, std::string_view>, 3> legacy_file_names {{
+      {"helios.conf"sv, "sunshine.conf"sv},
+      {"helios_state.json"sv, "sunshine_state.json"sv},
+      {"helios.log"sv, "sunshine.log"sv},
+    }};
+
+    // Option keys of older Helios versions: {current, old}
+    constexpr std::array<std::pair<std::string_view, std::string_view>, 1> legacy_option_names {{
+      {"helios_name"sv, "sunshine_name"sv},
+    }};
+
+    // Options that no longer exist
+    constexpr std::array<std::string_view, 1> removed_options {
+      "envvar_compatibility_mode"sv,
+    };
+  }  // namespace
+
+  std::string migrate_legacy_file(const fs::path &path) {
+    const auto file_name = path.filename().string();
+    const auto legacy = std::ranges::find(legacy_file_names, std::string_view {file_name}, [](const auto &names) {
+      return names.first;
+    });
+    if (legacy == legacy_file_names.end()) {
+      return {};
+    }
+
+    std::error_code ec;
+    const auto legacy_path = path.parent_path() / legacy->second;
+    if (fs::exists(path, ec) || !fs::exists(legacy_path, ec)) {
+      return {};
+    }
+
+    fs::rename(legacy_path, path, ec);
+    if (ec) {
+      return "Migration: failed to rename "s + legacy_path.string() + " to " + path.string() + ": " + ec.message();
+    }
+    return "Migration: renamed "s + legacy_path.string() + " to " + path.string();
+  }
+
+  std::vector<std::string> migrate_legacy_options(std::unordered_map<std::string, std::string> &vars) {
+    std::vector<std::string> found;
+
+    for (const auto &[current, old] : legacy_option_names) {
+      auto it = vars.find(std::string {old});
+      if (it == vars.end()) {
+        continue;
+      }
+      auto value = std::move(it->second);
+      vars.erase(it);
+      vars.try_emplace(std::string {current}, std::move(value));
+      found.emplace_back(old);
+    }
+
+    for (const auto &removed : removed_options) {
+      if (vars.erase(std::string {removed}) > 0) {
+        found.emplace_back(removed);
+      }
+    }
+
+    return found;
   }
 
   void string_f(std::unordered_map<std::string, std::string> &vars, const std::string &name, std::string &input) {
@@ -1017,7 +1081,7 @@ namespace config {
     }
 
     // The framerate list must be cleared before adding values from the file configuration.
-    // If the list is not cleared, then the specified parameters do not affect the behavior of the sunshine server.
+    // If the list is not cleared, then the specified parameters do not affect the behavior of the helios server.
     // That is, if you set only 30 fps in the configuration file, it will not work because by default, during initialization the list includes 10, 30, 60, 90 and 120 fps.
     input.clear();
     for (auto &el : list) {
@@ -1064,16 +1128,16 @@ namespace config {
     while (*line != '\0') {
       switch (*line) {
         case '0':
-          config::sunshine.flags[config::flag::PIN_STDIN].flip();
+          config::helios.flags[config::flag::PIN_STDIN].flip();
           break;
         case '1':
-          config::sunshine.flags[config::flag::FRESH_STATE].flip();
+          config::helios.flags[config::flag::FRESH_STATE].flip();
           break;
         case '2':
-          config::sunshine.flags[config::flag::FORCE_VIDEO_HEADER_REPLACE].flip();
+          config::helios.flags[config::flag::FORCE_VIDEO_HEADER_REPLACE].flip();
           break;
         case 'p':
-          config::sunshine.flags[config::flag::UPNP].flip();
+          config::helios.flags[config::flag::UPNP].flip();
           break;
         default:
           BOOST_LOG(warning) << "config: Unrecognized flag: ["sv << *line << ']' << std::endl;
@@ -1100,9 +1164,13 @@ namespace config {
 #ifndef __ANDROID__
     // TODO: Android can possibly support this
     if (!fs::exists(stream.file_apps.c_str())) {
-      fs::copy_file(SUNSHINE_ASSETS_DIR "/apps.json", stream.file_apps);
+      fs::copy_file(HELIOS_ASSETS_DIR "/apps.json", stream.file_apps);
     }
 #endif
+
+    for (const auto &key : migrate_legacy_options(vars)) {
+      migration_messages.emplace_back("Migration: the option ["s + key + "] of an older version was renamed or removed");
+    }
 
     for (auto &[name, val] : vars) {
     #ifdef _WIN32
@@ -1140,7 +1208,7 @@ namespace config {
     bool_f(vars, "nvenc_intra_refresh", video.nv.intra_refresh);
     bool_f(vars, "nvenc_realtime_hags", video.nv_realtime_hags);
     bool_f(vars, "nvenc_opengl_vulkan_on_dxgi", video.nv_opengl_vulkan_on_dxgi);
-    bool_f(vars, "nvenc_latency_over_power", video.nv_sunshine_high_power_mode);
+    bool_f(vars, "nvenc_latency_over_power", video.nv_helios_high_power_mode);
 
 #if !defined(__ANDROID__) && !defined(__APPLE__)
     video.nv_legacy.preset = video.nv.quality_preset + 11;
@@ -1227,18 +1295,18 @@ namespace config {
 
     path_f(vars, "pkey", nvhttp.pkey);
     path_f(vars, "cert", nvhttp.cert);
-    string_f(vars, "sunshine_name", nvhttp.sunshine_name);
-    path_f(vars, "log_path", config::sunshine.log_file);
+    string_f(vars, "helios_name", nvhttp.helios_name);
+    path_f(vars, "log_path", config::helios.log_file);
     path_f(vars, "file_state", nvhttp.file_state);
 
     // Must be run after "file_state"
-    config::sunshine.credentials_file = config::nvhttp.file_state;
-    path_f(vars, "credentials_file", config::sunshine.credentials_file);
+    config::helios.credentials_file = config::nvhttp.file_state;
+    path_f(vars, "credentials_file", config::helios.credentials_file);
 
     string_f(vars, "external_ip", nvhttp.external_ip);
-    list_prep_cmd_f(vars, "global_prep_cmd", config::sunshine.prep_cmds);
-    list_prep_cmd_f(vars, "global_state_cmd", config::sunshine.state_cmds);
-    list_server_cmd_f(vars, "server_cmd", config::sunshine.server_cmds);
+    list_prep_cmd_f(vars, "global_prep_cmd", config::helios.prep_cmds);
+    list_prep_cmd_f(vars, "global_state_cmd", config::helios.state_cmds);
+    list_server_cmd_f(vars, "server_cmd", config::helios.server_cmds);
 
     string_f(vars, "audio_sink", audio.sink);
     string_f(vars, "virtual_sink", audio.virtual_sink);
@@ -1309,30 +1377,29 @@ namespace config {
     bool_f(vars, "native_pen_touch", input.native_pen_touch);
     bool_f(vars, "enable_input_only_mode", input.enable_input_only_mode);
 
-    bool_f(vars, "system_tray", sunshine.system_tray);
-    bool_f(vars, "hide_tray_controls", sunshine.hide_tray_controls);
-    bool_f(vars, "enable_pairing", sunshine.enable_pairing);
-    bool_f(vars, "enable_discovery", sunshine.enable_discovery);
-    bool_f(vars, "envvar_compatibility_mode", sunshine.envvar_compatibility_mode);
-    bool_f(vars, "notify_pre_releases", sunshine.notify_pre_releases);
-    string_restricted_f(vars, "update_channel", sunshine.update_channel, {"stable"sv, "rc"sv, "nightly"sv});
-    bool_f(vars, "legacy_ordering", sunshine.legacy_ordering);
+    bool_f(vars, "system_tray", helios.system_tray);
+    bool_f(vars, "hide_tray_controls", helios.hide_tray_controls);
+    bool_f(vars, "enable_pairing", helios.enable_pairing);
+    bool_f(vars, "enable_discovery", helios.enable_discovery);
+    bool_f(vars, "notify_pre_releases", helios.notify_pre_releases);
+    string_restricted_f(vars, "update_channel", helios.update_channel, {"stable"sv, "rc"sv, "nightly"sv});
+    bool_f(vars, "legacy_ordering", helios.legacy_ordering);
     bool_f(vars, "forward_rumble", input.forward_rumble);
 
-    int port = sunshine.port;
+    int port = helios.port;
     int_between_f(vars, "port"s, port, {1024 + nvhttp::PORT_HTTPS, 65535 - rtsp_stream::RTSP_SETUP_PORT});
-    sunshine.port = (std::uint16_t) port;
+    helios.port = (std::uint16_t) port;
 
-    string_restricted_f(vars, "address_family", sunshine.address_family, {"ipv4"sv, "both"sv});
+    string_restricted_f(vars, "address_family", helios.address_family, {"ipv4"sv, "both"sv});
 
     bool upnp = false;
     bool_f(vars, "upnp"s, upnp);
 
     if (upnp) {
-      config::sunshine.flags[config::flag::UPNP].flip();
+      config::helios.flags[config::flag::UPNP].flip();
     }
 
-    string_restricted_f(vars, "locale", config::sunshine.locale, {
+    string_restricted_f(vars, "locale", config::helios.locale, {
                                                                    "bg"sv,  // Bulgarian
                                                                    "cs"sv,  // Czech
                                                                    "de"sv,  // German
@@ -1362,24 +1429,24 @@ namespace config {
 
     if (!log_level_string.empty()) {
       if (log_level_string == "verbose"sv) {
-        sunshine.min_log_level = 0;
+        helios.min_log_level = 0;
       } else if (log_level_string == "debug"sv) {
-        sunshine.min_log_level = 1;
+        helios.min_log_level = 1;
       } else if (log_level_string == "info"sv) {
-        sunshine.min_log_level = 2;
+        helios.min_log_level = 2;
       } else if (log_level_string == "warning"sv) {
-        sunshine.min_log_level = 3;
+        helios.min_log_level = 3;
       } else if (log_level_string == "error"sv) {
-        sunshine.min_log_level = 4;
+        helios.min_log_level = 4;
       } else if (log_level_string == "fatal"sv) {
-        sunshine.min_log_level = 5;
+        helios.min_log_level = 5;
       } else if (log_level_string == "none"sv) {
-        sunshine.min_log_level = 6;
+        helios.min_log_level = 6;
       } else {
         // accept digit directly
         auto val = log_level_string[0];
         if (val >= '0' && val < '7') {
-          sunshine.min_log_level = val - '0';
+          helios.min_log_level = val - '0';
         }
       }
     }
@@ -1391,7 +1458,7 @@ namespace config {
       vars.erase(it);
     }
 
-    if (sunshine.min_log_level <= 3) {
+    if (helios.min_log_level <= 3) {
       for (auto &[var, _] : vars) {
         std::cout << "Warning: Unrecognized configurable option ["sv << var << ']' << std::endl;
       }
@@ -1424,9 +1491,9 @@ namespace config {
 #endif
       else if (*line == '-') {
         if (*(line + 1) == '-') {
-          sunshine.cmd.name = line + 2;
-          sunshine.cmd.argc = argc - x - 1;
-          sunshine.cmd.argv = argv + x + 1;
+          helios.cmd.name = line + 2;
+          helios.cmd.argc = argc - x - 1;
+          helios.cmd.argv = argv + x + 1;
 
           break;
         }
@@ -1439,7 +1506,7 @@ namespace config {
 
         auto pos = std::find(line, line_end, '=');
         if (pos == line_end) {
-          sunshine.config_file = line;
+          helios.config_file = line;
         } else {
           TUPLE_EL(var, 1, parse_option(line, line_end));
           if (!var) {
@@ -1464,16 +1531,21 @@ namespace config {
       // Create appdata folder if it does not exist
       file_handler::make_directory(platf::appdata().string());
 
+      // Rename the config file of an older install before reading it
+      if (auto message = migrate_legacy_file(helios.config_file); !message.empty()) {
+        migration_messages.emplace_back(std::move(message));
+      }
+
       // Create empty config file if it does not exist
-      if (!fs::exists(sunshine.config_file)) {
-        auto cfg_file = std::ofstream {sunshine.config_file};
+      if (!fs::exists(helios.config_file)) {
+        auto cfg_file = std::ofstream {helios.config_file};
       #ifdef _WIN32
         cfg_file << "server_cmd = [{\"name\":\"Bubbles\",\"cmd\":\"bubbles.scr\",\"elevated\":false}]\n";
       #endif
       }
 
       // Read config file
-      auto vars = parse_config(file_handler::read_file(sunshine.config_file.c_str()));
+      auto vars = parse_config(file_handler::read_file(helios.config_file.c_str()));
 
       for (auto &[name, value] : cmd_vars) {
         vars.insert_or_assign(std::move(name), std::move(value));
@@ -1483,6 +1555,13 @@ namespace config {
       // referenced in the config, so we may receive exceptions if
       // the path is incorrect or inaccessible.
       apply_config(std::move(vars));
+
+      // Rename the state (paired clients, credentials) and log files of an older install before they are used
+      for (const auto &path : {fs::path {nvhttp.file_state}, fs::path {helios.credentials_file}, fs::path {helios.log_file}}) {
+        if (auto message = migrate_legacy_file(path); !message.empty()) {
+          migration_messages.emplace_back(std::move(message));
+        }
+      }
       config_loaded = true;
     } catch (const std::filesystem::filesystem_error &err) {
       BOOST_LOG(fatal) << "Failed to apply config: "sv << err.what();
@@ -1496,7 +1575,7 @@ namespace config {
     // so that service instance will do the work instead.
 
     if (!config_loaded && !shortcut_launch) {
-      BOOST_LOG(fatal) << "To relaunch Helios successfully, use the shortcut in the Start Menu. Do not run sunshine.exe manually."sv;
+      BOOST_LOG(fatal) << "To relaunch Helios successfully, use the shortcut in the Start Menu. Do not run helios.exe manually."sv;
       std::this_thread::sleep_for(10s);
 #else
     if (!config_loaded) {
@@ -1513,7 +1592,7 @@ namespace config {
       // This is a relaunch as admin to start the service
       service_ctrl::start_service();
 
-      // Always return 1 to ensure Sunshine doesn't start normally
+      // Always return 1 to ensure Helios doesn't start normally
       return 1;
     }
     if (shortcut_launch) {
@@ -1546,7 +1625,7 @@ namespace config {
       // Launch the web UI
       launch_ui();
 
-      // Always return 1 to ensure Sunshine doesn't start normally
+      // Always return 1 to ensure Helios doesn't start normally
       return 1;
     }
 #endif

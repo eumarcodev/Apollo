@@ -74,7 +74,7 @@ Pull requests are not built in CI: build and test locally before opening the PR.
 
 ## Update notifications in Helios
 
-Builds published from this repository check **this** repository's releases (`APOLLO_UPDATE_REPO`). The home page
+Builds published from this repository check **this** repository's releases (`HELIOS_UPDATE_REPO`). The home page
 follows an update channel, set in **Configuration > General > Update Channel**:
 
 - *Stable*: only stable releases.

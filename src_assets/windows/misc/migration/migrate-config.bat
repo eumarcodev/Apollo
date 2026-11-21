@@ -1,6 +1,6 @@
 @echo off
 
-rem Get sunshine root directory
+rem Get the Helios root directory
 for %%I in ("%~dp0\..") do set "OLD_DIR=%%~fI"
 
 rem Create the config directory if it didn't already exist
@@ -15,16 +15,16 @@ if exist "%OLD_DIR%\apps.json" (
         icacls "%NEW_DIR%\apps.json" /reset
     )
 )
-if exist "%OLD_DIR%\sunshine.conf" (
-    if not exist "%NEW_DIR%\sunshine.conf" (
-        move "%OLD_DIR%\sunshine.conf" "%NEW_DIR%\sunshine.conf"
-        icacls "%NEW_DIR%\sunshine.conf" /reset
+if exist "%OLD_DIR%\helios.conf" (
+    if not exist "%NEW_DIR%\helios.conf" (
+        move "%OLD_DIR%\helios.conf" "%NEW_DIR%\helios.conf"
+        icacls "%NEW_DIR%\helios.conf" /reset
     )
 )
-if exist "%OLD_DIR%\sunshine_state.json" (
-    if not exist "%NEW_DIR%\sunshine_state.json" (
-        move "%OLD_DIR%\sunshine_state.json" "%NEW_DIR%\sunshine_state.json"
-        icacls "%NEW_DIR%\sunshine_state.json" /reset
+if exist "%OLD_DIR%\helios_state.json" (
+    if not exist "%NEW_DIR%\helios_state.json" (
+        move "%OLD_DIR%\helios_state.json" "%NEW_DIR%\helios_state.json"
+        icacls "%NEW_DIR%\helios_state.json" /reset
     )
 )
 

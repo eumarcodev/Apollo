@@ -27,9 +27,9 @@ python branding/export.py
 
 | SVG | Used for |
 |---|---|
-| `helios-icon-rounded` | `apollo.svg/.png/.icns`, `apollo.ico` from 40 px up (executable, installer) |
-| `helios-mark` | `apollo.ico` up to 32 px, web favicon, `logo-apollo*` (navbar) |
-| `helios-mark-{playing,pausing,locked}` | tray icons `apollo-{state}*` |
+| `helios-icon-rounded` | `helios.svg/.png/.icns`, `helios.ico` from 40 px up (executable, installer) |
+| `helios-mark` | `helios.ico` up to 32 px, web favicon, `logo-helios*` (navbar) |
+| `helios-mark-{playing,pausing,locked}` | tray icons `helios-{state}*` |
 | `helios-icon` | full-bleed square, for previews |
 
-The `apollo*` file names are kept on purpose (see the naming notes in `CLAUDE.md`); only the artwork changed.
+The script writes the root `helios.*` files and the web UI images in `src_assets/common/assets/web-react/public/images`.

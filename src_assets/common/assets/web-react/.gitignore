@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+cypress.env.json
+*.tsbuildinfo
+!package-lock.json

@@ -32,10 +32,6 @@ if %ERRORLEVEL%==0 (
     echo !CONTENT!> "%SERVICE_CONFIG_FILE%"
 )
 
-rem Stop and delete the legacy SunshineSvc service
-net stop sunshinesvc
-sc delete sunshinesvc
-
 rem Stop and delete the new HeliosService service
 net stop HeliosService
 sc delete HeliosService
