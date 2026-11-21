@@ -94,8 +94,16 @@ describe('auth: welcome page (first run)', () => {
     cy.get('[data-testid="auth-success"]').should('not.exist');
   });
 
+  it('shows the server validation error of a 400 answer', () => {
+    visitWelcome({ statusCode: 400, body: { status: false, error: 'Invalid Username' } });
+    fill('a', 'a');
+    cy.get('[data-testid="auth-error"]')
+      .should('contain.text', 'Invalid Username')
+      .and('not.contain.text', 'Internal Server Error');
+  });
+
   it('shows "Internal Server Error" for any other status, translated', () => {
-    visitWelcome({ statusCode: 400, body: { status: false, error: 'Password Mismatch' } }, 'pt_BR');
+    visitWelcome({ statusCode: 500, body: '' }, 'pt_BR');
     cy.get('h1').should('have.text', 'Bem-vindo ao Helios!');
     fill('a', 'a');
     cy.get('[data-testid="auth-error"]').should('contain.text', 'Erro interno do servidor');
