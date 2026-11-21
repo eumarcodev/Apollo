@@ -70,8 +70,7 @@ set(INTEGRATION_TEST_FILES
     "src_assets/common/assets/web-react/src/features/config/domain/config-tabs.ts"
     "docs/configuration.md"
     "src_assets/common/assets/web-react/public/assets/locale/en.json"
-    "src_assets/common/assets/web/public/assets/locale/en.json"
-    "src_assets/common/assets/web/configs/tabs/General.vue"
+    "src_assets/common/assets/web-react/src/features/config/domain/general-options.ts"
     "src_assets/linux/misc/60-helios.rules"
 )
 
@@ -85,8 +84,8 @@ endforeach()
 
 # Copy all locale files for locale consistency tests
 # Use a custom command to properly handle both adding and removing files
-set(LOCALE_SRC_DIR "${CMAKE_SOURCE_DIR}/src_assets/common/assets/web/public/assets/locale")
-set(LOCALE_DST_DIR "${CMAKE_CURRENT_BINARY_DIR}/src_assets/common/assets/web/public/assets/locale")
+set(LOCALE_SRC_DIR "${CMAKE_SOURCE_DIR}/src_assets/common/assets/web-react/public/assets/locale")
+set(LOCALE_DST_DIR "${CMAKE_CURRENT_BINARY_DIR}/src_assets/common/assets/web-react/public/assets/locale")
 add_custom_target(sync_locale_files ALL
     COMMAND ${CMAKE_COMMAND} -E rm -rf "${LOCALE_DST_DIR}"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${LOCALE_DST_DIR}"
