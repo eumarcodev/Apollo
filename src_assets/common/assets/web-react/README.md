@@ -1,7 +1,7 @@
 # Helios web UI (React)
 
-The configuration UI served by Helios at `https://localhost:47990`. It replaces the legacy Vue UI in
-`../web/` (kept only as the functional reference until the cut-over of epic #156).
+The configuration UI served by Helios at `https://localhost:47990`. It is the only web UI: the CMake target `web-ui`
+builds this folder and the build output is installed as `<assets>/web`.
 
 ## Stack
 
@@ -18,7 +18,8 @@ The configuration UI served by Helios at `https://localhost:47990`. It replaces 
 | Lint         | ESLint (typescript-eslint, react-hooks, eslint-plugin-boundaries), Prettier   |
 
 Versions are pinned exactly in `package.json`. TypeScript stays on 6.0 (typescript-eslint supports `<6.1`) and jsdom on
-29 (jsdom 30+ needs Node 22.22).
+29 (jsdom 30+ needs Node 22.22). Building needs Node `^20.19` or `>=22.12` (Vite 8); running Vitest and Cypress needs
+Node 22 or newer. The release workflow pins Node 22.
 
 ## Commands
 
