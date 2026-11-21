@@ -67,9 +67,10 @@ export function scaleFactorValue(value: unknown): number {
   return Number.isNaN(parsed) ? 100 : parsed;
 }
 
-/** `parseInt(value) || fallback`, as the legacy save does (so 0 and blanks also become the fallback). */
+/** `parseInt(value)`, or the fallback when it is blank or not a number (0 is kept). */
 function intOr(value: unknown, fallback: number): number {
-  return Number.parseInt(String(value), 10) || fallback;
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isNaN(parsed) ? fallback : parsed;
 }
 
 /** The name the editor saves: the trimmed name, or null when it is blank (the save button is disabled then). */

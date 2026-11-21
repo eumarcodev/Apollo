@@ -461,7 +461,7 @@
     "port": "Port",
     "port_alert_1": "Helios cannot use ports below 1024!",
     "port_alert_2": "Ports above 65535 are not available!",
-    "port_desc": "Set the family of ports used by Helios",
+    "port_desc": "Base port. The other ports used by Helios are derived from it (see the table).",
     "port_http_port_note": "Use this port to connect with Moonlight.",
     "port_note": "Note",
     "port_port": "Port",

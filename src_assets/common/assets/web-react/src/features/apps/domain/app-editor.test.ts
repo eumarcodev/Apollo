@@ -104,12 +104,21 @@ describe('save payload', () => {
     });
   });
 
-  it('falls back to 5 and 100 for blank, zero or invalid numbers (parseInt || default)', () => {
-    const payload = buildSavePayload({ uuid: 'u', name: 'A', 'exit-timeout': '', 'scale-factor': 0 });
+  it('falls back to 5 and 100 for blank or non numeric values', () => {
+    const payload = buildSavePayload({ uuid: 'u', name: 'A', 'exit-timeout': '', 'scale-factor': 'abc' });
     expect(payload?.['exit-timeout']).toBe(5);
     expect(payload?.['scale-factor']).toBe(100);
-    expect(buildSavePayload({ uuid: 'u', name: 'A', 'exit-timeout': 0 })?.['exit-timeout']).toBe(5);
+    expect(buildSavePayload({ uuid: 'u', name: 'A' })?.['exit-timeout']).toBe(5);
     expect(buildSavePayload({ uuid: 'u', name: 'A', 'exit-timeout': 7.9 })?.['exit-timeout']).toBe(7);
+  });
+
+  it('keeps an explicit 0 for exit-timeout and scale-factor', () => {
+    const payload = buildSavePayload({ uuid: 'u', name: 'A', 'exit-timeout': 0, 'scale-factor': '0' });
+    expect(payload?.['exit-timeout']).toBe(0);
+    expect(payload?.['scale-factor']).toBe(0);
+  });
+
+  it('defaults the image path to an empty string', () => {
     expect(buildSavePayload({ uuid: 'u', name: 'A' })?.['image-path']).toBe('');
   });
 
