@@ -23,11 +23,25 @@ describe('createPasswordApi', () => {
     expect(JSON.parse(init.body as string)).toEqual(FORM);
   });
 
-  it('rejects on a non-200 answer, passing the abort signal along', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ status: false, error: 'Invalid' }, 400));
+  it('returns the server validation error of a 400 answer, passing the abort signal along', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(jsonResponse({ status: false, error: 'Invalid Current Credentials' }, 400));
     const api = createPasswordApi(createHttpClient({ fetch: fetchMock }));
     const controller = new AbortController();
-    await expect(api.change(FORM, controller.signal)).rejects.toMatchObject({ kind: 'http', status: 400 });
+    await expect(api.change(FORM, controller.signal)).resolves.toEqual({
+      status: false,
+      error: 'Invalid Current Credentials',
+    });
     expect((fetchMock.mock.calls[0] as [string, RequestInit])[1].signal).toBe(controller.signal);
+  });
+
+  it.each([
+    ['400 without an error text', () => jsonResponse({ status: false }, 400)],
+    ['400 with a non-JSON body', () => new Response('bad', { status: 400 })],
+    ['500', () => jsonResponse({ status: false, error: 'boom' }, 500)],
+  ])('still rejects on %s', async (_name, make) => {
+    const api = createPasswordApi(createHttpClient({ fetch: vi.fn().mockResolvedValue(make()) }));
+    await expect(api.change(FORM)).rejects.toMatchObject({ kind: 'http' });
   });
 });

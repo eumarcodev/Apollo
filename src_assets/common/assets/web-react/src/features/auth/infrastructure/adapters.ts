@@ -48,7 +48,20 @@ export function createAuthApi(http: HttpClient = httpClient): AuthApiPort {
           },
           { redirectOnUnauthorized: false },
         );
-      } catch {
+      } catch (cause) {
+        // A 400 carries the validation error of the server (`{ status: false, error }`): show it, not a generic failure.
+        const error = AppError.from(cause);
+        const reason = error.body;
+        if (
+          error.kind === 'http' &&
+          error.status === 400 &&
+          reason &&
+          typeof reason === 'object' &&
+          'error' in reason &&
+          typeof reason.error === 'string'
+        ) {
+          return { kind: 'rejected', error: reason.error };
+        }
         return { kind: 'server-error' };
       }
       const result = interpretPasswordResponse(body);

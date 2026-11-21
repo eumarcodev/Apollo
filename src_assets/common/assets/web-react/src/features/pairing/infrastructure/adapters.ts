@@ -14,6 +14,7 @@ interface OtpDto {
   ip?: unknown;
   name?: unknown;
   message?: unknown;
+  error?: unknown;
 }
 
 /**
@@ -35,9 +36,20 @@ function text(value: unknown): string {
   return typeof value === 'string' ? value : value === undefined || value === null ? '' : String(value);
 }
 
+/** A refused request carries its reason in `error` (HTTP 400 `{ status: false, error }`); `message` is the fallback. */
+function refusalText(dto: OtpDto | undefined): string | undefined {
+  for (const candidate of [dto?.error, dto?.message]) {
+    if (typeof candidate === 'string' && candidate) {
+      return candidate;
+    }
+  }
+  return undefined;
+}
+
 export function toOtpAnswer(dto: OtpDto | undefined): OtpAnswer {
   if (!dto?.status) {
-    return typeof dto?.message === 'string' && dto.message ? { ok: false, message: dto.message } : { ok: false };
+    const message = refusalText(dto);
+    return message ? { ok: false, message } : { ok: false };
   }
   return { ok: true, otp: text(dto.otp), ip: text(dto.ip), hostName: text(dto.name) };
 }

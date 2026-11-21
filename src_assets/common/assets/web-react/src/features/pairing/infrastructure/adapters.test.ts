@@ -70,7 +70,7 @@ describe('pairing API', () => {
     expect(JSON.parse(init?.body as string)).toEqual({ passphrase: 'abcd', deviceName: 'Tablet' });
   });
 
-  it('keeps the message of a refused OTP and drops the error text of a 400 (legacy reads `message` only)', async () => {
+  it('reads the refusal from `error` of a 400, falling back to `message`', async () => {
     expect(
       await apiWith(jsonResponse({ status: false, message: 'Too many' })).api.requestOtp({
         passphrase: 'abcd',
@@ -81,7 +81,7 @@ describe('pairing API', () => {
       await apiWith(
         jsonResponse({ status_code: 400, status: false, error: 'Passphrase too short!' }, 400),
       ).api.requestOtp({ passphrase: 'ab', deviceName: '' }),
-    ).toEqual({ ok: false });
+    ).toEqual({ ok: false, message: 'Passphrase too short!' });
   });
 
   it('maps missing or odd OTP fields to text', () => {

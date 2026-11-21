@@ -158,7 +158,7 @@ describe('pairing: OTP', () => {
     cy.get('@otp.all').should('have.length', 0);
   });
 
-  it('shows the message of a refused OTP and no alert for a 400 without one', () => {
+  it('shows the message of a refused OTP and the `error` of a 400', () => {
     visitPin({ otp: { statusCode: 200, body: { status: false, message: 'OTP already pending' } } });
     cy.get('[data-testid="otp-passphrase"]').type('abcd');
     cy.get('[data-testid="otp-submit"]').click();
@@ -171,7 +171,9 @@ describe('pairing: OTP', () => {
     ).as('otp400');
     cy.get('[data-testid="otp-submit"]').click();
     cy.wait('@otp400');
-    cy.get('[data-testid="otp-message"]').should('not.exist');
+    cy.get('[data-testid="otp-message"]')
+      .should('have.attr', 'data-status', 'danger')
+      .and('have.text', 'Passphrase too short!');
     cy.get('[data-testid="otp-code"]').should('have.text', '????');
   });
 
@@ -218,6 +220,32 @@ describe('pairing: host of the deep link', () => {
     cy.get('[data-testid="otp-passphrase"]').type('wxyz');
     cy.get('[data-testid="otp-submit"]').click();
     cy.get('[data-testid="otp-link"]').should('have.text', 'art://gaming-pc.lan:50000');
+  });
+
+  it('uses the manual host again after switching tabs (#184)', () => {
+    visitPin();
+    cy.get('[data-testid="otp-passphrase"]').type('abcd');
+    cy.get('[data-testid="otp-submit"]').click();
+    cy.get('[data-testid="host-edit"]').click();
+    cy.get('[data-testid="host-addr"]').clear().type('gaming-pc.lan');
+    cy.get('[data-testid="host-port"]').clear().type('50000');
+    cy.get('[data-testid="host-save"]').click();
+    cy.get('[data-testid="tab-pin"]').click();
+    cy.get('[data-testid="tab-otp"]').click();
+    cy.get('[data-testid="otp-passphrase"]').type('wxyz');
+    cy.get('[data-testid="otp-submit"]').click();
+    const link = 'art://gaming-pc.lan:50000?pin=4321&passphrase=wxyz&name=Helios%20PC';
+    cy.get('[data-testid="otp-qr"]').should('have.attr', 'data-value', link);
+    cy.get('[data-testid="otp-link"]').should('have.attr', 'href', link);
+  });
+
+  it('uses the automatic host after a tab switch when none was typed', () => {
+    visitPin();
+    cy.get('[data-testid="tab-pin"]').click();
+    cy.get('[data-testid="tab-otp"]').click();
+    cy.get('[data-testid="otp-passphrase"]').type('abcd');
+    cy.get('[data-testid="otp-submit"]').click();
+    cy.get('[data-testid="otp-qr"]').should('exist');
   });
 });
 
