@@ -12,7 +12,7 @@ function configWith(platform: StubPlatform, extra: Record<string, unknown>) {
       version: '1.0.0-e2e',
       update_repo: 'eumarcodev/Helios-Server',
       locale: 'en',
-      sunshine_name: 'E2E Host',
+      helios_name: 'E2E Host',
       ...extra,
     },
   };
@@ -69,7 +69,7 @@ describe('config: Audio/Video tab (Windows)', () => {
     cy.get('[data-testid="config-save"]').click();
     cy.wait('@save').its('request.body').should('deep.equal', {
       update_repo: 'eumarcodev/Helios-Server',
-      sunshine_name: 'E2E Host',
+      helios_name: 'E2E Host',
       audio_sink: 'Speakers',
       max_bitrate: 5000,
       minimum_fps_target: 60,

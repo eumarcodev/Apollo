@@ -45,9 +45,9 @@
 #include <linux/rtnetlink.h>
 
 #ifdef __GNUC__
-  #define SUNSHINE_GNUC_EXTENSION __extension__
+  #define HELIOS_GNUC_EXTENSION __extension__
 #else
-  #define SUNSHINE_GNUC_EXTENSION
+  #define HELIOS_GNUC_EXTENSION
 #endif
 
 using namespace std::literals;
@@ -85,7 +85,7 @@ namespace dyn {
     for (auto &func : funcs) {
       TUPLE_2D_REF(fn, name, func);
 
-      *fn = SUNSHINE_GNUC_EXTENSION(apiproc) dlsym(handle, name);
+      *fn = HELIOS_GNUC_EXTENSION(apiproc) dlsym(handle, name);
 
       if (!*fn && strict) {
         BOOST_LOG(error) << "Couldn't find function: "sv << name;
@@ -135,25 +135,39 @@ namespace platf {
       // May be set if running under a systemd service with the ConfigurationDirectory= option set.
       if ((dir = getenv("CONFIGURATION_DIRECTORY")) != nullptr && strlen(dir) > 0) {
         found = true;
-        config_path = fs::path(dir) / "sunshine"sv;
+        config_path = fs::path(dir) / "helios"sv;
       }
       // Otherwise, follow the XDG base directory specification:
       // https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
       if (!found && (dir = getenv("XDG_CONFIG_HOME")) != nullptr && strlen(dir) > 0) {
         found = true;
-        config_path = fs::path(dir) / "sunshine"sv;
+        config_path = fs::path(dir) / "helios"sv;
       }
       // As a last resort, use the home directory
       if (!found) {
         migrate_config = false;
-        config_path = fs::path(homedir) / ".config/sunshine"sv;
+        config_path = fs::path(homedir) / ".config/helios"sv;
+      }
+
+      // Older Helios versions used a directory named after the upstream project: rename it once
+      {
+        std::error_code ec;
+        const fs::path legacy_config_path = config_path.parent_path() / "sunshine"sv;
+        if (!fs::exists(config_path, ec) && fs::exists(legacy_config_path, ec)) {
+          fs::rename(legacy_config_path, config_path, ec);
+          if (ec) {
+            std::cerr << "Failed to rename "sv << legacy_config_path << " to "sv << config_path << ": "sv << ec.message() << std::endl;
+          } else {
+            std::cout << "Renamed "sv << legacy_config_path << " to "sv << config_path << std::endl;
+          }
+        }
       }
 
       // migrate from the old config location if necessary
-      migrate_envvar = getenv("SUNSHINE_MIGRATE_CONFIG");
+      migrate_envvar = getenv("HELIOS_MIGRATE_CONFIG");
       if (migrate_config && found && migrate_envvar && strcmp(migrate_envvar, "1") == 0) {
         std::error_code ec;
-        fs::path old_config_path = fs::path(homedir) / ".config/sunshine"sv;
+        fs::path old_config_path = fs::path(homedir) / ".config/helios"sv;
         if (old_config_path != config_path && fs::exists(old_config_path, ec)) {
           if (!fs::exists(config_path, ec)) {
             std::cout << "Migrating config from "sv << old_config_path << " to "sv << config_path << std::endl;
@@ -396,7 +410,7 @@ std::string get_local_ip_for_gateway() {
   void restart() {
     // Gracefully clean up and restart ourselves instead of exiting
     atexit(restart_on_exit);
-    lifetime::exit_sunshine(0, true);
+    lifetime::exit_helios(0, true);
   }
 
   int set_env(const std::string &name, const std::string &value) {
@@ -858,22 +872,22 @@ std::string get_local_ip_for_gateway() {
       return boost::asio::ip::host_name();
     } catch (boost::system::system_error &err) {
       BOOST_LOG(error) << "Failed to get hostname: "sv << err.what();
-      return "Sunshine"s;
+      return "Helios"s;
     }
   }
 
   namespace source {
     enum source_e : std::size_t {
-#ifdef SUNSHINE_BUILD_CUDA
+#ifdef HELIOS_BUILD_CUDA
       NVFBC,  ///< NvFBC
 #endif
-#ifdef SUNSHINE_BUILD_WAYLAND
+#ifdef HELIOS_BUILD_WAYLAND
       WAYLAND,  ///< Wayland
 #endif
-#ifdef SUNSHINE_BUILD_DRM
+#ifdef HELIOS_BUILD_DRM
       KMS,  ///< KMS
 #endif
-#ifdef SUNSHINE_BUILD_X11
+#ifdef HELIOS_BUILD_X11
       X11,  ///< X11
 #endif
       MAX_FLAGS  ///< The maximum number of flags
@@ -882,7 +896,7 @@ std::string get_local_ip_for_gateway() {
 
   static std::bitset<source::MAX_FLAGS> sources;
 
-#ifdef SUNSHINE_BUILD_CUDA
+#ifdef HELIOS_BUILD_CUDA
   std::vector<std::string> nvfbc_display_names();
   std::shared_ptr<display_t> nvfbc_display(mem_type_e hwdevice_type, const std::string &display_name, const video::config_t &config);
 
@@ -891,7 +905,7 @@ std::string get_local_ip_for_gateway() {
   }
 #endif
 
-#ifdef SUNSHINE_BUILD_WAYLAND
+#ifdef HELIOS_BUILD_WAYLAND
   std::vector<std::string> wl_display_names();
   std::shared_ptr<display_t> wl_display(mem_type_e hwdevice_type, const std::string &display_name, const video::config_t &config);
 
@@ -900,7 +914,7 @@ std::string get_local_ip_for_gateway() {
   }
 #endif
 
-#ifdef SUNSHINE_BUILD_DRM
+#ifdef HELIOS_BUILD_DRM
   std::vector<std::string> kms_display_names(mem_type_e hwdevice_type);
   std::shared_ptr<display_t> kms_display(mem_type_e hwdevice_type, const std::string &display_name, const video::config_t &config);
 
@@ -909,7 +923,7 @@ std::string get_local_ip_for_gateway() {
   }
 #endif
 
-#ifdef SUNSHINE_BUILD_X11
+#ifdef HELIOS_BUILD_X11
   std::vector<std::string> x11_display_names();
   std::shared_ptr<display_t> x11_display(mem_type_e hwdevice_type, const std::string &display_name, const video::config_t &config);
 
@@ -919,23 +933,23 @@ std::string get_local_ip_for_gateway() {
 #endif
 
   std::vector<std::string> display_names(mem_type_e hwdevice_type) {
-#ifdef SUNSHINE_BUILD_CUDA
+#ifdef HELIOS_BUILD_CUDA
     // display using NvFBC only supports mem_type_e::cuda
     if (sources[source::NVFBC] && hwdevice_type == mem_type_e::cuda) {
       return nvfbc_display_names();
     }
 #endif
-#ifdef SUNSHINE_BUILD_WAYLAND
+#ifdef HELIOS_BUILD_WAYLAND
     if (sources[source::WAYLAND]) {
       return wl_display_names();
     }
 #endif
-#ifdef SUNSHINE_BUILD_DRM
+#ifdef HELIOS_BUILD_DRM
     if (sources[source::KMS]) {
       return kms_display_names(hwdevice_type);
     }
 #endif
-#ifdef SUNSHINE_BUILD_X11
+#ifdef HELIOS_BUILD_X11
     if (sources[source::X11]) {
       return x11_display_names();
     }
@@ -953,25 +967,25 @@ std::string get_local_ip_for_gateway() {
   }
 
   std::shared_ptr<display_t> display(mem_type_e hwdevice_type, const std::string &display_name, const video::config_t &config) {
-#ifdef SUNSHINE_BUILD_CUDA
+#ifdef HELIOS_BUILD_CUDA
     if (sources[source::NVFBC] && hwdevice_type == mem_type_e::cuda) {
       BOOST_LOG(info) << "Screencasting with NvFBC"sv;
       return nvfbc_display(hwdevice_type, display_name, config);
     }
 #endif
-#ifdef SUNSHINE_BUILD_WAYLAND
+#ifdef HELIOS_BUILD_WAYLAND
     if (sources[source::WAYLAND]) {
       BOOST_LOG(info) << "Screencasting with Wayland's protocol"sv;
       return wl_display(hwdevice_type, display_name, config);
     }
 #endif
-#ifdef SUNSHINE_BUILD_DRM
+#ifdef HELIOS_BUILD_DRM
     if (sources[source::KMS]) {
       BOOST_LOG(info) << "Screencasting with KMS"sv;
       return kms_display(hwdevice_type, display_name, config);
     }
 #endif
-#ifdef SUNSHINE_BUILD_X11
+#ifdef HELIOS_BUILD_X11
     if (sources[source::X11]) {
       BOOST_LOG(info) << "Screencasting with X11"sv;
       return x11_display(hwdevice_type, display_name, config);
@@ -990,43 +1004,43 @@ std::string get_local_ip_for_gateway() {
     gbm::init();
 
     window_system = window_system_e::NONE;
-#ifdef SUNSHINE_BUILD_WAYLAND
+#ifdef HELIOS_BUILD_WAYLAND
     if (std::getenv("WAYLAND_DISPLAY")) {
       window_system = window_system_e::WAYLAND;
     }
 #endif
-#if defined(SUNSHINE_BUILD_X11) || defined(SUNSHINE_BUILD_CUDA)
+#if defined(HELIOS_BUILD_X11) || defined(HELIOS_BUILD_CUDA)
     if (std::getenv("DISPLAY") && window_system != window_system_e::WAYLAND) {
       if (std::getenv("WAYLAND_DISPLAY")) {
-        BOOST_LOG(warning) << "Wayland detected, yet sunshine will use X11 for screencasting, screencasting will only work on XWayland applications"sv;
+        BOOST_LOG(warning) << "Wayland detected, yet helios will use X11 for screencasting, screencasting will only work on XWayland applications"sv;
       }
 
       window_system = window_system_e::X11;
     }
 #endif
 
-#ifdef SUNSHINE_BUILD_CUDA
+#ifdef HELIOS_BUILD_CUDA
     if ((config::video.capture.empty() && sources.none()) || config::video.capture == "nvfbc") {
       if (verify_nvfbc()) {
         sources[source::NVFBC] = true;
       }
     }
 #endif
-#ifdef SUNSHINE_BUILD_WAYLAND
+#ifdef HELIOS_BUILD_WAYLAND
     if ((config::video.capture.empty() && sources.none()) || config::video.capture == "wlr") {
       if (verify_wl()) {
         sources[source::WAYLAND] = true;
       }
     }
 #endif
-#ifdef SUNSHINE_BUILD_DRM
+#ifdef HELIOS_BUILD_DRM
     if ((config::video.capture.empty() && sources.none()) || config::video.capture == "kms") {
       if (verify_kms()) {
         sources[source::KMS] = true;
       }
     }
 #endif
-#ifdef SUNSHINE_BUILD_X11
+#ifdef HELIOS_BUILD_X11
     // We enumerate this capture backend regardless of other suitable sources,
     // since it may be needed as a NvFBC fallback for software encoding on X11.
     if (config::video.capture.empty() || config::video.capture == "x11") {

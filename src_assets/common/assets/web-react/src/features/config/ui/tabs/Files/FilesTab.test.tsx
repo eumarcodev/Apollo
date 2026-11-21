@@ -41,11 +41,11 @@ async function renderTab(dto: Record<string, unknown> = {}, locale: 'en' | 'pt_B
 
 const FIELDS: ReadonlyArray<[id: string, placeholder: string]> = [
   ['file_apps', 'apps.json'],
-  ['credentials_file', 'sunshine_state.json'],
-  ['log_path', 'sunshine.log'],
+  ['credentials_file', 'helios_state.json'],
+  ['log_path', 'helios.log'],
   ['pkey', '/dir/pkey.pem'],
   ['cert', '/dir/cert.pem'],
-  ['file_state', 'sunshine_state.json'],
+  ['file_state', 'helios_state.json'],
 ];
 
 describe('FilesTab', () => {

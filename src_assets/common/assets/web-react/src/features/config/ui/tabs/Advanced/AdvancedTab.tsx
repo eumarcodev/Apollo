@@ -49,13 +49,6 @@ export function AdvancedTab({ config, platform, update }: ConfigTabProps) {
         default="true"
       />
       <BooleanField
-        id="envvar_compatibility_mode"
-        localePrefix="config"
-        value={config['envvar_compatibility_mode']}
-        onChange={(value) => update('envvar_compatibility_mode', value)}
-        default="false"
-      />
-      <BooleanField
         id="legacy_ordering"
         localePrefix="config"
         value={config['legacy_ordering']}

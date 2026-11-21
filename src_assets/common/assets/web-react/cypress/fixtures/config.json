@@ -5,6 +5,6 @@
   "update_repo": "eumarcodev/Helios-Server",
   "vdisplayStatus": 0,
   "locale": "en",
-  "sunshine_name": "E2E Host",
+  "helios_name": "E2E Host",
   "min_log_level": "2"
 }

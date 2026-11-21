@@ -14,7 +14,7 @@ function dto(overrides: Record<string, unknown> = {}): Record<string, unknown> {
     update_repo: 'eumarcodev/Helios-Server',
     vdisplayStatus: 0,
     locale: 'en',
-    sunshine_name: 'Host',
+    helios_name: 'Host',
     min_log_level: '2',
     ...overrides,
   };
@@ -29,7 +29,7 @@ describe('parseLoadedConfig', () => {
     }
     // Not removed by the legacy page either: it goes back to the server on save.
     expect(config['update_repo']).toBe('eumarcodev/Helios-Server');
-    expect(config['sunshine_name']).toBe('Host');
+    expect(config['helios_name']).toBe('Host');
     expect(config['min_log_level']).toBe('2');
   });
 
@@ -109,7 +109,7 @@ describe('serializeConfig', () => {
     const { payload } = serializeConfig(config, fallbackModeCache, windowsTabs);
     expect(payload).toEqual({
       update_repo: 'eumarcodev/Helios-Server',
-      sunshine_name: 'Host',
+      helios_name: 'Host',
     });
   });
 

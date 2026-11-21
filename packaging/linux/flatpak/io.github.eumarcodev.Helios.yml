@@ -5,12 +5,12 @@ runtime-version: "23.08"  # requires CUDA >= 12.2
 sdk: org.freedesktop.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.node20
-command: sunshine
+command: helios
 separate-locales: false
 finish-args:
   - --device=all  # access all devices
-  - --env=PULSE_PROP_media.category=Manager  # allow sunshine to manage audio sinks
-  - --env=SUNSHINE_MIGRATE_CONFIG=1  # migrate config files to the new location
+  - --env=PULSE_PROP_media.category=Manager  # allow helios to manage audio sinks
+  - --env=HELIOS_MIGRATE_CONFIG=1  # migrate config files to the new location
   - --filesystem=home  # need to save files in user's home directory
   - --share=ipc  # required for X11 shared memory extension
   - --share=network  # access network
@@ -47,7 +47,7 @@ modules:
   # Caching is configured until here, not including CUDA, since it is too large for GitHub cache
   - "modules/cuda.json"
 
-  - name: sunshine
+  - name: helios
     builddir: true
     build-options:
       append-path: /usr/lib/sdk/node20/bin
@@ -55,8 +55,8 @@ modules:
         BUILD_VERSION: "@BUILD_VERSION@"
         BRANCH: "@GITHUB_BRANCH@"
         COMMIT: "@GITHUB_COMMIT@"
-        XDG_CACHE_HOME: /run/build/sunshine/flatpak-node/cache
-        npm_config_cache: /run/build/sunshine/flatpak-node/npm-cache
+        XDG_CACHE_HOME: /run/build/helios/flatpak-node/cache
+        npm_config_cache: /run/build/helios/flatpak-node/npm-cache
         npm_config_nodedir: /usr/lib/sdk/node20
         npm_config_offline: 'true'
         NPM_CONFIG_LOGLEVEL: info
@@ -67,24 +67,24 @@ modules:
       - -DBUILD_WERROR=ON
       - -DCMAKE_BUILD_TYPE=Release
       - -DCMAKE_CUDA_COMPILER=/app/cuda/bin/nvcc
-      - -DSUNSHINE_ASSETS_DIR=share/sunshine
-      - -DSUNSHINE_BUILD_FLATPAK=ON
-      - -DSUNSHINE_EXECUTABLE_PATH=/app/bin/sunshine
-      - -DSUNSHINE_ENABLE_WAYLAND=ON
-      - -DSUNSHINE_ENABLE_X11=ON
-      - -DSUNSHINE_ENABLE_DRM=ON
-      - -DSUNSHINE_ENABLE_CUDA=ON
-      - -DSUNSHINE_PUBLISHER_NAME='LizardByte'
-      - -DSUNSHINE_PUBLISHER_WEBSITE='https://app.lizardbyte.dev'
-      - -DSUNSHINE_PUBLISHER_ISSUE_URL='https://app.lizardbyte.dev/support'
+      - -DHELIOS_ASSETS_DIR=share/helios
+      - -DHELIOS_BUILD_FLATPAK=ON
+      - -DHELIOS_EXECUTABLE_PATH=/app/bin/helios
+      - -DHELIOS_ENABLE_WAYLAND=ON
+      - -DHELIOS_ENABLE_X11=ON
+      - -DHELIOS_ENABLE_DRM=ON
+      - -DHELIOS_ENABLE_CUDA=ON
+      - -DHELIOS_PUBLISHER_NAME='LizardByte'
+      - -DHELIOS_PUBLISHER_WEBSITE='https://app.lizardbyte.dev'
+      - -DHELIOS_PUBLISHER_ISSUE_URL='https://app.lizardbyte.dev/support'
     no-make-install: false
     post-install:
       - install -D $FLATPAK_BUILDER_BUILDDIR/packaging/linux/flatpak/scripts/* /app/bin
-      - install -D $FLATPAK_BUILDER_BUILDDIR/packaging/linux/flatpak/apps.json /app/share/sunshine/apps.json
+      - install -D $FLATPAK_BUILDER_BUILDDIR/packaging/linux/flatpak/apps.json /app/share/helios/apps.json
     run-tests: true
     test-rule: ""  # empty to disable
     test-commands:
-      - npm run serve & xvfb-run tests/test_sunshine --gtest_color=yes
+      - npm run serve & xvfb-run tests/test_helios --gtest_color=yes
     sources:
       - generated-sources.json
       - type: git

@@ -13,11 +13,11 @@ describe('config: Config Files tab', () => {
   it('shows the six path fields with their placeholders and empty values', () => {
     visitFiles();
     cy.get('#file_apps').should('have.attr', 'placeholder', 'apps.json').and('have.value', '');
-    cy.get('#credentials_file').should('have.attr', 'placeholder', 'sunshine_state.json');
-    cy.get('#log_path').should('have.attr', 'placeholder', 'sunshine.log');
+    cy.get('#credentials_file').should('have.attr', 'placeholder', 'helios_state.json');
+    cy.get('#log_path').should('have.attr', 'placeholder', 'helios.log');
     cy.get('#pkey').should('have.attr', 'placeholder', '/dir/pkey.pem');
     cy.get('#cert').should('have.attr', 'placeholder', '/dir/cert.pem');
-    cy.get('#file_state').should('have.attr', 'placeholder', 'sunshine_state.json');
+    cy.get('#file_state').should('have.attr', 'placeholder', 'helios_state.json');
   });
 
   it('saves only the paths that were typed', () => {

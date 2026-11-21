@@ -9,7 +9,7 @@ function openTab(hash: string, tab: string, platform?: StubPlatform, locale?: St
   cy.get(`[data-testid="config-tab-${tab}"]`).should('have.attr', 'aria-selected', 'true');
 }
 
-const BASE_BODY = { update_repo: 'eumarcodev/Helios-Server', sunshine_name: 'E2E Host' };
+const BASE_BODY = { update_repo: 'eumarcodev/Helios-Server', helios_name: 'E2E Host' };
 
 describe('config: NVENC tab', () => {
   it('opens from the hash of an option and shows every Windows field with distinct ids', () => {

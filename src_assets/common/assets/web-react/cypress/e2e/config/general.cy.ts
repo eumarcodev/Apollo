@@ -17,7 +17,7 @@ function visitGeneral(platform: StubPlatform = 'windows', overrides = SAVED) {
 describe('config: General tab', () => {
   it('shows the loaded values and the defaults', () => {
     visitGeneral();
-    cy.get('#sunshine_name').should('have.value', 'E2E Host').and('have.attr', 'placeholder', 'Helios');
+    cy.get('#helios_name').should('have.value', 'E2E Host').and('have.attr', 'placeholder', 'Helios');
     cy.get('#locale').should('contain.text', 'English');
     cy.get('#min_log_level').should('contain.text', 'Info');
     cy.get('#update_channel').should('contain.text', 'Automatic');
@@ -49,8 +49,8 @@ describe('config: General tab', () => {
 
   it('saves the edited options with the legacy value spelling', () => {
     visitGeneral();
-    cy.get('#sunshine_name').clear();
-    cy.get('#sunshine_name').type('My PC');
+    cy.get('#helios_name').clear();
+    cy.get('#helios_name').type('My PC');
     choose('min_log_level', 'Warning');
     choose('update_channel', /^Stable only/);
     choose('locale', 'Português (Brasil)');
@@ -59,7 +59,7 @@ describe('config: General tab', () => {
     cy.get('[data-testid="config-save"]').click();
     cy.wait('@save').its('request.body').should('deep.equal', {
       update_repo: 'eumarcodev/Helios-Server',
-      sunshine_name: 'My PC',
+      helios_name: 'My PC',
       min_log_level: '3',
       update_channel: 'stable',
       locale: 'pt_BR',

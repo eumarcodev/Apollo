@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 # https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md#foundational-c-support
 
-project(test_sunshine)
+project(test_helios)
 
 include_directories("${CMAKE_SOURCE_DIR}")
 
@@ -25,20 +25,20 @@ if (WIN32)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)  # cmake-lint: disable=C0103
 endif ()
 
-# modify SUNSHINE_DEFINITIONS
+# modify HELIOS_DEFINITIONS
 if (WIN32)
     list(APPEND
-            SUNSHINE_DEFINITIONS SUNSHINE_SHADERS_DIR="${CMAKE_SOURCE_DIR}/src_assets/windows/assets/shaders/directx")
+            HELIOS_DEFINITIONS HELIOS_SHADERS_DIR="${CMAKE_SOURCE_DIR}/src_assets/windows/assets/shaders/directx")
 elseif (NOT APPLE)
-    list(APPEND SUNSHINE_DEFINITIONS SUNSHINE_SHADERS_DIR="${CMAKE_SOURCE_DIR}/src_assets/linux/assets/shaders/opengl")
+    list(APPEND HELIOS_DEFINITIONS HELIOS_SHADERS_DIR="${CMAKE_SOURCE_DIR}/src_assets/linux/assets/shaders/opengl")
 endif ()
 
 set(TEST_DEFINITIONS)  # list will be appended as needed
 
-# this indicates we're building tests in case sunshine needs to adjust some code or add private tests
-list(APPEND TEST_DEFINITIONS SUNSHINE_TESTS)
-list(APPEND TEST_DEFINITIONS SUNSHINE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-list(APPEND TEST_DEFINITIONS SUNSHINE_TEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}")
+# this indicates we're building tests in case helios needs to adjust some code or add private tests
+list(APPEND TEST_DEFINITIONS HELIOS_TESTS)
+list(APPEND TEST_DEFINITIONS HELIOS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+list(APPEND TEST_DEFINITIONS HELIOS_TEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}")
 
 if(NOT WIN32)
     find_package(Udev 255)  # we need 255+ for udevadm verify
@@ -52,26 +52,27 @@ file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS
         ${CMAKE_SOURCE_DIR}/tests/*.h
         ${CMAKE_SOURCE_DIR}/tests/*.cpp)
 
-set(SUNSHINE_SOURCES
-        ${SUNSHINE_TARGET_FILES})
+set(HELIOS_SOURCES
+        ${HELIOS_TARGET_FILES})
 
 # remove main.cpp from the list of sources
-list(REMOVE_ITEM SUNSHINE_SOURCES ${CMAKE_SOURCE_DIR}/src/main.cpp)
+list(REMOVE_ITEM HELIOS_SOURCES ${CMAKE_SOURCE_DIR}/src/main.cpp)
 
 add_executable(${PROJECT_NAME}
         ${TEST_SOURCES}
-        ${SUNSHINE_SOURCES})
+        ${HELIOS_SOURCES})
 
 # Copy files needed for config consistency tests to build directory
 # This ensures both CLI and CLion can access the same files relative to the test executable
 # Using configure_file ensures files are copied when they change between builds
 set(INTEGRATION_TEST_FILES
     "src/config.cpp"
-    "src_assets/common/assets/web/config.html"
+    "src_assets/common/assets/web-react/src/features/config/domain/config-tabs.ts"
     "docs/configuration.md"
+    "src_assets/common/assets/web-react/public/assets/locale/en.json"
     "src_assets/common/assets/web/public/assets/locale/en.json"
     "src_assets/common/assets/web/configs/tabs/General.vue"
-    "src_assets/linux/misc/60-sunshine.rules"
+    "src_assets/linux/misc/60-helios.rules"
 )
 
 foreach(file ${INTEGRATION_TEST_FILES})
@@ -94,8 +95,8 @@ add_custom_target(sync_locale_files ALL
     VERBATIM
 )
 
-foreach(dep ${SUNSHINE_TARGET_DEPENDENCIES})
-    add_dependencies(${PROJECT_NAME} ${dep})  # compile these before sunshine
+foreach(dep ${HELIOS_TARGET_DEPENDENCIES})
+    add_dependencies(${PROJECT_NAME} ${dep})  # compile these before helios
 endforeach()
 
 # Ensure locale files are synchronized before building the test executable
@@ -103,11 +104,11 @@ add_dependencies(${PROJECT_NAME} sync_locale_files)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 23)
 target_link_libraries(${PROJECT_NAME}
-        ${SUNSHINE_EXTERNAL_LIBRARIES}
+        ${HELIOS_EXTERNAL_LIBRARIES}
         gtest
         ${PLATFORM_LIBRARIES})
-target_compile_definitions(${PROJECT_NAME} PUBLIC ${SUNSHINE_DEFINITIONS} ${TEST_DEFINITIONS})
-target_compile_options(${PROJECT_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${SUNSHINE_COMPILE_OPTIONS}>;$<$<COMPILE_LANGUAGE:CUDA>:${SUNSHINE_COMPILE_OPTIONS_CUDA};-std=c++17>)  # cmake-lint: disable=C0301
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${HELIOS_DEFINITIONS} ${TEST_DEFINITIONS})
+target_compile_options(${PROJECT_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${HELIOS_COMPILE_OPTIONS}>;$<$<COMPILE_LANGUAGE:CUDA>:${HELIOS_COMPILE_OPTIONS_CUDA};-std=c++17>)  # cmake-lint: disable=C0301
 target_link_options(${PROJECT_NAME} PRIVATE)
 
 if (HELIOS_ENABLE_PYROWAVE)

@@ -81,7 +81,7 @@ describe('resolveBuildPaths', () => {
 
   it('uses the CMake asset directories', () => {
     const paths = resolveBuildPaths(
-      { SUNSHINE_SOURCE_ASSETS_DIR: '/repo/src_assets', SUNSHINE_ASSETS_DIR: '/repo/build' },
+      { HELIOS_SOURCE_ASSETS_DIR: '/repo/src_assets', HELIOS_ASSETS_DIR: '/repo/build' },
       appDir,
       realpath,
     );
@@ -91,7 +91,7 @@ describe('resolveBuildPaths', () => {
 
   it('ignores the directories for Homebrew builds', () => {
     const paths = resolveBuildPaths(
-      { SUNSHINE_BUILD_HOMEBREW: 'true', SUNSHINE_ASSETS_DIR: '/repo/build' },
+      { HELIOS_BUILD_HOMEBREW: 'true', HELIOS_ASSETS_DIR: '/repo/build' },
       appDir,
       realpath,
     );

@@ -94,9 +94,9 @@ jobs:
             mingw-w64-ucrt-x86_64-opus
             mingw-w64-ucrt-x86_64-toolchain
 
-      # APOLLO_UPDATE_REPO makes the web UI check this repository's releases for new versions
+      # HELIOS_UPDATE_REPO makes the web UI check this repository's releases for new versions
       - name: Configure
-        run: cmake -B build -G Ninja -S . -DAPOLLO_UPDATE_REPO=${{ github.repository }} -DHELIOS_ENABLE_PYROWAVE=ON
+        run: cmake -B build -G Ninja -S . -DHELIOS_UPDATE_REPO=${{ github.repository }} -DHELIOS_ENABLE_PYROWAVE=ON
 
       - name: Build
         run: ninja -C build

@@ -7,7 +7,7 @@ const TABS: Record<StubPlatform, string[]> = {
 };
 
 /** What the page posts for the fixture: the defaults are stripped, the non-tab keys and strings stay. */
-const UNCHANGED_PAYLOAD = { update_repo: 'eumarcodev/Helios-Server', sunshine_name: 'E2E Host' };
+const UNCHANGED_PAYLOAD = { update_repo: 'eumarcodev/Helios-Server', helios_name: 'E2E Host' };
 
 function tabIds() {
   return cy

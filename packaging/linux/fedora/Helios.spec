@@ -7,12 +7,12 @@
 
 %undefine _hardened_build
 
-Name: Sunshine
+Name: Helios
 Version: %{build_version}
 Release: 1%{?dist}
 Summary: Self-hosted game stream host for Moonlight.
 License: GPLv3-only
-URL: https://github.com/LizardByte/Sunshine
+URL: https://github.com/eumarcodev/Helios-Server
 Source0: tarball.tar.gz
 
 BuildRequires: appstream
@@ -92,11 +92,11 @@ Self-hosted game stream host for Moonlight.
 
 %prep
 # extract tarball to current directory
-mkdir -p %{_builddir}/Sunshine
-tar -xzf %{SOURCE0} -C %{_builddir}/Sunshine
+mkdir -p %{_builddir}/Helios
+tar -xzf %{SOURCE0} -C %{_builddir}/Helios
 
 # list directory
-ls -a %{_builddir}/Sunshine
+ls -a %{_builddir}/Helios
 
 %build
 # exit on error
@@ -109,21 +109,21 @@ cuda_supported_architectures=("x86_64" "aarch64")
 
 # prepare CMAKE args
 cmake_args=(
-  "-B=%{_builddir}/Sunshine/build"
+  "-B=%{_builddir}/Helios/build"
   "-G=Unix Makefiles"
   "-S=."
   "-DBUILD_DOCS=OFF"
   "-DBUILD_WERROR=ON"
   "-DCMAKE_BUILD_TYPE=Release"
   "-DCMAKE_INSTALL_PREFIX=%{_prefix}"
-  "-DSUNSHINE_ASSETS_DIR=%{_datadir}/sunshine"
-  "-DSUNSHINE_EXECUTABLE_PATH=%{_bindir}/sunshine"
-  "-DSUNSHINE_ENABLE_WAYLAND=ON"
-  "-DSUNSHINE_ENABLE_X11=ON"
-  "-DSUNSHINE_ENABLE_DRM=ON"
-  "-DSUNSHINE_PUBLISHER_NAME=LizardByte"
-  "-DSUNSHINE_PUBLISHER_WEBSITE=https://app.lizardbyte.dev"
-  "-DSUNSHINE_PUBLISHER_ISSUE_URL=https://app.lizardbyte.dev/support"
+  "-DHELIOS_ASSETS_DIR=%{_datadir}/helios"
+  "-DHELIOS_EXECUTABLE_PATH=%{_bindir}/helios"
+  "-DHELIOS_ENABLE_WAYLAND=ON"
+  "-DHELIOS_ENABLE_X11=ON"
+  "-DHELIOS_ENABLE_DRM=ON"
+  "-DHELIOS_PUBLISHER_NAME=LizardByte"
+  "-DHELIOS_PUBLISHER_WEBSITE=https://app.lizardbyte.dev"
+  "-DHELIOS_PUBLISHER_ISSUE_URL=https://app.lizardbyte.dev/support"
 )
 
 export CC=gcc-%{gcc_version}
@@ -172,17 +172,17 @@ function install_cuda() {
       --backup \
       --directory="%{cuda_dir}" \
       --verbose \
-      < "%{_builddir}/Sunshine/packaging/linux/patches/${architecture}/01-math_functions.patch"
+      < "%{_builddir}/Helios/packaging/linux/patches/${architecture}/01-math_functions.patch"
   fi
 }
 
 if [ -n "%{cuda_version}" ] && [[ " ${cuda_supported_architectures[@]} " =~ " ${architecture} " ]]; then
   install_cuda
-  cmake_args+=("-DSUNSHINE_ENABLE_CUDA=ON")
+  cmake_args+=("-DHELIOS_ENABLE_CUDA=ON")
   cmake_args+=("-DCMAKE_CUDA_COMPILER:PATH=%{cuda_dir}/bin/nvcc")
   cmake_args+=("-DCMAKE_CUDA_HOST_COMPILER=gcc-%{gcc_version}")
 else
-  cmake_args+=("-DSUNSHINE_ENABLE_CUDA=OFF")
+  cmake_args+=("-DHELIOS_ENABLE_CUDA=OFF")
 fi
 
 # setup the version
@@ -191,11 +191,11 @@ export BUILD_VERSION=v%{build_version}
 export COMMIT=%{commit}
 
 # cmake
-cd %{_builddir}/Sunshine
+cd %{_builddir}/Helios
 echo "cmake args:"
 echo "${cmake_args[@]}"
 cmake "${cmake_args[@]}"
-make -j$(nproc) -C "%{_builddir}/Sunshine/build"
+make -j$(nproc) -C "%{_builddir}/Helios/build"
 
 %check
 # validate the metainfo file
@@ -204,11 +204,11 @@ appstream-util validate %{buildroot}%{_metainfodir}/*.metainfo.xml
 desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 
 # run tests
-cd %{_builddir}/Sunshine/build
-xvfb-run ./tests/test_sunshine
+cd %{_builddir}/Helios/build
+xvfb-run ./tests/test_helios
 
 %install
-cd %{_builddir}/Sunshine/build
+cd %{_builddir}/Helios/build
 %make_install
 
 %post
@@ -239,29 +239,29 @@ fi
 
 %files
 # Executables
-%caps(cap_sys_admin+p) %{_bindir}/sunshine
-%caps(cap_sys_admin+p) %{_bindir}/sunshine-*
+%caps(cap_sys_admin+p) %{_bindir}/helios
+%caps(cap_sys_admin+p) %{_bindir}/helios-*
 
 # Systemd unit file for user services
-%{_userunitdir}/sunshine.service
+%{_userunitdir}/helios.service
 
 # Udev rules
-%{_udevrulesdir}/*-sunshine.rules
+%{_udevrulesdir}/*-helios.rules
 
 # Modules-load configuration
-%{_modulesloaddir}/*-sunshine.conf
+%{_modulesloaddir}/*-helios.conf
 
 # Desktop entries
 %{_datadir}/applications/*.desktop
 
 # Icons
-%{_datadir}/icons/hicolor/scalable/apps/apollo.svg
-%{_datadir}/icons/hicolor/scalable/status/apollo*.svg
+%{_datadir}/icons/hicolor/scalable/apps/helios.svg
+%{_datadir}/icons/hicolor/scalable/status/helios*.svg
 
 # Metainfo
 %{_datadir}/metainfo/*.metainfo.xml
 
 # Assets
-%{_datadir}/sunshine/**
+%{_datadir}/helios/**
 
 %changelog

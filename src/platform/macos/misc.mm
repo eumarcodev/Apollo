@@ -11,6 +11,7 @@
 // standard includes
 #include <fcntl.h>
 #include <ifaddrs.h>
+#include <mutex>
 
 // platform includes
 #include <arpa/inet.h>
@@ -91,7 +92,19 @@ namespace platf {
       homedir = getpwuid(geteuid())->pw_dir;
     }
 
-    return fs::path {homedir} / ".config/sunshine"sv;
+    const fs::path config_path = fs::path {homedir} / ".config/helios"sv;
+
+    // Older Helios versions used a directory named after the upstream project: rename it once
+    static std::once_flag migration_flag;
+    std::call_once(migration_flag, [&config_path, homedir]() {
+      std::error_code ec;
+      const fs::path legacy_config_path = fs::path {homedir} / ".config/sunshine"sv;
+      if (!fs::exists(config_path, ec) && fs::exists(legacy_config_path, ec)) {
+        fs::rename(legacy_config_path, config_path, ec);
+      }
+    });
+
+    return config_path;
   }
 
   using ifaddr_t = util::safe_ptr<ifaddrs, freeifaddrs>;
@@ -251,7 +264,7 @@ namespace platf {
   void restart() {
     // Gracefully clean up and restart ourselves instead of exiting
     atexit(restart_on_exit);
-    lifetime::exit_sunshine(0, true);
+    lifetime::exit_helios(0, true);
   }
 
   int set_env(const std::string &name, const std::string &value) {
@@ -517,7 +530,7 @@ namespace platf {
       return boost::asio::ip::host_name();
     } catch (boost::system::system_error &err) {
       BOOST_LOG(error) << "Failed to get hostname: "sv << err.what();
-      return "Sunshine"s;
+      return "Helios"s;
     }
   }
 

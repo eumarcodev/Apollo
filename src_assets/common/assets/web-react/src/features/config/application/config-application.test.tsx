@@ -11,7 +11,7 @@ import { RELOAD_AFTER_NETWORK_ERROR_MS, RESTART_NOTE_MS, useConfigEditor } from 
 const FAILED = { status: 'failed' } as const;
 
 function fakePort(
-  body: Record<string, unknown> = { platform: 'windows', sunshine_name: 'Host' },
+  body: Record<string, unknown> = { platform: 'windows', helios_name: 'Host' },
   save: SaveOutcome = 'saved',
   restart: RestartOutcome = 'ok',
 ) {
@@ -79,7 +79,7 @@ describe('loadConfig', () => {
     );
     const { result } = renderHook(() => useConfigSession(port), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.config['sunshine_name']).toBe('Host');
+    expect(result.current.data?.config['helios_name']).toBe('Host');
     expect(port.load).toHaveBeenCalledOnce();
   });
 
@@ -111,7 +111,7 @@ describe('useConfigEditor', () => {
     act(() => result.current.update('global_prep_cmd', [{ do: 'x', undo: '', elevated: false }]));
     expect(result.current.config['port']).toBe(48000);
     expect(result.current.config.global_prep_cmd).toHaveLength(1);
-    expect(result.current.config['sunshine_name']).toBe('Host');
+    expect(result.current.config['helios_name']).toBe('Host');
     expect(before['port']).toBe(47989);
   });
 
@@ -123,7 +123,7 @@ describe('useConfigEditor', () => {
       ok = await result.current.save();
     });
     expect(ok).toBe(true);
-    expect(port.save).toHaveBeenCalledWith({ sunshine_name: 'Host', port: 48000 });
+    expect(port.save).toHaveBeenCalledWith({ helios_name: 'Host', port: 48000 });
     expect(result.current.saved).toBe(true);
     expect(result.current.restarted).toBe(false);
     expect(result.current.saving).toBe(false);

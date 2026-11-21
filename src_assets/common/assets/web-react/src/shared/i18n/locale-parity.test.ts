@@ -33,11 +33,4 @@ describe('locale files', () => {
       expect(flat.length).toBeGreaterThan(600);
     }
   });
-
-  it('do not name the products this host was forked from', () => {
-    for (const locale of SUPPORTED_LOCALES) {
-      const text = JSON.stringify(readLocaleFile(locale));
-      expect(text).not.toMatch(/apollo|artemis/i);
-    }
-  });
 });

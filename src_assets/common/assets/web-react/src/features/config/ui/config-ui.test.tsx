@@ -175,13 +175,13 @@ describe('ConfigPage', () => {
 
   it('saves what the tabs changed and shows the apply note and button', async () => {
     TAB_COMPONENTS.advanced = TestAdvancedTab;
-    const port = fakePort({ sunshine_name: 'Host' });
+    const port = fakePort({ helios_name: 'Host' });
     await renderPage(port);
     await userEvent.click(screen.getByRole('tab', { name: 'Advanced' }));
     fireEvent.change(screen.getByLabelText('qp'), { target: { value: '30' } });
     expect(screen.queryByTestId('config-apply')).not.toBeInTheDocument();
     await userEvent.click(screen.getByTestId('config-save'));
-    expect(port.save).toHaveBeenCalledWith({ sunshine_name: 'Host', qp: 30 });
+    expect(port.save).toHaveBeenCalledWith({ helios_name: 'Host', qp: 30 });
     expect(await screen.findByTestId('config-apply-note')).toHaveTextContent(
       "Success! Click 'Apply' to restart Helios and apply changes.",
     );

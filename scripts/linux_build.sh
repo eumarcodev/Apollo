@@ -90,7 +90,7 @@ Options:
   --publisher-name         The name of the publisher (not developer) of the application.
   --publisher-website      The URL of the publisher's website.
   --publisher-issue-url    The URL of the publisher's support site or issue tracker.
-                           If you provide a modified version of Sunshine, we kindly request that you use your own url.
+                           If you provide a modified version of Helios, we kindly request that you use your own url.
   --skip-cleanup           Do not restore the original gcc alternatives, or the math-vector.h file.
   --skip-cuda              Skip CUDA installation.
   --skip-libva             Skip libva installation. This will automatically be enabled if passing --appimage-build.
@@ -484,7 +484,7 @@ function run_step_deps() {
 
   # compile doxygen if version is too low
   if ! check_version "doxygen" "$doxygen_min" "$doxygen_max"; then
-    if [ "${SUNSHINE_COMPILE_DOXYGEN}" == "true" ]; then
+    if [ "${HELIOS_COMPILE_DOXYGEN}" == "true" ]; then
       echo "Compiling doxygen"
       doxygen_url="https://github.com/doxygen/doxygen/releases/download/Release_${_doxygen_min}/doxygen-${doxygen_min}.src.tar.gz"
       echo "doxygen url: ${doxygen_url}"
@@ -540,43 +540,43 @@ function run_step_cmake() {
     "-DBUILD_WERROR=ON"
     "-DCMAKE_BUILD_TYPE=Release"
     "-DCMAKE_INSTALL_PREFIX=/usr"
-    "-DSUNSHINE_ASSETS_DIR=share/sunshine"
-    "-DSUNSHINE_EXECUTABLE_PATH=/usr/bin/sunshine"
-    "-DSUNSHINE_ENABLE_WAYLAND=ON"
-    "-DSUNSHINE_ENABLE_X11=ON"
-    "-DSUNSHINE_ENABLE_DRM=ON"
+    "-DHELIOS_ASSETS_DIR=share/helios"
+    "-DHELIOS_EXECUTABLE_PATH=/usr/bin/helios"
+    "-DHELIOS_ENABLE_WAYLAND=ON"
+    "-DHELIOS_ENABLE_X11=ON"
+    "-DHELIOS_ENABLE_DRM=ON"
   )
 
   if [ "$appimage_build" == 1 ]; then
-    cmake_args+=("-DSUNSHINE_BUILD_APPIMAGE=ON")
+    cmake_args+=("-DHELIOS_BUILD_APPIMAGE=ON")
   fi
 
   # Publisher metadata
   if [ -n "$publisher_name" ]; then
-    cmake_args+=("-DSUNSHINE_PUBLISHER_NAME='${publisher_name}'")
+    cmake_args+=("-DHELIOS_PUBLISHER_NAME='${publisher_name}'")
   fi
   if [ -n "$publisher_website" ]; then
-    cmake_args+=("-DSUNSHINE_PUBLISHER_WEBSITE='${publisher_website}'")
+    cmake_args+=("-DHELIOS_PUBLISHER_WEBSITE='${publisher_website}'")
   fi
   if [ -n "$publisher_issue_url" ]; then
-    cmake_args+=("-DSUNSHINE_PUBLISHER_ISSUE_URL='${publisher_issue_url}'")
+    cmake_args+=("-DHELIOS_PUBLISHER_ISSUE_URL='${publisher_issue_url}'")
   fi
 
   # Handle doxygen docs flag
   if ! check_version "doxygen" "$doxygen_min" "$doxygen_max"; then
-    if [ "${SUNSHINE_COMPILE_DOXYGEN}" != "true" ]; then
+    if [ "${HELIOS_COMPILE_DOXYGEN}" != "true" ]; then
       cmake_args+=("-DBUILD_DOCS=OFF")
     fi
   fi
 
   # Handle CUDA
   if [ "$skip_cuda" == 0 ]; then
-    cmake_args+=("-DSUNSHINE_ENABLE_CUDA=ON")
+    cmake_args+=("-DHELIOS_ENABLE_CUDA=ON")
     if [ -n "$nvcc_path" ]; then
       cmake_args+=("-DCMAKE_CUDA_COMPILER:PATH=$nvcc_path")
     fi
   else
-    cmake_args+=("-DSUNSHINE_ENABLE_CUDA=OFF")
+    cmake_args+=("-DHELIOS_ENABLE_CUDA=OFF")
   fi
 
   # Cmake stuff here
@@ -590,11 +590,11 @@ function run_step_validation() {
   echo "Running step: Validation"
 
   # Run appstream validation, etc.
-  appstreamcli validate "build/dev.lizardbyte.app.Sunshine.metainfo.xml"
-  appstream-util validate "build/dev.lizardbyte.app.Sunshine.metainfo.xml"
-  desktop-file-validate "build/dev.lizardbyte.app.Sunshine.desktop"
+  appstreamcli validate "build/io.github.eumarcodev.Helios.metainfo.xml"
+  appstream-util validate "build/io.github.eumarcodev.Helios.metainfo.xml"
+  desktop-file-validate "build/io.github.eumarcodev.Helios.desktop"
   if [ "$appimage_build" == 0 ]; then
-    desktop-file-validate "build/dev.lizardbyte.app.Sunshine.terminal.desktop"
+    desktop-file-validate "build/io.github.eumarcodev.Helios.terminal.desktop"
   fi
 }
 
