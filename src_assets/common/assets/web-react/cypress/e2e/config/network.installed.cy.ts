@@ -24,9 +24,10 @@ describe('installed config: Network tab of the installed host', () => {
   });
 
   it('renders the Network fields and the port table of the installed port', () => {
-    cy.request<{ port: string | number }>('/api/config')
-      .its('body.port')
-      .then((port) => {
+    // The host omits options left at their default, so a missing port means the default base port 47989.
+    cy.request<{ port?: string | number }>('/api/config')
+      .its('body')
+      .then(({ port = 47989 }) => {
         cy.visit('/config#ping_timeout');
         cy.get('[data-testid="config-tab-network"]').should('have.attr', 'aria-selected', 'true');
         for (const id of ['upnp', 'address_family', 'port', 'origin_web_ui_allowed', 'ping_timeout', 'audio_qos']) {
