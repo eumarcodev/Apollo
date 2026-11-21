@@ -221,6 +221,32 @@ describe('pairing: host of the deep link', () => {
     cy.get('[data-testid="otp-submit"]').click();
     cy.get('[data-testid="otp-link"]').should('have.text', 'art://gaming-pc.lan:50000');
   });
+
+  it('uses the manual host again after switching tabs (#184)', () => {
+    visitPin();
+    cy.get('[data-testid="otp-passphrase"]').type('abcd');
+    cy.get('[data-testid="otp-submit"]').click();
+    cy.get('[data-testid="host-edit"]').click();
+    cy.get('[data-testid="host-addr"]').clear().type('gaming-pc.lan');
+    cy.get('[data-testid="host-port"]').clear().type('50000');
+    cy.get('[data-testid="host-save"]').click();
+    cy.get('[data-testid="tab-pin"]').click();
+    cy.get('[data-testid="tab-otp"]').click();
+    cy.get('[data-testid="otp-passphrase"]').type('wxyz');
+    cy.get('[data-testid="otp-submit"]').click();
+    const link = 'art://gaming-pc.lan:50000?pin=4321&passphrase=wxyz&name=Helios%20PC';
+    cy.get('[data-testid="otp-qr"]').should('have.attr', 'data-value', link);
+    cy.get('[data-testid="otp-link"]').should('have.attr', 'href', link);
+  });
+
+  it('uses the automatic host after a tab switch when none was typed', () => {
+    visitPin();
+    cy.get('[data-testid="tab-pin"]').click();
+    cy.get('[data-testid="tab-otp"]').click();
+    cy.get('[data-testid="otp-passphrase"]').type('abcd');
+    cy.get('[data-testid="otp-submit"]').click();
+    cy.get('[data-testid="otp-qr"]').should('exist');
+  });
 });
 
 describe('pairing: translations', () => {
