@@ -20,6 +20,7 @@ export interface ConfigTextFieldProps {
   type?: 'text' | 'number';
   min?: number;
   max?: number;
+  step?: number;
   /** Translation key of a validation message; marks the field invalid while set. */
   error?: string;
   /** Extra help (commands, examples) rendered inside the field, under the description. */
@@ -39,6 +40,7 @@ export function TextField({
   type = 'text',
   min,
   max,
+  step,
   error,
   children,
 }: ConfigTextFieldProps) {
@@ -54,7 +56,13 @@ export function TextField({
       isInvalid={error !== undefined}
     >
       <Label>{t(label)}</Label>
-      <Input placeholder={placeholder} min={min} max={max} className={monospace ? 'font-mono' : undefined} />
+      <Input
+        placeholder={placeholder}
+        min={min}
+        max={max}
+        step={step}
+        className={monospace ? 'font-mono' : undefined}
+      />
       {desc ? <Description className="whitespace-pre-line">{t(desc)}</Description> : null}
       {error !== undefined && <FieldError>{t(error)}</FieldError>}
       {children}

@@ -49,4 +49,24 @@ describe('installed config: Audio/Video tab of the installed host', () => {
     cy.wait('@save').its('response.statusCode').should('eq', 200);
     cy.request<Record<string, unknown>>('/api/config').its('body.audio_sink').should('eq', MARKER);
   });
+
+  it('saves a changed HDR option on Windows and the host reports it', () => {
+    cy.request<{ platform: string; dd_hdr_option?: string }>('/api/config').then(({ body }) => {
+      if (body.platform !== 'windows') {
+        cy.visit('/config#audio_sink');
+        cy.get('#dd_hdr_option').should('not.exist');
+        return;
+      }
+      const next = body.dd_hdr_option === 'disabled' ? 'Switch on/off the HDR mode' : 'Do not change HDR settings';
+      const expected = body.dd_hdr_option === 'disabled' ? 'auto' : 'disabled';
+      cy.intercept({ method: 'POST', pathname: '/api/config' }).as('saveHdr');
+      cy.visit('/config#dd_hdr_option');
+      cy.contains('button', 'Advanced display device options').should('be.visible');
+      cy.get('#dd_hdr_option').click();
+      cy.contains('[role="option"]', next).click();
+      cy.get('[data-testid="config-save"]').click();
+      cy.wait('@saveHdr').its('response.statusCode').should('eq', 200);
+      cy.request<Record<string, unknown>>('/api/config').its('body.dd_hdr_option').should('eq', expected);
+    });
+  });
 });
