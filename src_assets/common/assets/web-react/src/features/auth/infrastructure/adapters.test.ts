@@ -68,8 +68,14 @@ describe('createAuthApi.createCredentials', () => {
     await expect(api.createCredentials(credentials)).resolves.toEqual({ kind: 'rejected', error: 'Invalid Username' });
   });
 
+  it('shows the server error of a 400 validation answer instead of a generic failure', async () => {
+    const { api } = apiWith(jsonResponse({ status: false, error: 'Password Mismatch' }, 400));
+    await expect(api.createCredentials(credentials)).resolves.toEqual({ kind: 'rejected', error: 'Password Mismatch' });
+  });
+
   it.each([
-    ['400', () => jsonResponse({ status: false, error: 'Password Mismatch' }, 400)],
+    ['400 without an error text', () => jsonResponse({ status: false }, 400)],
+    ['400 with a non-JSON body', () => new Response('bad', { status: 400 })],
     ['401', () => new Response('', { status: 401 })],
     ['500', () => new Response('', { status: 500 })],
     ['invalid JSON', () => new Response('<html>', { status: 200 })],
